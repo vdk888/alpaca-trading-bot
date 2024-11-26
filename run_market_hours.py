@@ -38,7 +38,20 @@ def is_market_hours():
 
 async def run_bot():
     """Main function to run the trading bot"""
-    load_dotenv()
+    # Try to load from .env file, but continue if file not found
+    try:
+        load_dotenv()
+    except Exception as e:
+        logger.warning(f"Could not load .env file: {e}")
+    
+    # Check for required environment variables
+    required_vars = ['ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'TELEGRAM_BOT_TOKEN', 'CHAT_ID']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
     
     # Initialize clients
     trading_client = TradingClient(
