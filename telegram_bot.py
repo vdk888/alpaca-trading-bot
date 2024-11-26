@@ -13,9 +13,10 @@ class TradingBot:
         self.trading_client = trading_client
         self.strategy = strategy
         self.symbol = symbol
-        self.bot_token = os.getenv('BOT_KEY')
+        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.chat_id = os.getenv('CHAT_ID')
         self.bot = Bot(token=self.bot_token)
+        self.application = None
         
     async def send_message(self, message: str):
         """Send message to Telegram"""
@@ -141,6 +142,25 @@ Composite Scores:
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help message"""
         await self.start_command(update, context)
+
+    async def start(self):
+        """Start the Telegram bot"""
+        if not self.bot_token:
+            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
+        if not self.chat_id:
+            raise ValueError("CHAT_ID not found in environment variables")
+            
+        self.application = Application.builder().token(self.bot_token).build()
+        self.setup_handlers(self.application)
+        await self.application.initialize()
+        await self.application.start()
+        await self.send_message("🤖 Trading Bot started successfully!")
+
+    async def stop(self):
+        """Stop the Telegram bot"""
+        if self.application:
+            await self.application.stop()
+            await self.application.shutdown()
 
     def setup_handlers(self, application: Application):
         """Setup all command handlers"""

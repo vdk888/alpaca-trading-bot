@@ -4,7 +4,7 @@ import pytz
 from trading import TradingExecutor
 from fetch import fetch_historical_data, get_latest_data, is_market_open
 from strategy import TradingStrategy
-from telegram_bot import TelegramBot
+from telegram_bot import TradingBot
 from alpaca.trading.client import TradingClient
 import os
 from dotenv import load_dotenv
@@ -49,10 +49,12 @@ async def run_bot():
     # Initialize bot components
     symbol = "SPY"  # or your preferred symbol
     trading_executor = TradingExecutor(trading_client, symbol)
-    telegram_bot = TelegramBot(trading_client)
+    strategy = TradingStrategy(symbol)
+    trading_bot = TradingBot(trading_client, strategy, symbol)
     
-    # Start the Telegram bot in the background
-    asyncio.create_task(telegram_bot.start())
+    # Start the Telegram bot
+    logger.info("Starting Telegram bot...")
+    await trading_bot.start()
     
     logger.info("Bot started, waiting for market hours...")
     
@@ -60,13 +62,13 @@ async def run_bot():
         try:
             if is_market_hours():
                 logger.info("Market is open, running trading logic...")
-                # Your trading logic here
-                # You might want to add your specific trading implementation
+                analysis = strategy.analyze()
+                if analysis['signal'] != 0:  # If there's a trading signal
+                    await trading_bot.send_message(f"Trading Signal: {analysis}")
                 await asyncio.sleep(300)  # Wait 5 minutes between iterations
             else:
                 logger.info("Outside market hours, waiting...")
-                # If outside market hours, check every 5 minutes
-                await asyncio.sleep(300)
+                await asyncio.sleep(300)  # Check every 5 minutes
                 
         except Exception as e:
             logger.error(f"Error in main loop: {str(e)}")

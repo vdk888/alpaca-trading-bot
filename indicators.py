@@ -58,27 +58,31 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     daily_data, daily_composite, daily_std = calculate_composite_indicator(data, params, reactivity)
     
     # Calculate "weekly" composite (35-minute timeframe = 7 * 5min)
-    weekly_data = data.resample('35T').last()  # 35-minute resampling
+    weekly_data = data.resample('35min').last()  # Use 'min' instead of 'T'
     weekly_data, weekly_composite, weekly_std = calculate_composite_indicator(weekly_data, params, reactivity, is_weekly=True)
     weekly_data = weekly_data.reindex(data.index, method='ffill')
     print(f"Debug: generate_signals called with reactivity={reactivity}")
 
-    signals = pd.DataFrame(index=data.index, columns=['Signal', 'Daily_Composite', 'Daily_Down_Lim', 'Daily_Up_Lim', 'Weekly_Composite', 'Weekly_Down_Lim', 'Weekly_Up_Lim'])
-    signals['Daily_Composite'] = daily_data['Composite']
-    signals['Daily_Down_Lim'] = daily_data['Down_Lim']
-    signals['Daily_Up_Lim'] = daily_data['Up_Lim']
-    signals['Weekly_Composite'] = weekly_data['Composite']
-    signals['Weekly_Down_Lim'] = weekly_data['Down_Lim']
-    signals['Weekly_Up_Lim'] = weekly_data['Up_Lim']
+    # Initialize signals DataFrame with zeros
+    signals = pd.DataFrame(0, index=data.index, columns=['Signal', 'Daily_Composite', 'Daily_Down_Lim', 'Daily_Up_Lim', 'Weekly_Composite', 'Weekly_Down_Lim', 'Weekly_Up_Lim'])
+    
+    # Assign values without chaining
+    signals = signals.assign(
+        Daily_Composite=daily_data['Composite'],
+        Daily_Down_Lim=daily_data['Down_Lim'],
+        Daily_Up_Lim=daily_data['Up_Lim'],
+        Weekly_Composite=weekly_data['Composite'],
+        Weekly_Down_Lim=weekly_data['Down_Lim'],
+        Weekly_Up_Lim=weekly_data['Up_Lim']
+    )
     
     # Generate buy signals (daily crossing above upper limit)
-    signals.loc[(daily_data['Composite'] > daily_data['Up_Lim']) & (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1)), 'Signal'] = 1
+    buy_mask = (daily_data['Composite'] > daily_data['Up_Lim']) & (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))
+    signals.loc[buy_mask, 'Signal'] = 1
     
     # Generate sell signals (weekly crossing below lower limit)
-    signals.loc[(weekly_data['Composite'] < weekly_data['Down_Lim']) & (weekly_data['Composite'].shift(1) >= weekly_data['Down_Lim'].shift(1)), 'Signal'] = -1
-    
-    # Fill NaN values with 0 (no signal)
-    signals['Signal'].fillna(0, inplace=True)
+    sell_mask = (weekly_data['Composite'] < weekly_data['Down_Lim']) & (weekly_data['Composite'].shift(1) >= weekly_data['Down_Lim'].shift(1))
+    signals.loc[sell_mask, 'Signal'] = -1
     
     return signals, daily_data, weekly_data
 
@@ -113,10 +117,10 @@ if __name__ == "__main__":
     params = get_default_params()
     
     result = generate_signals(data, params)
-    print(result.tail(10))
+    print(result[0].tail(10))
     
     # Count buy and sell signals
-    buy_signals = (result['Signal'] == 1).sum()
-    sell_signals = (result['Signal'] == -1).sum()
+    buy_signals = (result[0]['Signal'] == 1).sum()
+    sell_signals = (result[0]['Signal'] == -1).sum()
     print(f"\nTotal buy signals: {buy_signals}")
     print(f"Total sell signals: {sell_signals}")
