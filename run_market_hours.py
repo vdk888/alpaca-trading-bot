@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import pytz
 from trading import TradingExecutor
-from fetch import DataFetcher
+from fetch import fetch_historical_data, get_latest_data, is_market_open
 from strategy import Strategy
 from telegram_bot import TelegramBot
 from alpaca.trading.client import TradingClient
