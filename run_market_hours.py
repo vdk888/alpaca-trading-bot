@@ -89,14 +89,21 @@ async def run_bot():
                 logger.error(f"Error in trading loop: {str(e)}")
                 await asyncio.sleep(60)  # Wait a minute before retrying
     
-    # Run both the trading loop and the Telegram bot
+    # Create tasks for both loops
+    trading_task = asyncio.create_task(trading_loop())
+    
     try:
-        await asyncio.gather(
-            trading_loop(),
-            trading_bot.application.run_polling(allowed_updates=Update.ALL_TYPES)
-        )
+        # Run the application with polling
+        await trading_bot.application.run_polling(allowed_updates=Update.ALL_TYPES, close_loop=False)
     except Exception as e:
         logger.error(f"Error in main loop: {str(e)}")
+    finally:
+        # Clean up
+        trading_task.cancel()
+        try:
+            await trading_task
+        except asyncio.CancelledError:
+            pass
         await trading_bot.stop()
 
 if __name__ == "__main__":
