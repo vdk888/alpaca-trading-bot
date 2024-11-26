@@ -9,6 +9,7 @@ from alpaca.trading.client import TradingClient
 import os
 from dotenv import load_dotenv
 import logging
+from telegram import Update
 
 # Set up logging
 logging.basicConfig(
@@ -71,21 +72,32 @@ async def run_bot():
     
     logger.info("Bot started, waiting for market hours...")
     
-    while True:
-        try:
-            if is_market_hours():
-                logger.info("Market is open, running trading logic...")
-                analysis = strategy.analyze()
-                if analysis['signal'] != 0:  # If there's a trading signal
-                    await trading_bot.send_message(f"Trading Signal: {analysis}")
-                await asyncio.sleep(300)  # Wait 5 minutes between iterations
-            else:
-                logger.info("Outside market hours, waiting...")
-                await asyncio.sleep(300)  # Check every 5 minutes
-                
-        except Exception as e:
-            logger.error(f"Error in main loop: {str(e)}")
-            await asyncio.sleep(60)  # Wait a minute before retrying
+    async def trading_loop():
+        while True:
+            try:
+                if is_market_hours():
+                    logger.info("Market is open, running trading logic...")
+                    analysis = strategy.analyze()
+                    if analysis['signal'] != 0:  # If there's a trading signal
+                        await trading_bot.send_message(f"Trading Signal: {analysis}")
+                    await asyncio.sleep(300)  # Wait 5 minutes between iterations
+                else:
+                    logger.info("Outside market hours, waiting...")
+                    await asyncio.sleep(300)  # Check every 5 minutes
+                    
+            except Exception as e:
+                logger.error(f"Error in trading loop: {str(e)}")
+                await asyncio.sleep(60)  # Wait a minute before retrying
+    
+    # Run both the trading loop and the Telegram bot
+    try:
+        await asyncio.gather(
+            trading_loop(),
+            trading_bot.application.run_polling(allowed_updates=Update.ALL_TYPES)
+        )
+    except Exception as e:
+        logger.error(f"Error in main loop: {str(e)}")
+        await trading_bot.stop()
 
 if __name__ == "__main__":
     try:
