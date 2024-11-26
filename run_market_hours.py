@@ -73,6 +73,7 @@ async def run_bot():
     logger.info("Bot started, waiting for market hours...")
     
     async def trading_loop():
+        """Background task for trading logic"""
         while True:
             try:
                 if is_market_hours():
@@ -80,30 +81,30 @@ async def run_bot():
                     analysis = strategy.analyze()
                     if analysis['signal'] != 0:  # If there's a trading signal
                         await trading_bot.send_message(f"Trading Signal: {analysis}")
-                    await asyncio.sleep(300)  # Wait 5 minutes between iterations
-                else:
-                    logger.info("Outside market hours, waiting...")
-                    await asyncio.sleep(300)  # Check every 5 minutes
-                    
+                await asyncio.sleep(300)  # Wait 5 minutes between iterations
             except Exception as e:
                 logger.error(f"Error in trading loop: {str(e)}")
                 await asyncio.sleep(60)  # Wait a minute before retrying
-    
-    # Create tasks for both loops
-    trading_task = asyncio.create_task(trading_loop())
-    
+
     try:
-        # Run the application with polling
-        await trading_bot.application.run_polling(allowed_updates=Update.ALL_TYPES, close_loop=False)
+        # Start the trading loop
+        trading_task = asyncio.create_task(trading_loop())
+        
+        # Keep the main task running
+        while True:
+            await asyncio.sleep(1)
+            
     except Exception as e:
         logger.error(f"Error in main loop: {str(e)}")
     finally:
-        # Clean up
-        trading_task.cancel()
-        try:
-            await trading_task
-        except asyncio.CancelledError:
-            pass
+        # Cleanup
+        if 'trading_task' in locals():
+            trading_task.cancel()
+            try:
+                await trading_task
+            except asyncio.CancelledError:
+                pass
+        
         await trading_bot.stop()
 
 if __name__ == "__main__":

@@ -15,9 +15,62 @@ class TradingBot:
         self.symbol = symbol
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.chat_id = os.getenv('CHAT_ID')
-        self.bot = Bot(token=self.bot_token)
-        self.application = None
         
+        if not self.bot_token:
+            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
+        if not self.chat_id:
+            raise ValueError("CHAT_ID not found in environment variables")
+            
+        # Initialize the application and bot
+        self.application = Application.builder().token(self.bot_token).build()
+        self._bot = None  # Will be initialized in start()
+        self.setup_handlers(self.application)
+        
+    def setup_handlers(self, application: Application):
+        """Setup all command handlers"""
+        application.add_handler(CommandHandler("start", self.start_command))
+        application.add_handler(CommandHandler("status", self.status_command))
+        application.add_handler(CommandHandler("position", self.position_command))
+        application.add_handler(CommandHandler("balance", self.balance_command))
+        application.add_handler(CommandHandler("performance", self.performance_command))
+        application.add_handler(CommandHandler("indicators", self.indicators_command))
+        application.add_handler(CommandHandler("help", self.help_command))
+
+    @property
+    def bot(self):
+        """Lazy initialization of bot instance"""
+        if self._bot is None:
+            self._bot = Bot(token=self.bot_token)
+        return self._bot
+
+    async def start(self):
+        """Start the Telegram bot"""
+        try:
+            # Initialize the application
+            await self.application.initialize()
+            await self.application.start()
+            await self.application.updater.start_polling()
+            
+            # Send startup message
+            await self.send_message("🤖 Trading Bot started successfully!")
+        except Exception as e:
+            logger.error(f"Error starting bot: {e}")
+            raise
+
+    async def stop(self):
+        """Stop the Telegram bot"""
+        try:
+            if self._bot:
+                await self._bot.close()
+                self._bot = None
+                
+            if hasattr(self.application, 'updater'):
+                await self.application.updater.stop()
+            await self.application.stop()
+            await self.application.shutdown()
+        except Exception as e:
+            logger.error(f"Error stopping bot: {e}")
+            
     async def send_message(self, message: str):
         """Send message to Telegram"""
         try:
@@ -142,32 +195,3 @@ Composite Scores:
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help message"""
         await self.start_command(update, context)
-
-    async def start(self):
-        """Start the Telegram bot"""
-        if not self.bot_token:
-            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
-        if not self.chat_id:
-            raise ValueError("CHAT_ID not found in environment variables")
-            
-        self.application = Application.builder().token(self.bot_token).build()
-        self.setup_handlers(self.application)
-        await self.application.initialize()
-        await self.application.start()
-        await self.send_message("🤖 Trading Bot started successfully!")
-
-    async def stop(self):
-        """Stop the Telegram bot"""
-        if self.application:
-            await self.application.stop()
-            await self.application.shutdown()
-
-    def setup_handlers(self, application: Application):
-        """Setup all command handlers"""
-        application.add_handler(CommandHandler("start", self.start_command))
-        application.add_handler(CommandHandler("status", self.status_command))
-        application.add_handler(CommandHandler("position", self.position_command))
-        application.add_handler(CommandHandler("balance", self.balance_command))
-        application.add_handler(CommandHandler("performance", self.performance_command))
-        application.add_handler(CommandHandler("indicators", self.indicators_command))
-        application.add_handler(CommandHandler("help", self.help_command))
