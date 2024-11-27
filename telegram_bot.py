@@ -7,6 +7,7 @@ from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -373,6 +374,14 @@ Last Update: {analysis['timestamp']}
                     signal_strength = abs(analysis['daily_composite'])
                     signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                     
+                    # Format last signal time
+                    last_signal_str = "No signals generated yet"
+                    if analysis.get('last_signal_time'):
+                        last_signal_time = analysis['last_signal_time']
+                        if isinstance(last_signal_time, str):
+                            last_signal_time = pd.to_datetime(last_signal_time)
+                        last_signal_str = f"Last Signal: {last_signal_time.strftime('%H:%M')} ({signal_direction})"
+                    
                     # Check if signal crosses thresholds
                     daily_signal = (
                         "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
@@ -401,6 +410,7 @@ Weekly Signal: {weekly_signal}
 
 Current Price: ${analysis['current_price']:.2f}
 Last Update: {analysis['timestamp']}
+{last_signal_str}
                     """
                     signal_messages.append(message)
                 except Exception as e:

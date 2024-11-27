@@ -14,6 +14,7 @@ class TradingStrategy:
         self.current_position = 0  # -1: short, 0: neutral, 1: long
         self.data = None
         self.last_update = None
+        self.last_signal_time = None
         self._initialize_data()
         
     def _initialize_data(self) -> None:
@@ -73,6 +74,10 @@ class TradingStrategy:
             # Get the latest signal
             latest_signal = signals.iloc[-1]
             
+            # Update last signal time if we have a new signal
+            if latest_signal['signal'] != 0:
+                self.last_signal_time = self.data.index[-1]
+            
             # Calculate price changes
             price_change_5m = self.data['close'].pct_change().iloc[-1]
             price_change_1h = self.data['close'].pct_change(12).iloc[-1]  # 12 5-minute bars = 1 hour
@@ -92,7 +97,8 @@ class TradingStrategy:
                 'timestamp': self.data.index[-1],
                 'position': self.current_position,
                 'data_points': len(self.data),
-                'weekly_bars': len(self.data.resample('35min').last())
+                'weekly_bars': len(self.data.resample('35min').last()),
+                'last_signal_time': self.last_signal_time
             }
             
             return analysis
