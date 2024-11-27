@@ -91,6 +91,13 @@ class TradingExecutor:
             logger.error(f"Error calculating position size: {str(e)}")
             return 0
 
+    def calculate_shares_from_amount(self, amount: float, current_price: float) -> float:
+        """Calculate number of shares based on dollar amount"""
+        shares = amount / current_price
+        if self.config['market'] != 'FX':
+            shares = int(shares)  # Round down to nearest whole share for stocks
+        return shares
+
     async def execute_trade(self, action: str, analysis: dict, notify_callback=None) -> bool:
         """
         Execute trade on Alpaca
@@ -179,6 +186,107 @@ class TradingExecutor:
 
         except Exception as e:
             error_msg = f"Error executing trade for {self.symbol}: {str(e)}"
+            logger.error(error_msg)
+            if notify_callback:
+                await notify_callback(f"❌ {error_msg}")
+            return False
+
+    async def open_position(self, amount: float, current_price: float, notify_callback=None) -> bool:
+        """
+        Open a new position with specified dollar amount
+        
+        Args:
+            amount: Dollar amount to invest
+            current_price: Current price of the asset
+            notify_callback: Optional callback for notifications
+        """
+        try:
+            if not self._check_market_hours():
+                message = f"Market is closed for {self.symbol}"
+                logger.warning(message)
+                if notify_callback:
+                    await notify_callback(message)
+                return False
+            
+            # Calculate shares based on amount
+            shares = self.calculate_shares_from_amount(amount, current_price)
+            
+            if shares <= 0:
+                message = f"Invalid position size calculated for {self.symbol}"
+                logger.error(message)
+                if notify_callback:
+                    await notify_callback(message)
+                return False
+            
+            # Submit buy order
+            order = MarketOrderRequest(
+                symbol=self.symbol,
+                qty=shares,
+                side=OrderSide.BUY,
+                time_in_force=TimeInForce.DAY
+            )
+            
+            self.trading_client.submit_order(order)
+            
+            message = f"Opening position: BUY {shares} {self.symbol} (${amount:.2f}) at ${current_price:.2f}"
+            logger.info(message)
+            if notify_callback:
+                await notify_callback(message)
+            
+            return True
+            
+        except Exception as e:
+            error_msg = f"Error opening position for {self.symbol}: {str(e)}"
+            logger.error(error_msg)
+            if notify_callback:
+                await notify_callback(f"❌ {error_msg}")
+            return False
+
+    async def close_position(self, notify_callback=None) -> bool:
+        """
+        Close entire position for this symbol
+        """
+        try:
+            if not self._check_market_hours():
+                message = f"Market is closed for {self.symbol}"
+                logger.warning(message)
+                if notify_callback:
+                    await notify_callback(message)
+                return False
+            
+            # Get current position
+            try:
+                position = self.trading_client.get_open_position(self.symbol)
+                shares = abs(float(position.qty))
+                
+                # Submit sell order
+                order = MarketOrderRequest(
+                    symbol=self.symbol,
+                    qty=shares,
+                    side=OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY
+                )
+                
+                self.trading_client.submit_order(order)
+                
+                message = f"Closing position: SELL {shares} {self.symbol} at market price"
+                logger.info(message)
+                if notify_callback:
+                    await notify_callback(message)
+                
+                return True
+                
+            except Exception as e:
+                if "no position" in str(e).lower():
+                    message = f"No position to close for {self.symbol}"
+                    logger.info(message)
+                    if notify_callback:
+                        await notify_callback(message)
+                    return False
+                raise
+                
+        except Exception as e:
+            error_msg = f"Error closing position for {self.symbol}: {str(e)}"
             logger.error(error_msg)
             if notify_callback:
                 await notify_callback(f"❌ {error_msg}")

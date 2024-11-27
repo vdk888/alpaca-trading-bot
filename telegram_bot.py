@@ -7,6 +7,7 @@ from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
+from trading import TradingExecutor
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,9 @@ class TradingBot:
             raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
         if not self.chat_id:
             raise ValueError("CHAT_ID not found in environment variables")
+            
+        # Initialize trading executors for each symbol
+        self.executors = {symbol: TradingExecutor(trading_client, symbol) for symbol in symbols}
             
         # Initialize the application and bot
         self.application = Application.builder().token(self.bot_token).build()
@@ -42,6 +46,8 @@ class TradingBot:
         application.add_handler(CommandHandler("signals", self.signals_command))
         application.add_handler(CommandHandler("markets", self.markets_command))
         application.add_handler(CommandHandler("symbols", self.symbols_command))
+        application.add_handler(CommandHandler("open", self.open_command))
+        application.add_handler(CommandHandler("close", self.close_command))
 
     @property
     def bot(self):
@@ -107,7 +113,11 @@ class TradingBot:
 /plot [symbol] [days] - Generate strategy visualization
 /signals - View latest signals for all symbols
 
-🔧 Management Commands:
+🔧 Trading Commands:
+/open <symbol> <amount> - Open a position with specified amount
+/close [symbol] - Close positions (all positions if no symbol specified)
+
+⚙️ Management Commands:
 /symbols - List all trading symbols
 /markets - View market hours for all symbols
 /help - Show this help message
@@ -461,3 +471,73 @@ Last Update: {analysis['timestamp']}
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help message"""
         await self.start_command(update, context)
+
+    async def open_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Open a new position with specified amount"""
+        try:
+            if not context.args or len(context.args) != 2:
+                await update.message.reply_text(
+                    "❌ Usage: /open <symbol> <amount>\n"
+                    "Example: /open SPY 1000 (to open $1000 position in SPY)"
+                )
+                return
+            
+            symbol = context.args[0].upper()
+            try:
+                amount = float(context.args[1])
+            except ValueError:
+                await update.message.reply_text("❌ Amount must be a number")
+                return
+            
+            if symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+            
+            if amount <= 0:
+                await update.message.reply_text("❌ Amount must be positive")
+                return
+            
+            # Get current price from strategy
+            analysis = self.strategies[symbol].analyze()
+            if not analysis:
+                await update.message.reply_text(f"❌ Unable to get current price for {symbol}")
+                return
+            
+            current_price = analysis['current_price']
+            
+            # Execute the trade using the appropriate executor
+            await self.executors[symbol].open_position(amount, current_price, self.send_message)
+            
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error opening position: {str(e)}")
+
+    async def close_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Close positions"""
+        try:
+            # If no symbol specified, close all positions
+            symbol = context.args[0].upper() if context.args else None
+            
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+            
+            symbols_to_close = [symbol] if symbol else self.symbols
+            success_count = 0
+            
+            for sym in symbols_to_close:
+                try:
+                    if await self.executors[sym].close_position(self.send_message):
+                        success_count += 1
+                except Exception as e:
+                    await update.message.reply_text(f"❌ Error closing {sym} position: {str(e)}")
+            
+            if success_count > 0:
+                message = f"Successfully closed {success_count} position(s)"
+                if symbol:
+                    message += f" for {symbol}"
+                await update.message.reply_text(message)
+            elif not symbol:  # No positions were closed when trying to close all
+                await update.message.reply_text("No open positions to close")
+            
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error closing positions: {str(e)}")
