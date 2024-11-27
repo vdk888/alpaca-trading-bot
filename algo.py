@@ -9,7 +9,6 @@ from strategy import TradingStrategy
 from telegram_bot import TradingBot
 from trading import TradingExecutor
 from fetch import is_market_open
-from visualization import create_strategy_plot
 
 # Load environment variables
 load_dotenv()
@@ -65,78 +64,10 @@ async def run_strategy():
             await telegram_bot.send_message(f" {error_msg}")
             await asyncio.sleep(60)
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /help is issued."""
-    help_text = """
-Available commands:
-/start - Start the bot
-/help - Show this help message
-/status - Check trading bot status
-/position - Check current position
-/plot [symbol] [days] - Generate strategy visualization (default: SPY, 5 days)
-"""
-    await update.message.reply_text(help_text)
-
-async def plot_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Generate and send a strategy visualization plot."""
-    try:
-        # Parse arguments
-        args = context.args
-        symbol = args[0].upper() if len(args) > 0 else 'SPY'
-        days = int(args[1]) if len(args) > 1 else 5
-        
-        # Validate days
-        if days <= 0 or days > 30:
-            await update.message.reply_text("Days must be between 1 and 30")
-            return
-        
-        # Send "generating" message
-        status_message = await update.message.reply_text(
-            f"📊 Generating visualization for {symbol} (last {days} days)..."
-        )
-        
-        # Generate plot
-        plot_bytes, stats = create_strategy_plot(symbol, days)
-        
-        # Prepare statistics message
-        stats_message = f"""
-📈 {symbol} Analysis (Last {days} days):
-• Current Price: ${stats['current_price']:.2f}
-• Price Change: {stats['price_change']:.2f}%
-• Buy Signals: {stats['buy_signals']}
-• Sell Signals: {stats['sell_signals']}
-
-📊 Indicators:
-• Daily Composite: {stats['daily_composite_mean']:.4f} (±{stats['daily_composite_std']:.4f})
-• Weekly Composite: {stats['weekly_composite_mean']:.4f} (±{stats['weekly_composite_std']:.4f})
-"""
-        
-        # Send plot and statistics
-        await update.message.reply_photo(
-            photo=plot_bytes,
-            caption=stats_message
-        )
-        
-        # Delete the "generating" message
-        await status_message.delete()
-        
-    except Exception as e:
-        await update.message.reply_text(f"Error generating plot: {str(e)}")
-
 async def main():
     """Start the bot and strategy"""
     try:
-        # Create the Application
-        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-        
-        # Add command handlers
-        application.add_handler(CommandHandler("start", telegram_bot.start_command))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("status", telegram_bot.status_command))
-        application.add_handler(CommandHandler("position", telegram_bot.position_command))
-        application.add_handler(CommandHandler("plot", plot_command))
-        
-        # Start the bot
+        # Start the bot (this will handle command registration internally)
         await telegram_bot.start()
         
         # Start the strategy loop

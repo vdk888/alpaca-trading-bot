@@ -5,6 +5,7 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
+from visualization import create_strategy_plot
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class TradingBot:
         application.add_handler(CommandHandler("balance", self.balance_command))
         application.add_handler(CommandHandler("performance", self.performance_command))
         application.add_handler(CommandHandler("indicators", self.indicators_command))
+        application.add_handler(CommandHandler("plot", self.plot_command))
         application.add_handler(CommandHandler("help", self.help_command))
 
     @property
@@ -93,11 +95,7 @@ class TradingBot:
 /position - View current position details
 /balance - Check account balance
 /performance - View today's performance
-/settings - View current trading settings
-/pause - Pause trading
-/resume - Resume trading
-/risk - View risk metrics
-/orders - View recent orders
+/plot [symbol] [days] - Generate strategy visualization
 /indicators - View current indicator values
 /help - Show this help message
         """
@@ -198,6 +196,64 @@ Last Update: {analysis['timestamp']}
             await update.message.reply_text(message)
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting indicators: {str(e)}")
+
+    async def plot_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Generate and send a strategy visualization plot."""
+        try:
+            # Parse arguments
+            args = context.args
+            symbol = args[0].upper() if len(args) > 0 else 'SPY'
+            days = int(args[1]) if len(args) > 1 else 5
+            
+            # Validate days
+            if days <= 0 or days > 30:
+                await update.message.reply_text("❌ Days must be between 1 and 30")
+                return
+            
+            # Send "generating" message
+            status_message = await update.message.reply_text(
+                f"📊 Generating visualization for {symbol} (last {days} days)..."
+            )
+            
+            try:
+                # Generate plot
+                plot_bytes, stats = create_strategy_plot(symbol, days)
+                
+                # Prepare statistics message
+                stats_message = f"""
+📈 {symbol} Analysis (Last {days} days):
+• Current Price: ${stats['current_price']:.2f}
+• Price Change: {stats['price_change']:.2f}%
+• Buy Signals: {stats['buy_signals']}
+• Sell Signals: {stats['sell_signals']}
+
+📊 Indicators:
+• Daily Composite: {stats['daily_composite_mean']:.4f} (±{stats['daily_composite_std']:.4f})
+• Weekly Composite: {stats['weekly_composite_mean']:.4f} (±{stats['weekly_composite_std']:.4f})
+"""
+                
+                # Send plot and statistics
+                await update.message.reply_photo(
+                    photo=plot_bytes,
+                    caption=stats_message
+                )
+            except Exception as e:
+                logger.error(f"Plot generation error for {symbol}: {str(e)}")
+                if hasattr(e, '__traceback__'):
+                    import traceback
+                    logger.error(traceback.format_exc())
+                await update.message.reply_text(f"❌ Error generating plot: {str(e)}")
+            finally:
+                # Always try to delete the "generating" message
+                try:
+                    await status_message.delete()
+                except Exception:
+                    pass
+                
+        except ValueError as e:
+            await update.message.reply_text(f"❌ Invalid input: {str(e)}")
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error: {str(e)}")
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help message"""
