@@ -4,6 +4,7 @@ from indicators import calculate_macd, calculate_rsi, calculate_stochastic, gene
 from strategy import TradingStrategy
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import yfinance as yf
 
 def generate_sample_data(periods=2000):
     """Generate sample price data with a trend and some volatility"""
@@ -52,7 +53,7 @@ def analyze_single_point(data: pd.DataFrame, point_index: int):
         'Weekly Composite': weekly_data['Composite'].iloc[point_index],
         'Weekly Upper Limit': weekly_data['Up_Lim'].iloc[point_index],
         'Weekly Lower Limit': weekly_data['Down_Lim'].iloc[point_index],
-        'Signal': signals['Signal'].iloc[point_index]
+        'Signal': signals['signal'].iloc[point_index]
     }
     
     return point
@@ -64,8 +65,8 @@ def plot_analysis(data: pd.DataFrame, signals, daily_data, weekly_data):
     # Plot 1: Price and Signals with volume
     ax1_volume = ax1.twinx()
     ax1.plot(data.index, data['close'], label='Price', color='blue', alpha=0.7)
-    buy_signals = signals[signals['Signal'] == 1].index
-    sell_signals = signals[signals['Signal'] == -1].index
+    buy_signals = signals[signals['signal'] == 1].index
+    sell_signals = signals[signals['signal'] == -1].index
     
     # Plot signals with price labels
     for idx in buy_signals:
@@ -103,13 +104,99 @@ def plot_analysis(data: pd.DataFrame, signals, daily_data, weekly_data):
     ax3.plot(weekly_data.index, weekly_data['Down_Lim'], '--', label='Lower Limit', color='red', alpha=0.6)
     ax3.fill_between(weekly_data.index, weekly_data['Up_Lim'], weekly_data['Down_Lim'], 
                      color='gray', alpha=0.1)
-    ax3.set_title('Weekly Composite Indicator')
+    ax3.set_title('Weekly Composite Indicator (35-min bars)')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.savefig('strategy_analysis.png', dpi=300, bbox_inches='tight')
     plt.close()
+
+def simulate_and_plot(symbol='SPY', start_date=None, end_date=None):
+    # If dates not provided, use last 5 trading days
+    if not end_date:
+        end_date = datetime.now()
+    if not start_date:
+        start_date = end_date - timedelta(days=5)
+    
+    # Fetch data
+    print(f"Fetching {symbol} data from {start_date} to {end_date}")
+    data = yf.download(symbol, start=start_date, end=end_date, interval='5m')
+    
+    if len(data) == 0:
+        print("No data fetched. Please check your dates and symbol.")
+        return
+    
+    # Convert column names to lowercase for consistency
+    data.columns = data.columns.str.lower()
+    
+    # Generate signals
+    params = get_default_params()
+    signals, daily_data, weekly_data = generate_signals(data, params)
+    
+    # Create the plot
+    plt.figure(figsize=(15, 12))
+    
+    # Plot 1: Price and Signals
+    plt.subplot(3, 1, 1)
+    plt.plot(data.index, data['close'], label='Price', color='blue', alpha=0.6)
+    
+    # Plot buy signals
+    buy_signals = signals[signals['signal'] == 1]
+    if len(buy_signals) > 0:
+        plt.scatter(buy_signals.index, data.loc[buy_signals.index, 'close'], 
+                   marker='^', color='green', s=100, label='Buy Signal')
+    
+    # Plot sell signals
+    sell_signals = signals[signals['signal'] == -1]
+    if len(sell_signals) > 0:
+        plt.scatter(sell_signals.index, data.loc[sell_signals.index, 'close'], 
+                   marker='v', color='red', s=100, label='Sell Signal')
+    
+    plt.title(f'{symbol} Price and Signals')
+    plt.legend()
+    plt.grid(True)
+    
+    # Plot 2: Daily Composite
+    plt.subplot(3, 1, 2)
+    plt.plot(signals.index, signals['daily_composite'], label='Daily Composite', color='blue')
+    plt.plot(signals.index, signals['daily_up_lim'], '--', label='Upper Limit', color='green')
+    plt.plot(signals.index, signals['daily_down_lim'], '--', label='Lower Limit', color='red')
+    plt.fill_between(signals.index, signals['daily_up_lim'], signals['daily_down_lim'], 
+                     color='gray', alpha=0.1)
+    plt.title('Daily Composite Indicator')
+    plt.legend()
+    plt.grid(True)
+    
+    # Plot 3: Weekly Composite
+    plt.subplot(3, 1, 3)
+    plt.plot(signals.index, signals['weekly_composite'], label='Weekly Composite', color='purple')
+    plt.plot(signals.index, signals['weekly_up_lim'], '--', label='Upper Limit', color='green')
+    plt.plot(signals.index, signals['weekly_down_lim'], '--', label='Lower Limit', color='red')
+    plt.fill_between(signals.index, signals['weekly_up_lim'], signals['weekly_down_lim'], 
+                     color='gray', alpha=0.1)
+    plt.title('Weekly Composite Indicator (35-min bars)')
+    plt.legend()
+    plt.grid(True)
+    
+    plt.tight_layout()
+    
+    # Save the plot
+    plt.savefig('strategy_simulation.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Print statistics
+    print("\nStrategy Statistics:")
+    print(f"Number of buy signals: {len(buy_signals)}")
+    print(f"Number of sell signals: {len(sell_signals)}")
+    print(f"\nDaily Composite Stats:")
+    print(f"Mean: {signals['daily_composite'].mean():.4f}")
+    print(f"Std: {signals['daily_composite'].std():.4f}")
+    print(f"Range: {signals['daily_composite'].min():.4f} to {signals['daily_composite'].max():.4f}")
+    print(f"\nWeekly Composite Stats:")
+    print(f"Mean: {signals['weekly_composite'].mean():.4f}")
+    print(f"Std: {signals['weekly_composite'].std():.4f}")
+    print(f"Range: {signals['weekly_composite'].min():.4f} to {signals['weekly_composite'].max():.4f}")
 
 def main():
     # Generate sample data with more periods
@@ -123,11 +210,11 @@ def main():
     signals, daily_data, weekly_data = generate_signals(data, params)
     
     # Analyze multiple signal points
-    signal_points = signals[signals['Signal'] != 0].index
+    signal_points = signals[signals['signal'] != 0].index
     if len(signal_points) > 0:
         # Analyze first buy and first sell signal
-        buy_points = signals[signals['Signal'] == 1].index
-        sell_points = signals[signals['Signal'] == -1].index
+        buy_points = signals[signals['signal'] == 1].index
+        sell_points = signals[signals['signal'] == -1].index
         
         points_to_analyze = []
         if len(buy_points) > 0:
@@ -157,8 +244,8 @@ def main():
             print(f"\nFinal Signal: {analysis['Signal']}")
         
         # Count signals
-        buy_signals = (signals['Signal'] == 1).sum()
-        sell_signals = (signals['Signal'] == -1).sum()
+        buy_signals = (signals['signal'] == 1).sum()
+        sell_signals = (signals['signal'] == -1).sum()
         print(f"\nTotal Signals in Sample:")
         print(f"Buy Signals: {buy_signals}")
         print(f"Sell Signals: {sell_signals}")
@@ -179,6 +266,12 @@ def main():
     # Create visualization
     plot_analysis(data, signals, daily_data, weekly_data)
     print("\nVisualization saved as 'strategy_analysis.png'")
+    
+    # Run simulation
+    simulate_and_plot()
 
 if __name__ == "__main__":
-    main()
+    # Use the last 5 trading days by default
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=5)
+    simulate_and_plot(start_date=start_date, end_date=end_date)

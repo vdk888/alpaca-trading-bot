@@ -27,25 +27,70 @@ def calculate_stochastic(data: pd.DataFrame, k_period: int = 14, d_period: int =
     return k - d  # Similar to MACD, we return K-D
 
 def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[float, int]], reactivity: float = 1.0, is_weekly: bool = False) -> Tuple[pd.DataFrame, pd.Series, pd.Series]:
+    # Print input data stats for debugging
+    print(f"Debug: calculate_composite_indicator input stats:")
+    print(f"Data points: {len(data)}")
+    print(f"Date range: {data.index[0]} to {data.index[-1]}")
+    
+    # Calculate indicators
     macd = calculate_macd(data, fast=params['macd_fast'], slow=params['macd_slow'], signal=params['macd_signal'])
     rsi = calculate_rsi(data, period=params['rsi_period'])
     stoch = calculate_stochastic(data, k_period=params['stochastic_k_period'], d_period=params['stochastic_d_period'])
     
-    # Normalize each indicator
-    norm_macd = (macd - macd.mean()) / macd.std()
+    # Print indicator stats
+    print(f"MACD range: {macd.min():.4f} to {macd.max():.4f}")
+    print(f"RSI range: {rsi.min():.4f} to {rsi.max():.4f}")
+    print(f"Stochastic range: {stoch.min():.4f} to {stoch.max():.4f}")
+    
+    # Handle NaN values safely
+    macd = macd.fillna(0)
+    rsi = rsi.fillna(50)  # Neutral RSI value
+    stoch = stoch.fillna(0)
+    
+    # Normalize each indicator with safe division
+    norm_macd = macd / (macd.std() if macd.std() != 0 else 1)
     norm_rsi = (rsi - 50) / 25  # Center around 0 and scale
-    norm_stoch = stoch / 100  # Already centered around 0, just scale
+    norm_stoch = stoch / (100 if stoch.max() != 0 else 1)  # Scale to [-1, 1]
     
-    # Combine indicators (equal weighting for simplicity)
-    composite = ((norm_macd + norm_rsi + norm_stoch) / 3) 
-    composite = composite.ffill().fillna(0)  # Fill NaNs
+    # Print normalized stats
+    print(f"Normalized MACD range: {norm_macd.min():.4f} to {norm_macd.max():.4f}")
+    print(f"Normalized RSI range: {norm_rsi.min():.4f} to {norm_rsi.max():.4f}")
+    print(f"Normalized Stoch range: {norm_stoch.min():.4f} to {norm_stoch.max():.4f}")
     
-    # Calculate the standard deviation for thresholds
-    rolling_std = composite.rolling(window=int(params['sell_rolling_std'] if is_weekly else params['buy_rolling_std'])).std().ffill().fillna(0)
+    # Combine indicators with weighted approach
+    if is_weekly:
+        # Weekly composite puts more weight on longer-term indicators
+        composite = (0.4 * norm_macd + 0.4 * norm_rsi + 0.2 * norm_stoch)
+    else:
+        # Daily composite weights all indicators equally
+        composite = (norm_macd + norm_rsi + norm_stoch) / 3
     
-    # Calculate the threshold lines
-    down_lim_line = composite.mean() + (params['sell_down_lim'] * rolling_std * reactivity)
-    up_lim_line = composite.mean() + (params['buy_up_lim'] * rolling_std * reactivity)
+    composite = composite.fillna(0)
+    
+    # Calculate the rolling standard deviation for thresholds
+    window = int(params['sell_rolling_std'] if is_weekly else params['buy_rolling_std'])
+    rolling_std = composite.rolling(window=window, min_periods=5).std()
+    rolling_std = rolling_std.fillna(composite.std())  # Use overall std for initial values
+    
+    # Ensure rolling_std is never zero to avoid division issues
+    rolling_std = rolling_std.clip(lower=0.0001)
+    
+    # Calculate dynamic threshold lines
+    if is_weekly:
+        # Weekly thresholds are more conservative
+        down_lim_line = -rolling_std * reactivity
+        up_lim_line = rolling_std * reactivity
+    else:
+        # Daily thresholds use parameter-based multipliers
+        down_lim_line = params['sell_down_lim'] * rolling_std * reactivity
+        up_lim_line = params['buy_up_lim'] * rolling_std * reactivity
+    
+    # Print final composite stats
+    print(f"{'Weekly' if is_weekly else 'Daily'} Composite stats:")
+    print(f"Mean: {composite.mean():.4f}")
+    print(f"Std: {composite.std():.4f}")
+    print(f"Range: {composite.min():.4f} to {composite.max():.4f}")
+    print(f"Threshold range: {down_lim_line.min():.4f} to {up_lim_line.max():.4f}")
 
     return pd.DataFrame({
         'Composite': composite,
@@ -66,11 +111,13 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
         'low': 'min',
         'close': 'last',
         'volume': 'sum'
-    })
+    }).dropna()  # Remove any NaN rows
     
     # Debug information
     print(f"Debug: Generated {len(weekly_data)} weekly bars")
     print(f"Debug: Weekly data range: {weekly_data.index[0]} to {weekly_data.index[-1]}")
+    print(f"Debug: Weekly data sample:")
+    print(weekly_data.head())
     
     # Verify we have enough data for weekly calculations
     min_weekly_bars = 20  # Minimum bars needed for reliable signals
@@ -78,42 +125,50 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
         print(f"Warning: Insufficient weekly data. Have {len(weekly_data)} bars, need {min_weekly_bars}")
         # Still calculate but with a warning
     
-    weekly_data, weekly_composite, weekly_std = calculate_composite_indicator(weekly_data, params, reactivity, is_weekly=True)
-    weekly_data = weekly_data.reindex(data.index, method='ffill')
+    # Calculate weekly indicators
+    weekly_indicators, weekly_composite, weekly_std = calculate_composite_indicator(weekly_data, params, reactivity, is_weekly=True)
+    
+    # Forward fill the weekly data to match the 5-minute timeframe
+    weekly_resampled = pd.DataFrame(index=data.index)
+    for col in weekly_indicators.columns:
+        weekly_resampled[col] = weekly_indicators[col].reindex(data.index, method='ffill')
     
     # Print weekly composite stats for debugging
-    print(f"Debug: Weekly Composite stats:")
+    non_zero = weekly_composite[weekly_composite != 0]
+    print(f"Debug: Weekly Composite detailed stats:")
     print(f"Mean: {weekly_composite.mean():.4f}")
     print(f"Std: {weekly_composite.std():.4f}")
-    print(f"Non-zero values: {(weekly_composite != 0).sum()}")
+    print(f"Non-zero values: {len(non_zero)}")
+    if len(non_zero) > 0:
+        print(f"Non-zero range: {non_zero.min():.4f} to {non_zero.max():.4f}")
     
     # Initialize signals DataFrame with zeros
-    signals = pd.DataFrame(0, index=data.index, columns=['Signal', 'Daily_Composite', 'Daily_Down_Lim', 'Daily_Up_Lim', 'Weekly_Composite', 'Weekly_Down_Lim', 'Weekly_Up_Lim'])
+    signals = pd.DataFrame(0, index=data.index, columns=['signal', 'daily_composite', 'daily_down_lim', 'daily_up_lim', 'weekly_composite', 'weekly_down_lim', 'weekly_up_lim'])
     
     # Assign values without chaining
     signals = signals.assign(
-        Daily_Composite=daily_data['Composite'],
-        Daily_Down_Lim=daily_data['Down_Lim'],
-        Daily_Up_Lim=daily_data['Up_Lim'],
-        Weekly_Composite=weekly_data['Composite'],
-        Weekly_Down_Lim=weekly_data['Down_Lim'],
-        Weekly_Up_Lim=weekly_data['Up_Lim']
+        daily_composite=daily_data['Composite'],
+        daily_down_lim=daily_data['Down_Lim'],
+        daily_up_lim=daily_data['Up_Lim'],
+        weekly_composite=weekly_resampled['Composite'],
+        weekly_down_lim=weekly_resampled['Down_Lim'],
+        weekly_up_lim=weekly_resampled['Up_Lim']
     )
     
     # Generate buy signals (daily crossing above upper limit)
     buy_mask = (daily_data['Composite'] > daily_data['Up_Lim']) & (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))
-    signals.loc[buy_mask, 'Signal'] = 1
+    signals.loc[buy_mask, 'signal'] = 1
     
     # Generate sell signals (weekly crossing below lower limit)
-    sell_mask = (weekly_data['Composite'] < weekly_data['Down_Lim']) & (weekly_data['Composite'].shift(1) >= weekly_data['Down_Lim'].shift(1))
-    signals.loc[sell_mask, 'Signal'] = -1
+    sell_mask = (weekly_resampled['Composite'] < weekly_resampled['Down_Lim']) & (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Down_Lim'].shift(1))
+    signals.loc[sell_mask, 'signal'] = -1
     
     # Print final signal counts for debugging
-    buy_count = (signals['Signal'] == 1).sum()
-    sell_count = (signals['Signal'] == -1).sum()
+    buy_count = (signals['signal'] == 1).sum()
+    sell_count = (signals['signal'] == -1).sum()
     print(f"Debug: Generated {buy_count} buy signals and {sell_count} sell signals")
     
-    return signals, daily_data, weekly_data
+    return signals, daily_data, weekly_resampled
 
 def get_default_params():
     return {
@@ -149,7 +204,7 @@ if __name__ == "__main__":
     print(result[0].tail(10))
     
     # Count buy and sell signals
-    buy_signals = (result[0]['Signal'] == 1).sum()
-    sell_signals = (result[0]['Signal'] == -1).sum()
+    buy_signals = (result[0]['signal'] == 1).sum()
+    sell_signals = (result[0]['signal'] == -1).sum()
     print(f"\nTotal buy signals: {buy_signals}")
     print(f"Total sell signals: {sell_signals}")
