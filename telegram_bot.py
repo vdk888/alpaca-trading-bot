@@ -53,6 +53,12 @@ class TradingBot:
             
             # Send startup message
             await self.send_message("🤖 Trading Bot started successfully!")
+            
+            # Log startup
+            logger.info(f"Starting trading bot for {self.symbol}")
+            print(f"Starting trading bot for {self.symbol}...")
+            print("Telegram bot initialized. Use /start to begin.")
+            
         except Exception as e:
             logger.error(f"Error starting bot: {e}")
             raise

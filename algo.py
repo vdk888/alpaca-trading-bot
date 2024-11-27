@@ -13,9 +13,9 @@ from visualization import create_strategy_plot
 
 # Load environment variables
 load_dotenv()
-API_KEY = os.getenv('ALPACA_KEY_ID')
+API_KEY = os.getenv('ALPACA_API_KEY')
 API_SECRET = os.getenv('ALPACA_SECRET_KEY')
-TELEGRAM_BOT_TOKEN = os.getenv('BOT_KEY')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('CHAT_ID')
 SYMBOL = 'SPXL'
 
@@ -129,38 +129,22 @@ async def main():
         # Create the Application
         application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
         
-        # Setup telegram handlers
-        telegram_bot.setup_handlers(application)
-        
         # Add command handlers
-        application.add_handler(CommandHandler("start", telegram_bot.start))
+        application.add_handler(CommandHandler("start", telegram_bot.start_command))
         application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("status", telegram_bot.status))
-        application.add_handler(CommandHandler("position", telegram_bot.position))
+        application.add_handler(CommandHandler("status", telegram_bot.status_command))
+        application.add_handler(CommandHandler("position", telegram_bot.position_command))
         application.add_handler(CommandHandler("plot", plot_command))
         
-        # Log startup
-        logger.info(f"Starting trading bot for {SYMBOL}")
-        print(f"Starting trading bot for {SYMBOL}...")
-        print("Telegram bot initialized. Use /start to begin.")
+        # Start the bot
+        await telegram_bot.start()
         
-        # Start both the application and strategy
-        async with application:
-            await application.initialize()
-            await application.start()
-            await application.updater.start_polling()
-            
-            # Run the strategy concurrently
-            await run_strategy()
-            
+        # Start the strategy loop
+        await run_strategy()
+        
     except Exception as e:
-        logger.critical(f"Critical error in main: {str(e)}")
-        print(f"Critical error: {str(e)}")
+        logger.error(f"Error in main: {str(e)}")
         raise
-    finally:
-        # Cleanup
-        logger.info("Shutting down...")
-        await application.stop()
 
 if __name__ == "__main__":
     asyncio.run(main())
