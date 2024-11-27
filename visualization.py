@@ -7,21 +7,43 @@ import io
 import pandas as pd
 import pytz
 import numpy as np
+import logging
 
-def is_market_hours(timestamp):
-    """Check if timestamp is during market hours (9:30 AM - 4:00 PM ET, weekdays)"""
-    et_tz = pytz.timezone('US/Eastern')
-    ts_et = timestamp.astimezone(et_tz)
+logger = logging.getLogger(__name__)
+
+def is_market_hours(timestamp, market_config):
+    """Check if timestamp is during market hours for the specific market"""
+    market_tz = pytz.timezone(market_config['timezone'])
+    ts_market = timestamp.astimezone(market_tz)
+    
+    # Parse market hours
+    start_time = datetime.strptime(market_config['start'], '%H:%M').time()
+    end_time = datetime.strptime(market_config['end'], '%H:%M').time()
+    
+    # For 24/7 markets like Forex
+    if start_time == datetime.strptime('00:00', '%H:%M').time() and \
+       end_time == datetime.strptime('23:59', '%H:%M').time():
+        return True
     
     # Check if it's a weekday
-    if ts_et.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
+    if ts_market.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
         return False
     
-    # Check if it's between 9:30 AM and 4:00 PM ET
-    market_start = ts_et.replace(hour=9, minute=30, second=0, microsecond=0)
-    market_end = ts_et.replace(hour=16, minute=0, second=0, microsecond=0)
+    # Create datetime objects for comparison
+    market_start = ts_market.replace(
+        hour=start_time.hour,
+        minute=start_time.minute,
+        second=0,
+        microsecond=0
+    )
+    market_end = ts_market.replace(
+        hour=end_time.hour,
+        minute=end_time.minute,
+        second=0,
+        microsecond=0
+    )
     
-    return market_start <= ts_et <= market_end
+    return market_start <= ts_market <= market_end
 
 def split_into_sessions(data):
     """Split data into continuous market sessions"""
@@ -47,255 +69,366 @@ def split_into_sessions(data):
     return sessions
 
 def create_strategy_plot(symbol='SPY', days=5):
-    """Create a strategy visualization plot and return it as bytes"""
-    # Calculate date range
+    """Create a strategy visualization plot for a single symbol and return it as bytes"""
+    # Get the correct Yahoo Finance symbol and market configuration
+    from config import TRADING_SYMBOLS
+    symbol_config = TRADING_SYMBOLS[symbol]
+    yf_symbol = symbol_config['yfinance']
+    
+    # Calculate date range with extra days to account for market closures
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
+    start_date = end_date - timedelta(days=days + 2)  # Add buffer days
     
     # Create Ticker object
-    ticker = yf.Ticker(symbol)
+    ticker = yf.Ticker(yf_symbol)
     
-    # Fetch data with explicit columns
-    data = ticker.history(
-        start=start_date,
-        end=end_date,
-        interval='5m',
-        actions=False
-    )
-    
-    if len(data) == 0:
-        raise ValueError(f"No data available for {symbol} in the specified date range")
-    
-    # Filter for market hours only
-    data = data[data.index.map(is_market_hours)]
-    
-    # Convert column names to lowercase
-    data.columns = data.columns.str.lower()
-    
-    # Ensure required columns exist
-    required_columns = ['close', 'open', 'high', 'low', 'volume']
-    missing_columns = [col for col in required_columns if col not in data.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}. Available columns: {data.columns.tolist()}")
-    
-    # Generate signals
-    params = get_default_params()
-    signals, daily_data, weekly_data = generate_signals(data, params)
-    
-    # Split data into sessions
-    sessions = split_into_sessions(data)
-    
-    # Create the plot
-    fig = plt.figure(figsize=(15, 12))
-    
-    # Plot 1: Price and Signals
-    ax1 = plt.subplot(3, 1, 1)
-    
-    # Plot each session separately and collect x-limits
-    all_timestamps = []
-    session_boundaries = []
-    last_timestamp = None
-    shifted_data = pd.DataFrame()
-    
-    # Store the original session start times for labeling
-    session_start_times = []
-    
-    # First, collect all original timestamps and determine trading sessions
-    trading_sessions = []
-    current_session = []
-    
-    for idx, row in data.iterrows():
-        if not current_session or (idx - current_session[-1].name).total_seconds() <= 300:  # 5 minutes
-            current_session.append(row)
-        else:
+    try:
+        # Fetch data with explicit columns
+        data = ticker.history(
+            start=start_date,
+            end=end_date,
+            interval=symbol_config.get('interval', '5m'),
+            actions=False
+        )
+        
+        if len(data) == 0:
+            raise ValueError(f"No data available for {symbol} ({yf_symbol}) in the specified date range")
+        
+        # Localize timezone if not already localized
+        if data.index.tz is None:
+            data.index = data.index.tz_localize('UTC')
+        
+        # Filter for market hours only if not a 24/7 market
+        data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
+        
+        # Ensure we have enough data after filtering
+        if len(data) == 0:
+            raise ValueError(f"No market hours data available for {symbol} in the specified date range")
+        
+        # Convert column names to lowercase
+        data.columns = data.columns.str.lower()
+        
+        # Ensure required columns exist
+        required_columns = ['close', 'open', 'high', 'low', 'volume']
+        missing_columns = [col for col in required_columns if col not in data.columns]
+        if missing_columns:
+            raise ValueError(f"Missing required columns: {missing_columns}. Available columns: {data.columns.tolist()}")
+        
+        # Generate signals
+        params = get_default_params()
+        signals, daily_data, weekly_data = generate_signals(data, params)
+        
+        # Calculate trading days using pandas
+        trading_days = len(pd.Series([idx.date() for idx in data.index]).unique())
+        
+        if trading_days == 0:
+            raise ValueError(f"No trading days found for {symbol} in the specified date range")
+            
+        # Calculate statistics
+        stats = {
+            'trading_days': trading_days,
+            'price_change': ((data['close'].iloc[-1] - data['close'].iloc[0]) / data['close'].iloc[0] * 100),
+            'buy_signals': len(signals[signals['signal'] == 1]),
+            'sell_signals': len(signals[signals['signal'] == -1])
+        }
+        
+        # Split data into sessions
+        sessions = split_into_sessions(data)
+        
+        # Create the plot
+        fig = plt.figure(figsize=(15, 12))
+        
+        # Plot 1: Price and Signals
+        ax1 = plt.subplot(3, 1, 1)
+        
+        # Plot each session separately and collect x-limits
+        all_timestamps = []
+        session_boundaries = []
+        last_timestamp = None
+        shifted_data = pd.DataFrame()
+        
+        # Store the original session start times for labeling
+        session_start_times = []
+        
+        # First, collect all original timestamps and determine trading sessions
+        trading_sessions = []
+        current_session = []
+        
+        for idx, row in data.iterrows():
+            if not current_session or (idx - current_session[-1].name).total_seconds() <= 300:  # 5 minutes
+                current_session.append(row)
+            else:
+                trading_sessions.append(pd.DataFrame(current_session))
+                current_session = [row]
+        if current_session:
             trading_sessions.append(pd.DataFrame(current_session))
-            current_session = [row]
-    if current_session:
-        trading_sessions.append(pd.DataFrame(current_session))
-    
-    # Now plot each session with proper time labels
-    for i, session in enumerate(trading_sessions):
-        session_df = session.copy()
         
-        if last_timestamp is not None:
-            # Add a small gap between sessions
-            gap = pd.Timedelta(minutes=5)
-            time_shift = (last_timestamp + gap) - session_df.index[0]
-            session_df.index = session_df.index + time_shift
+        # Now plot each session with proper time labels
+        for i, session in enumerate(trading_sessions):
+            session_df = session.copy()
+            
+            if last_timestamp is not None:
+                # Add a small gap between sessions
+                gap = pd.Timedelta(minutes=5)
+                time_shift = (last_timestamp + gap) - session_df.index[0]
+                session_df.index = session_df.index + time_shift
+            
+            # Store original start time of session
+            session_start_times.append((session_df.index[0], session.index[0]))
+            
+            ax1.plot(session_df.index, session_df['close'],
+                    label='Price' if i == 0 else "",
+                    color='blue', alpha=0.6)
+            
+            all_timestamps.extend(session_df.index)
+            session_boundaries.append(session_df.index[0])
+            last_timestamp = session_df.index[-1]
+            
+            # Store the shifted data for signals
+            shifted_data = pd.concat([shifted_data, session_df])
         
-        # Store original start time of session
-        session_start_times.append((session_df.index[0], session.index[0]))
+        # Create timestamp mapping for signals
+        original_to_shifted = {}
+        for orig_session, shifted_session in zip(trading_sessions, session_boundaries):
+            time_diff = shifted_session - orig_session.index[0]
+            for orig_time in orig_session.index:
+                original_to_shifted[orig_time] = orig_time + time_diff
         
-        ax1.plot(session_df.index, session_df['close'],
-                label='Price' if i == 0 else "",
-                color='blue', alpha=0.6)
+        # Plot signals with correct timestamps
+        buy_signals = signals[signals['signal'] == 1].copy()
+        if len(buy_signals) > 0:
+            buy_signals['close'] = data.loc[buy_signals.index, 'close']  # Get close prices
+            shifted_indices = [original_to_shifted[idx] for idx in buy_signals.index]
+            ax1.scatter(shifted_indices, buy_signals['close'],
+                       marker='^', color='green', s=100, label='Buy Signal')
+            for idx, shifted_idx in zip(buy_signals.index, shifted_indices):
+                ax1.annotate(f'${buy_signals.loc[idx, "close"]:.2f}',
+                            (shifted_idx, buy_signals.loc[idx, 'close']),
+                            xytext=(0, 10), textcoords='offset points',
+                            ha='center', va='bottom')
         
-        all_timestamps.extend(session_df.index)
-        session_boundaries.append(session_df.index[0])
-        last_timestamp = session_df.index[-1]
+        # Plot sell signals
+        sell_signals = signals[signals['signal'] == -1].copy()
+        if len(sell_signals) > 0:
+            sell_signals['close'] = data.loc[sell_signals.index, 'close']  # Get close prices
+            shifted_indices = [original_to_shifted[idx] for idx in sell_signals.index]
+            ax1.scatter(shifted_indices, sell_signals['close'],
+                       marker='v', color='red', s=100, label='Sell Signal')
+            for idx, shifted_idx in zip(sell_signals.index, shifted_indices):
+                ax1.annotate(f'${sell_signals.loc[idx, "close"]:.2f}',
+                            (shifted_idx, sell_signals.loc[idx, 'close']),
+                            xytext=(0, -10), textcoords='offset points',
+                            ha='center', va='top')
         
-        # Store the shifted data for signals
-        shifted_data = pd.concat([shifted_data, session_df])
+        # Format x-axis to show dates without gaps
+        def format_date(x, p):
+            try:
+                # Find the closest session start time
+                for shifted_time, original_time in session_start_times:
+                    if abs((pd.Timestamp(x) - shifted_time).total_seconds()) < 300:  # Within 5 minutes
+                        # Show full date at session boundaries
+                        return original_time.strftime('%Y-%m-%d\n%H:%M')
+                
+                # For other times, find the corresponding original time
+                for shifted_time, original_time in session_start_times:
+                    if pd.Timestamp(x) >= shifted_time:
+                        last_session_start = shifted_time
+                        last_original_start = original_time
+                        break
+                
+                time_since_session_start = pd.Timestamp(x) - last_session_start
+                original_time = last_original_start + time_since_session_start
+                return original_time.strftime('%H:%M')
+                
+            except Exception as e:
+                print(f"Error formatting date: {e}")
+                return ''
+        
+        # Set up axis formatting
+        ax1.xaxis.set_major_locator(HourLocator(interval=1))
+        ax1.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
+        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
+        
+        ax1.set_title(f'{symbol} Price and Signals - Last {days} Trading Days')
+        ax1.legend()
+        ax1.grid(True)
+        
+        # Plot 2: Daily Composite
+        ax2 = plt.subplot(3, 1, 2)
+        sessions_signals = split_into_sessions(signals)
+        last_timestamp = None
+        
+        for session_data in sessions_signals:
+            if last_timestamp is not None:
+                gap = pd.Timedelta(minutes=5)
+                session_data.index = session_data.index.shift(-1, freq=(session_data.index[0] - (last_timestamp + gap)))
+                
+            ax2.plot(session_data.index, session_data['daily_composite'], 
+                    label='Daily Composite' if session_data is sessions_signals[0] else "", 
+                    color='blue')
+            ax2.plot(session_data.index, session_data['daily_up_lim'], '--', 
+                    label='Upper Limit' if session_data is sessions_signals[0] else "", 
+                    color='green')
+            ax2.plot(session_data.index, session_data['daily_down_lim'], '--', 
+                    label='Lower Limit' if session_data is sessions_signals[0] else "", 
+                    color='red')
+            
+            last_timestamp = session_data.index[-1]
+        
+        # Apply the same time axis formatting to other plots
+        ax2.xaxis.set_major_locator(HourLocator(interval=1))
+        ax2.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
+        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
+        ax2.set_xlim(min(all_timestamps), max(all_timestamps))
+        
+        # Add vertical lines between sessions
+        for boundary in session_boundaries[1:]:
+            ax2.axvline(x=boundary, color='gray', linestyle='--', alpha=0.3)
+        
+        ax2.set_title('Daily Composite Indicator')
+        ax2.legend()
+        ax2.grid(True)
+        
+        # Plot 3: Weekly Composite
+        ax3 = plt.subplot(3, 1, 3)
+        last_timestamp = None
+        
+        for session_data in sessions_signals:
+            if last_timestamp is not None:
+                gap = pd.Timedelta(minutes=5)
+                session_data.index = session_data.index.shift(-1, freq=(session_data.index[0] - (last_timestamp + gap)))
+                
+            ax3.plot(session_data.index, session_data['weekly_composite'], 
+                    label='Weekly Composite' if session_data is sessions_signals[0] else "", 
+                    color='purple')
+            ax3.plot(session_data.index, session_data['weekly_up_lim'], '--', 
+                    label='Upper Limit' if session_data is sessions_signals[0] else "", 
+                    color='green')
+            ax3.plot(session_data.index, session_data['weekly_down_lim'], '--', 
+                    label='Lower Limit' if session_data is sessions_signals[0] else "", 
+                    color='red')
+            
+            last_timestamp = session_data.index[-1]
+        
+        # Apply the same time axis formatting to other plots
+        ax3.xaxis.set_major_locator(HourLocator(interval=1))
+        ax3.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
+        plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
+        ax3.set_xlim(min(all_timestamps), max(all_timestamps))
+        
+        # Add vertical lines between sessions
+        for boundary in session_boundaries[1:]:
+            ax3.axvline(x=boundary, color='gray', linestyle='--', alpha=0.3)
+        
+        ax3.set_title('Weekly Composite Indicator (35-min bars)')
+        ax3.legend()
+        ax3.grid(True)
+        
+        plt.tight_layout()
+        
+        # Convert plot to bytes
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+        buf.seek(0)
+        
+        return buf, stats
+        
+    except Exception as e:
+        logger.error(f"Error processing {symbol} ({yf_symbol}): {str(e)}")
+        raise ValueError(f"Error processing {symbol} ({yf_symbol}): {str(e)}")
+
+def create_multi_symbol_plot(symbols=None, days=5):
+    """Create strategy visualization plots for multiple symbols and return them as bytes"""
+    if symbols is None:
+        from config import TRADING_SYMBOLS
+        symbols = list(TRADING_SYMBOLS.keys())
     
-    # Create timestamp mapping for signals
-    original_to_shifted = {}
-    for orig_session, shifted_session in zip(trading_sessions, session_boundaries):
-        time_diff = shifted_session - orig_session.index[0]
-        for orig_time in orig_session.index:
-            original_to_shifted[orig_time] = orig_time + time_diff
+    # Create subplots based on number of symbols
+    n_symbols = len(symbols)
+    n_cols = min(2, n_symbols)  # Maximum 2 columns
+    n_rows = (n_symbols + 1) // 2  # Ceiling division for number of rows
     
-    # Plot signals with correct timestamps
-    buy_signals = signals[signals['signal'] == 1].copy()
-    if len(buy_signals) > 0:
-        buy_signals['close'] = data.loc[buy_signals.index, 'close']  # Get close prices
-        shifted_indices = [original_to_shifted[idx] for idx in buy_signals.index]
-        ax1.scatter(shifted_indices, buy_signals['close'],
-                   marker='^', color='green', s=100, label='Buy Signal')
-        for idx, shifted_idx in zip(buy_signals.index, shifted_indices):
-            ax1.annotate(f'${buy_signals.loc[idx, "close"]:.2f}',
-                        (shifted_idx, buy_signals.loc[idx, 'close']),
-                        xytext=(0, 10), textcoords='offset points',
-                        ha='center', va='bottom')
+    # Create figure with enough height for all symbols
+    fig = plt.figure(figsize=(15 * n_cols, 12 * n_rows))
     
-    # Plot sell signals
-    sell_signals = signals[signals['signal'] == -1].copy()
-    if len(sell_signals) > 0:
-        sell_signals['close'] = data.loc[sell_signals.index, 'close']  # Get close prices
-        shifted_indices = [original_to_shifted[idx] for idx in sell_signals.index]
-        ax1.scatter(shifted_indices, sell_signals['close'],
-                   marker='v', color='red', s=100, label='Sell Signal')
-        for idx, shifted_idx in zip(sell_signals.index, shifted_indices):
-            ax1.annotate(f'${sell_signals.loc[idx, "close"]:.2f}',
-                        (shifted_idx, sell_signals.loc[idx, 'close']),
-                        xytext=(0, -10), textcoords='offset points',
-                        ha='center', va='top')
-    
-    # Format x-axis to show dates without gaps
-    def format_date(x, p):
+    for idx, symbol in enumerate(symbols):
         try:
-            # Find the closest session start time
-            for shifted_time, original_time in session_start_times:
-                if abs((pd.Timestamp(x) - shifted_time).total_seconds()) < 300:  # Within 5 minutes
-                    # Show full date at session boundaries
-                    return original_time.strftime('%Y-%m-%d\n%H:%M')
+            # Calculate subplot position
+            ax_idx = idx + 1
             
-            # For other times, find the corresponding original time
-            for shifted_time, original_time in session_start_times:
-                if pd.Timestamp(x) >= shifted_time:
-                    last_session_start = shifted_time
-                    last_original_start = original_time
-                    break
+            # Create Ticker object and fetch data
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=days)
+            ticker = yf.Ticker(symbol)
+            data = ticker.history(
+                start=start_date,
+                end=end_date,
+                interval='5m',
+                actions=False
+            )
             
-            time_since_session_start = pd.Timestamp(x) - last_session_start
-            original_time = last_original_start + time_since_session_start
-            return original_time.strftime('%H:%M')
+            if len(data) == 0:
+                continue
+                
+            # Filter for market hours only
+            data = data[data.index.map(lambda x: is_market_hours(x, {'start': '09:30', 'end': '16:00', 'timezone': 'US/Eastern'}))]
+            data.columns = data.columns.str.lower()
+            
+            # Generate signals
+            params = get_default_params()
+            signals, daily_data, weekly_data = generate_signals(data, params)
+            
+            # Split data into sessions
+            sessions = split_into_sessions(data)
+            
+            # Create subplots for this symbol
+            ax1 = plt.subplot(n_rows, n_cols, ax_idx)
+            ax2 = ax1.twinx()
+            
+            # Plot price and volume
+            all_timestamps = []
+            for session in sessions:
+                timestamps = session.index
+                all_timestamps.extend(timestamps)
+                ax1.plot(timestamps, session['close'], color='blue', linewidth=1)
+                ax2.bar(timestamps, session['volume'], color='gray', alpha=0.3)
+            
+            # Plot signals
+            buy_signals = signals[signals['signal'] == 1].index
+            sell_signals = signals[signals['signal'] == -1].index
+            ax1.scatter(buy_signals, data.loc[buy_signals, 'close'], color='green', marker='^', s=100, label='Buy')
+            ax1.scatter(sell_signals, data.loc[sell_signals, 'close'], color='red', marker='v', s=100, label='Sell')
+            
+            # Plot daily and weekly composites
+            ax3 = plt.subplot(n_rows, n_cols, ax_idx)
+            ax3.plot(signals.index, signals['daily_composite'], color='orange', label='Daily Composite')
+            ax3.plot(signals.index, signals['weekly_composite'], color='purple', label='Weekly Composite')
+            ax3.axhline(y=0, color='black', linestyle='--', alpha=0.3)
+            
+            # Customize appearance
+            ax1.set_title(f'{symbol} - Price and Signals')
+            ax1.legend(loc='upper left')
+            ax1.grid(True, alpha=0.3)
+            ax2.set_ylabel('Volume', color='gray')
+            ax3.set_title(f'{symbol} - Indicators')
+            ax3.legend(loc='upper left')
+            ax3.grid(True, alpha=0.3)
+            
+            # Format x-axis
+            ax1.xaxis.set_major_locator(HourLocator(interval=4))
+            ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d %H:%M'))
+            plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
             
         except Exception as e:
-            print(f"Error formatting date: {e}")
-            return ''
-    
-    # Set up axis formatting
-    ax1.xaxis.set_major_locator(HourLocator(interval=1))
-    ax1.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
-    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
-    
-    ax1.set_title(f'{symbol} Price and Signals - Last {days} Trading Days')
-    ax1.legend()
-    ax1.grid(True)
-    
-    # Plot 2: Daily Composite
-    ax2 = plt.subplot(3, 1, 2)
-    sessions_signals = split_into_sessions(signals)
-    last_timestamp = None
-    
-    for session_data in sessions_signals:
-        if last_timestamp is not None:
-            gap = pd.Timedelta(minutes=5)
-            session_data.index = session_data.index.shift(-1, freq=(session_data.index[0] - (last_timestamp + gap)))
-            
-        ax2.plot(session_data.index, session_data['daily_composite'], 
-                label='Daily Composite' if session_data is sessions_signals[0] else "", 
-                color='blue')
-        ax2.plot(session_data.index, session_data['daily_up_lim'], '--', 
-                label='Upper Limit' if session_data is sessions_signals[0] else "", 
-                color='green')
-        ax2.plot(session_data.index, session_data['daily_down_lim'], '--', 
-                label='Lower Limit' if session_data is sessions_signals[0] else "", 
-                color='red')
-        
-        last_timestamp = session_data.index[-1]
-    
-    # Apply the same time axis formatting to other plots
-    ax2.xaxis.set_major_locator(HourLocator(interval=1))
-    ax2.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
-    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
-    ax2.set_xlim(min(all_timestamps), max(all_timestamps))
-    
-    # Add vertical lines between sessions
-    for boundary in session_boundaries[1:]:
-        ax2.axvline(x=boundary, color='gray', linestyle='--', alpha=0.3)
-    
-    ax2.set_title('Daily Composite Indicator')
-    ax2.legend()
-    ax2.grid(True)
-    
-    # Plot 3: Weekly Composite
-    ax3 = plt.subplot(3, 1, 3)
-    last_timestamp = None
-    
-    for session_data in sessions_signals:
-        if last_timestamp is not None:
-            gap = pd.Timedelta(minutes=5)
-            session_data.index = session_data.index.shift(-1, freq=(session_data.index[0] - (last_timestamp + gap)))
-            
-        ax3.plot(session_data.index, session_data['weekly_composite'], 
-                label='Weekly Composite' if session_data is sessions_signals[0] else "", 
-                color='purple')
-        ax3.plot(session_data.index, session_data['weekly_up_lim'], '--', 
-                label='Upper Limit' if session_data is sessions_signals[0] else "", 
-                color='green')
-        ax3.plot(session_data.index, session_data['weekly_down_lim'], '--', 
-                label='Lower Limit' if session_data is sessions_signals[0] else "", 
-                color='red')
-        
-        last_timestamp = session_data.index[-1]
-    
-    # Apply the same time axis formatting to other plots
-    ax3.xaxis.set_major_locator(HourLocator(interval=1))
-    ax3.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
-    plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=8)
-    ax3.set_xlim(min(all_timestamps), max(all_timestamps))
-    
-    # Add vertical lines between sessions
-    for boundary in session_boundaries[1:]:
-        ax3.axvline(x=boundary, color='gray', linestyle='--', alpha=0.3)
-    
-    ax3.set_title('Weekly Composite Indicator (35-min bars)')
-    ax3.legend()
-    ax3.grid(True)
+            plt.text(0.5, 0.5, f'Error plotting {symbol}: {str(e)}', 
+                    ha='center', va='center', transform=fig.transFigure)
     
     plt.tight_layout()
     
-    # Convert plot to bytes
+    # Save plot to bytes
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
     plt.close()
     buf.seek(0)
-    
-    # Calculate trading days (excluding non-market hours)
-    unique_dates = pd.Series([idx.date() for idx in data.index]).nunique()
-    
-    # Prepare statistics
-    stats = {
-        'buy_signals': len(buy_signals),
-        'sell_signals': len(sell_signals),
-        'daily_composite_mean': signals['daily_composite'].mean(),
-        'daily_composite_std': signals['daily_composite'].std(),
-        'weekly_composite_mean': signals['weekly_composite'].mean(),
-        'weekly_composite_std': signals['weekly_composite'].std(),
-        'current_price': data['close'].iloc[-1],
-        'price_change': (data['close'].iloc[-1] / data['close'].iloc[0] - 1) * 100,
-        'trading_days': unique_dates
-    }
-    
-    return buf, stats
+    return buf

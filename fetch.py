@@ -2,6 +2,10 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Optional
+from config import TRADING_SYMBOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> pd.DataFrame:
     """
@@ -15,7 +19,9 @@ def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> p
     Returns:
         DataFrame with OHLCV data
     """
-    ticker = yf.Ticker(symbol)
+    # Get the correct Yahoo Finance symbol
+    yf_symbol = TRADING_SYMBOLS[symbol]['yfinance']
+    ticker = yf.Ticker(yf_symbol)
     
     # Calculate start and end dates
     end = datetime.now()
@@ -30,8 +36,13 @@ def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> p
                 break
         except Exception as e:
             if attempt == max_retries - 1:
+                logger.error(f"Failed to fetch data for {symbol} ({yf_symbol}): {str(e)}")
                 raise e
             continue
+    
+    if df.empty:
+        logger.error(f"No data available for {symbol} ({yf_symbol})")
+        raise ValueError(f"No data available for {symbol} ({yf_symbol})")
     
     # Ensure we have enough data
     min_required_bars = 700  # Minimum bars needed for weekly signals
@@ -45,8 +56,8 @@ def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> p
     df = df[['open', 'high', 'low', 'close', 'volume']]
     
     # Add logging for data quality
-    print(f"Fetched {len(df)} bars of {interval} data for {symbol}")
-    print(f"Date range: {df.index[0]} to {df.index[-1]}")
+    logger.info(f"Fetched {len(df)} bars of {interval} data for {symbol} ({yf_symbol})")
+    logger.info(f"Date range: {df.index[0]} to {df.index[-1]}")
     
     return df
 
@@ -62,23 +73,67 @@ def get_latest_data(symbol: str, interval: str = '5m', limit: Optional[int] = No
     Returns:
         DataFrame with the most recent data points
     """
-    # Fetch at least 3 days of data for proper weekly signal calculation
-    df = fetch_historical_data(symbol, interval, days=3)
+    # Get the correct interval from config
+    config_interval = TRADING_SYMBOLS[symbol].get('interval', interval)
     
-    # Apply limit if specified
-    if limit is not None:
-        return df.tail(limit)
-    return df
+    try:
+        # Fetch at least 3 days of data for proper weekly signal calculation
+        df = fetch_historical_data(symbol, config_interval, days=3)
+        
+        # Filter for market hours
+        market_hours = TRADING_SYMBOLS[symbol]['market_hours']
+        if market_hours['start'] != '00:00' or market_hours['end'] != '23:59':
+            # Convert index to market timezone
+            if df.index.tz is None:
+                df.index = df.index.tz_localize('UTC')
+            market_tz = market_hours['timezone']
+            df.index = df.index.tz_convert(market_tz)
+            
+            # Create time masks for market hours
+            start_time = pd.Timestamp.strptime(market_hours['start'], '%H:%M').time()
+            end_time = pd.Timestamp.strptime(market_hours['end'], '%H:%M').time()
+            
+            # Filter for market hours
+            df = df[
+                (df.index.time >= start_time) & 
+                (df.index.time <= end_time) &
+                (df.index.weekday < 5)  # Monday = 0, Friday = 4
+            ]
+        
+        # Apply limit if specified
+        if limit is not None:
+            return df.tail(limit)
+        return df
+        
+    except Exception as e:
+        logger.error(f"Error fetching data for {symbol}: {str(e)}")
+        raise
 
-def is_market_open() -> bool:
-    """Check if US market is currently open"""
-    now = datetime.now()
-    # Check if it's a weekday
-    if now.weekday() in [5, 6]:  # Saturday = 5, Sunday = 6
+def is_market_open(symbol: str = 'SPY') -> bool:
+    """Check if market is currently open for the given symbol"""
+    try:
+        market_hours = TRADING_SYMBOLS[symbol]['market_hours']
+        now = datetime.now()
+        
+        # For 24/7 markets
+        if market_hours['start'] == '00:00' and market_hours['end'] == '23:59':
+            return True
+            
+        # Convert current time to market timezone
+        market_tz = market_hours['timezone']
+        market_time = now.astimezone(pd.Timezone(market_tz))
+        
+        # Check if it's a weekday
+        if market_time.weekday() >= 5:  # Saturday = 5, Sunday = 6
+            return False
+        
+        # Parse market hours
+        start_time = datetime.strptime(market_hours['start'], '%H:%M').time()
+        end_time = datetime.strptime(market_hours['end'], '%H:%M').time()
+        current_time = market_time.time()
+        
+        return start_time <= current_time <= end_time
+        
+    except Exception as e:
+        logger.error(f"Error checking market hours for {symbol}: {str(e)}")
         return False
-    
-    # Convert current time to US Eastern time
-    market_open = now.replace(hour=9, minute=30, second=0, microsecond=0)
-    market_close = now.replace(hour=16, minute=0, second=0, microsecond=0)
-    
-    return market_open <= now <= market_close

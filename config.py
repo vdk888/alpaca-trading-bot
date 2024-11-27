@@ -8,6 +8,7 @@ ALPACA_PAPER = True
 TRADING_SYMBOLS = {
     'SPY': {
         'market': 'US',
+        'yfinance': 'SPY',  # Yahoo Finance symbol
         'interval': '5m',
         'market_hours': {
             'start': '09:30',
@@ -17,6 +18,7 @@ TRADING_SYMBOLS = {
     },
     'DAX': {
         'market': 'EU',
+        'yfinance': '^GDAXI',  # Yahoo Finance symbol for DAX
         'interval': '5m',
         'market_hours': {
             'start': '09:00',
@@ -24,8 +26,9 @@ TRADING_SYMBOLS = {
             'timezone': 'Europe/Berlin'
         }
     },
-    'NIKKEI': {  # Using ^N225 as the symbol for Nikkei
+    'NIKKEI': {
         'market': 'JP',
+        'yfinance': '^N225',  # Yahoo Finance symbol for Nikkei
         'interval': '5m',
         'market_hours': {
             'start': '09:00',
@@ -35,6 +38,7 @@ TRADING_SYMBOLS = {
     },
     'EUR/USD': {
         'market': 'FX',
+        'yfinance': 'EURUSD=X',  # Yahoo Finance symbol for EUR/USD
         'interval': '5m',
         'market_hours': {
             'start': '00:00',

@@ -5,15 +5,16 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
-from visualization import create_strategy_plot
+from visualization import create_strategy_plot, create_multi_symbol_plot
+from config import TRADING_SYMBOLS
 
 logger = logging.getLogger(__name__)
 
 class TradingBot:
-    def __init__(self, trading_client: TradingClient, strategy: TradingStrategy, symbol: str):
+    def __init__(self, trading_client: TradingClient, strategies: dict, symbols: list):
         self.trading_client = trading_client
-        self.strategy = strategy
-        self.symbol = symbol
+        self.strategies = strategies  # Dict of symbol -> TradingStrategy
+        self.symbols = symbols
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.chat_id = os.getenv('CHAT_ID')
         
@@ -37,6 +38,9 @@ class TradingBot:
         application.add_handler(CommandHandler("indicators", self.indicators_command))
         application.add_handler(CommandHandler("plot", self.plot_command))
         application.add_handler(CommandHandler("help", self.help_command))
+        application.add_handler(CommandHandler("signals", self.signals_command))
+        application.add_handler(CommandHandler("markets", self.markets_command))
+        application.add_handler(CommandHandler("symbols", self.symbols_command))
 
     @property
     def bot(self):
@@ -57,8 +61,8 @@ class TradingBot:
             await self.send_message("🤖 Trading Bot started successfully!")
             
             # Log startup
-            logger.info(f"Starting trading bot for {self.symbol}")
-            print(f"Starting trading bot for {self.symbol}...")
+            logger.info(f"Starting trading bot for {', '.join(self.symbols)}")
+            print(f"Starting trading bot for {', '.join(self.symbols)}...")
             print("Telegram bot initialized. Use /start to begin.")
             
         except Exception as e:
@@ -89,53 +93,119 @@ class TradingBot:
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start the bot and show available commands"""
         commands = """
-🤖 Trading Bot Commands:
-/start - Show this help message
-/status - Get current trading status
-/position - View current position details
+🤖 Multi-Symbol Trading Bot Commands:
+
+📊 Status Commands:
+/status [symbol] - Get current trading status (all symbols if none specified)
+/position [symbol] - View current position details
 /balance - Check account balance
 /performance - View today's performance
+
+📈 Analysis Commands:
+/indicators [symbol] - View current indicator values
 /plot [symbol] [days] - Generate strategy visualization
-/indicators - View current indicator values
+/signals - View latest signals for all symbols
+
+🔧 Management Commands:
+/symbols - List all trading symbols
+/markets - View market hours for all symbols
 /help - Show this help message
         """
-        await update.message.reply_text(f"Trading bot started\nTrading {self.symbol} on 5-minute timeframe\n\n{commands}")
+        symbols_list = "\n".join([f"• {symbol}" for symbol in self.symbols])
+        await update.message.reply_text(f"Trading bot started\nMonitoring the following symbols:\n{symbols_list}\n\n{commands}")
 
     async def status_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Get current status"""
         try:
-            analysis = self.strategy.analyze()
-            position = "LONG" if self.strategy.current_position == 1 else "SHORT" if self.strategy.current_position == -1 else "NEUTRAL"
+            # Check if a specific symbol was requested
+            symbol = context.args[0].upper() if context.args else None
             
-            message = f"""
-📊 Status for {self.symbol}:
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+                
+            symbols_to_check = [symbol] if symbol else self.symbols
+            status_messages = []
+            has_data = False
+            
+            for sym in symbols_to_check:
+                try:
+                    analysis = self.strategies[sym].analyze()
+                    if not analysis:
+                        status_messages.append(f"No data available for {sym}")
+                        continue
+                        
+                    has_data = True
+                    position = "LONG" if self.strategies[sym].current_position == 1 else "SHORT" if self.strategies[sym].current_position == -1 else "NEUTRAL"
+                    
+                    # Get position details if any
+                    try:
+                        pos = self.trading_client.get_open_position(sym)
+                        pos_pnl = f"P&L: ${float(pos.unrealized_pl):.2f} ({float(pos.unrealized_plpc)*100:.2f}%)"
+                    except:
+                        pos_pnl = "No open position"
+                    
+                    status_messages.append(f"""
+📊 {sym} Status:
 Position: {position}
 Current Price: ${analysis['current_price']:.2f}
-Daily Composite: {analysis['daily_composite']:.4f}
-Weekly Composite: {analysis['weekly_composite']:.4f}
+{pos_pnl}
+
+Indicators:
+• Daily Composite: {analysis['daily_composite']:.4f}
+  - Upper: {analysis['daily_upper_limit']:.4f}
+  - Lower: {analysis['daily_lower_limit']:.4f}
+• Weekly Composite: {analysis['weekly_composite']:.4f}
+  - Upper: {analysis['weekly_upper_limit']:.4f}
+  - Lower: {analysis['weekly_lower_limit']:.4f}
+
+Price Changes:
+• 5min: {analysis['price_change_5m']*100:.2f}%
+• 1hr: {analysis['price_change_1h']*100:.2f}%
+
 Last Update: {analysis['timestamp']}
-            """
-            await update.message.reply_text(message)
+                    """)
+                except Exception as e:
+                    status_messages.append(f"Error analyzing {sym}: {str(e)}")
+            
+            if not has_data:
+                await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
+                return
+                
+            await update.message.reply_text("\n---\n".join(status_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting status: {str(e)}")
 
     async def position_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Get current position details"""
         try:
-            try:
-                position = self.trading_client.get_open_position(self.symbol)
-                message = f"""
-📈 Position Details for {self.symbol}:
+            # Check if a specific symbol was requested
+            symbol = context.args[0].upper() if context.args else None
+            
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+                
+            symbols_to_check = [symbol] if symbol else self.symbols
+            position_messages = []
+            
+            for sym in symbols_to_check:
+                try:
+                    position = self.trading_client.get_open_position(sym)
+                    message = f"""
+📈 {sym} Position Details:
 Side: {position.side.upper()}
 Quantity: {position.qty}
 Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
 Market Value: ${float(position.market_value):.2f}
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)
-                """
-            except:
-                message = f"No open position for {self.symbol}"
-            await update.message.reply_text(message)
+                    """
+                except:
+                    message = f"No open position for {sym}"
+                position_messages.append(message)
+            
+            await update.message.reply_text("\n---\n".join(position_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting position: {str(e)}")
 
@@ -174,9 +244,27 @@ Current Equity: ${float(account.equity):.2f}
     async def indicators_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """View current indicator values"""
         try:
-            analysis = self.strategy.analyze()
-            message = f"""
-📈 {self.symbol} Indicators:
+            # Check if a specific symbol was requested
+            symbol = context.args[0].upper() if context.args else None
+            
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+                
+            symbols_to_check = [symbol] if symbol else self.symbols
+            indicator_messages = []
+            has_data = False
+            
+            for sym in symbols_to_check:
+                try:
+                    analysis = self.strategies[sym].analyze()
+                    if not analysis:
+                        indicator_messages.append(f"No data available for {sym}")
+                        continue
+                        
+                    has_data = True
+                    message = f"""
+📈 {sym} Indicators:
 
 Daily Composite: {analysis['daily_composite']:.4f}
 • Upper Limit: {analysis['daily_upper_limit']:.4f}
@@ -192,68 +280,173 @@ Price Changes:
 
 Current Price: ${analysis['current_price']:.2f}
 Last Update: {analysis['timestamp']}
-            """
-            await update.message.reply_text(message)
+                    """
+                    indicator_messages.append(message)
+                except Exception as e:
+                    indicator_messages.append(f"Error analyzing {sym}: {str(e)}")
+            
+            if not has_data:
+                await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
+                return
+                
+            await update.message.reply_text("\n---\n".join(indicator_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting indicators: {str(e)}")
 
     async def plot_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Generate and send a strategy visualization plot."""
+        """Generate and send strategy visualization plots."""
         try:
             # Parse arguments
-            args = context.args
-            symbol = args[0].upper() if len(args) > 0 else 'SPY'
-            days = int(args[1]) if len(args) > 1 else 5
+            args = context.args if context.args else []
             
-            # Validate days
+            # Handle specific symbol request
+            if len(args) >= 2:
+                symbol = args[0].upper()
+                days = int(args[1])
+                if symbol not in self.symbols:
+                    await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
+                    return
+                symbols_to_plot = [symbol]
+            else:
+                # Default: all symbols
+                symbols_to_plot = self.symbols
+                days = int(args[0]) if args else 5
+            
             if days <= 0 or days > 30:
                 await update.message.reply_text("❌ Days must be between 1 and 30")
                 return
             
-            # Send "generating" message
-            status_message = await update.message.reply_text(
-                f"📊 Generating visualization for {symbol} (last {days} days)..."
-            )
+            await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
             
-            try:
-                # Generate plot
-                plot_bytes, stats = create_strategy_plot(symbol, days)
-                
-                # Prepare statistics message
-                stats_message = f"""
-📈 {symbol} Analysis (Last {days} days):
-• Current Price: ${stats['current_price']:.2f}
+            # Generate and send plot for each symbol
+            for symbol in symbols_to_plot:
+                try:
+                    buf, stats = create_strategy_plot(symbol, days)
+                    
+                    stats_message = f"""
+📈 {symbol} Statistics ({days} days):
+• Trading Days: {stats['trading_days']}
 • Price Change: {stats['price_change']:.2f}%
 • Buy Signals: {stats['buy_signals']}
 • Sell Signals: {stats['sell_signals']}
-
-📊 Indicators:
-• Daily Composite: {stats['daily_composite_mean']:.4f} (±{stats['daily_composite_std']:.4f})
-• Weekly Composite: {stats['weekly_composite_mean']:.4f} (±{stats['weekly_composite_std']:.4f})
-"""
-                
-                # Send plot and statistics
-                await update.message.reply_photo(
-                    photo=plot_bytes,
-                    caption=stats_message
-                )
-            except Exception as e:
-                logger.error(f"Plot generation error for {symbol}: {str(e)}")
-                if hasattr(e, '__traceback__'):
-                    import traceback
-                    logger.error(traceback.format_exc())
-                await update.message.reply_text(f"❌ Error generating plot: {str(e)}")
-            finally:
-                # Always try to delete the "generating" message
-                try:
-                    await status_message.delete()
-                except Exception:
-                    pass
-                
+                    """
+                    
+                    await update.message.reply_document(
+                        document=buf,
+                        filename=f"{symbol}_strategy_{days}d.png",
+                        caption=stats_message
+                    )
+                except Exception as e:
+                    logger.error(f"Error plotting {symbol}: {str(e)}")
+                    await update.message.reply_text(f"❌ Could not generate plot for {symbol}: {str(e)}")
+                    continue
+                    
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
+            logger.error(f"Plot command error: {str(e)}")
             await update.message.reply_text(f"❌ Error: {str(e)}")
+
+    async def signals_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """View latest signals for all symbols"""
+        try:
+            # Check if a specific symbol was requested
+            symbol = context.args[0].upper() if context.args else None
+            
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+                
+            symbols_to_check = [symbol] if symbol else self.symbols
+            signal_messages = []
+            has_data = False
+            
+            for sym in symbols_to_check:
+                try:
+                    analysis = self.strategies[sym].analyze()
+                    if not analysis:
+                        signal_messages.append(f"No data available for {sym}")
+                        continue
+                        
+                    has_data = True
+                    # Get signal strength and direction
+                    signal_strength = abs(analysis['daily_composite'])
+                    signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
+                    
+                    # Check if signal crosses thresholds
+                    daily_signal = (
+                        "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
+                        else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
+                        else "WEAK " + signal_direction if signal_strength > 0.5
+                        else "NEUTRAL"
+                    )
+                    
+                    weekly_signal = (
+                        "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
+                        else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
+                        else "WEAK BUY" if analysis['weekly_composite'] > 0
+                        else "WEAK SELL" if analysis['weekly_composite'] < 0
+                        else "NEUTRAL"
+                    )
+                    
+                    message = f"""
+📊 {sym} Signals:
+
+Daily Signal: {daily_signal}
+• Composite: {analysis['daily_composite']:.4f}
+• Strength: {signal_strength:.2f}
+
+Weekly Signal: {weekly_signal}
+• Composite: {analysis['weekly_composite']:.4f}
+
+Current Price: ${analysis['current_price']:.2f}
+Last Update: {analysis['timestamp']}
+                    """
+                    signal_messages.append(message)
+                except Exception as e:
+                    signal_messages.append(f"Error analyzing {sym}: {str(e)}")
+            
+            if not has_data:
+                await update.message.reply_text("❌ No signals available. The market may be closed or there might be connection issues.")
+                return
+                
+            await update.message.reply_text("\n---\n".join(signal_messages))
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error getting signals: {str(e)}")
+
+    async def markets_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """View market hours for all symbols"""
+        try:
+            market_info = []
+            
+            for symbol in self.symbols:
+                config = TRADING_SYMBOLS[symbol]
+                market_info.append(f"""
+{symbol} ({config['market']}):
+• Trading Hours: {config['market_hours']['start']} - {config['market_hours']['end']}
+• Timezone: {config['market_hours']['timezone']}
+                """)
+            
+            await update.message.reply_text("🕒 Market Hours:\n" + "\n".join(market_info))
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error getting market hours: {str(e)}")
+
+    async def symbols_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """List all trading symbols"""
+        try:
+            symbols_info = []
+            
+            for symbol in self.symbols:
+                config = TRADING_SYMBOLS[symbol]
+                symbols_info.append(f"""
+{symbol}:
+• Market: {config['market']}
+• Interval: {config['interval']}
+                """)
+            
+            await update.message.reply_text("📈 Trading Symbols:\n" + "\n".join(symbols_info))
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error listing symbols: {str(e)}")
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help message"""

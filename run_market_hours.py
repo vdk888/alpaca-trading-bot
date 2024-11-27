@@ -10,6 +10,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from telegram import Update
+from config import TRADING_SYMBOLS
 
 # Set up logging
 logging.basicConfig(
@@ -60,27 +61,41 @@ async def run_bot():
         os.getenv('ALPACA_SECRET_KEY')
     )
     
-    # Initialize bot components
-    symbol = "SPY"  # or your preferred symbol
-    trading_executor = TradingExecutor(trading_client, symbol)
-    strategy = TradingStrategy(symbol)
-    trading_bot = TradingBot(trading_client, strategy, symbol)
+    # Initialize strategies for each symbol
+    symbols = list(TRADING_SYMBOLS.keys())
+    strategies = {symbol: TradingStrategy(symbol) for symbol in symbols}
+    trading_executors = {symbol: TradingExecutor(trading_client, symbol) for symbol in symbols}
+    
+    # Initialize the Telegram bot with all symbols and strategies
+    trading_bot = TradingBot(trading_client, strategies, symbols)
     
     # Start the Telegram bot
     logger.info("Starting Telegram bot...")
     await trading_bot.start()
     
-    logger.info("Bot started, waiting for market hours...")
+    logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")
     
     async def trading_loop():
         """Background task for trading logic"""
         while True:
             try:
-                if is_market_hours():
-                    logger.info("Market is open, running trading logic...")
-                    analysis = strategy.analyze()
-                    if analysis['signal'] != 0:  # If there's a trading signal
-                        await trading_bot.send_message(f"Trading Signal: {analysis}")
+                for symbol in symbols:
+                    try:
+                        analysis = strategies[symbol].analyze()
+                        if analysis['signal'] != 0:  # If there's a trading signal
+                            signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
+                            message = f"""
+🔔 Trading Signal for {symbol}:
+Signal: {signal_type}
+Price: ${analysis['current_price']:.2f}
+Daily Score: {analysis['daily_composite']:.4f}
+Weekly Score: {analysis['weekly_composite']:.4f}
+                            """
+                            await trading_bot.send_message(message)
+                    except Exception as e:
+                        logger.error(f"Error analyzing {symbol}: {str(e)}")
+                        continue
+                
                 await asyncio.sleep(300)  # Wait 5 minutes between iterations
             except Exception as e:
                 logger.error(f"Error in trading loop: {str(e)}")
@@ -104,7 +119,6 @@ async def run_bot():
                 await trading_task
             except asyncio.CancelledError:
                 pass
-        
         await trading_bot.stop()
 
 if __name__ == "__main__":
@@ -113,4 +127,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
     except Exception as e:
-        logger.error(f"Fatal error: {str(e)}")
+        logger.error(f"Bot stopped due to error: {str(e)}")

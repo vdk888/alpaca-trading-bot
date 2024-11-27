@@ -101,17 +101,31 @@ def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[fl
 def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], reactivity: float = 1.0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     print(f"Debug: Starting signal generation with {len(data)} data points")
     
+    # Ensure index is datetime
+    if data.empty:
+        raise ValueError("No data available for signal generation")
+        
+    # Convert index to datetime if it's not already
+    if not isinstance(data.index, pd.DatetimeIndex):
+        data.index = pd.to_datetime(data.index)
+    
     # Calculate daily composite and thresholds (5-minute timeframe)
     daily_data, daily_composite, daily_std = calculate_composite_indicator(data, params, reactivity)
     
     # Calculate weekly composite (35-minute timeframe = 7 * 5min)
-    weekly_data = data.resample('35min').agg({
-        'open': 'first',
-        'high': 'max',
-        'low': 'min',
-        'close': 'last',
-        'volume': 'sum'
-    }).dropna()  # Remove any NaN rows
+    try:
+        weekly_data = data.resample('35min').agg({
+            'open': 'first',
+            'high': 'max',
+            'low': 'min',
+            'close': 'last',
+            'volume': 'sum'
+        }).dropna()  # Remove any NaN rows
+    except Exception as e:
+        print(f"Error resampling data: {str(e)}")
+        print("Data index type:", type(data.index))
+        print("Data index sample:", data.index[:5])
+        raise
     
     # Debug information
     print(f"Debug: Generated {len(weekly_data)} weekly bars")
