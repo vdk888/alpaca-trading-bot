@@ -5,4 +5,4 @@ python-dotenv==1.0.1
 python-telegram-bot==21.6
 pytz==2024.2
 yfinance==0.2.37
-matplotlib==3.8.3
+plotly==5.19.0
