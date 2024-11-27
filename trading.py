@@ -58,11 +58,23 @@ class TradingExecutor:
             account = self.trading_client.get_account()
             equity = float(account.equity)
             
-            # Calculate maximum position value based on risk
-            max_position_value = equity * risk_percent
+            # Get current position value if any
+            try:
+                position = self.trading_client.get_open_position(self.symbol)
+                current_position_value = float(position.market_value)
+            except Exception:
+                current_position_value = 0
+                
+            # Calculate remaining available capital (10% of equity - current position value)
+            max_total_position = equity * 0.10  # 10% of total capital
+            available_capital = max_total_position - current_position_value
             
-            # Calculate quantity
-            qty = max_position_value / current_price
+            if available_capital <= 0:
+                logger.info(f"Maximum position size reached for {self.symbol} (10% of capital)")
+                return 0
+            
+            # Calculate quantity based on available capital and risk
+            qty = min(available_capital, equity * risk_percent) / current_price
             
             # Round down to nearest whole number for stocks
             if self.config['market'] != 'FX':
@@ -105,58 +117,65 @@ class TradingExecutor:
                     await notify_callback(message)
                 return False
             
-            # Get current position
-            current_position = self.get_position()
-            
-            # Handle existing position
-            if current_position:
-                current_side = current_position.side
-                current_qty = abs(float(current_position.qty))
+            # For buy orders, calculate new position size
+            if action == "BUY":
+                new_qty = self.calculate_position_size(analysis['current_price'])
                 
-                # If we're already in the desired position, do nothing
-                if (action == "BUY" and current_side == "long") or (action == "SELL" and current_side == "short"):
-                    message = f"Already in {action} position for {self.symbol}"
+                if new_qty <= 0:
+                    message = f"Maximum position size reached or invalid size calculated for {self.symbol}"
                     logger.info(message)
                     if notify_callback:
                         await notify_callback(message)
-                    return True
+                    return False
                 
-                # Close existing position
-                close_order = MarketOrderRequest(
+                # Submit buy order
+                order = MarketOrderRequest(
                     symbol=self.symbol,
-                    qty=current_qty,
-                    side=OrderSide.SELL if current_side == "long" else OrderSide.BUY,
+                    qty=new_qty,
+                    side=OrderSide.BUY,
                     time_in_force=TimeInForce.DAY
                 )
-                self.trading_client.submit_order(close_order)
-                logger.info(f"Closed existing {current_side} position of {current_qty} {self.symbol}")
-            
-            # Calculate new position size
-            new_qty = self.calculate_position_size(analysis['current_price'])
-            
-            if new_qty <= 0:
-                message = f"Invalid position size calculated for {self.symbol}"
-                logger.error(message)
+                
+                self.trading_client.submit_order(order)
+                
+                message = f"BUY {new_qty} {self.symbol} at ${analysis['current_price']:.2f}"
+                logger.info(message)
                 if notify_callback:
                     await notify_callback(message)
-                return False
-            
-            # Submit new order
-            order = MarketOrderRequest(
-                symbol=self.symbol,
-                qty=new_qty,
-                side=OrderSide.BUY if action == "BUY" else OrderSide.SELL,
-                time_in_force=TimeInForce.DAY
-            )
-            
-            self.trading_client.submit_order(order)
-            
-            message = f"{action} {new_qty} {self.symbol} at ${analysis['current_price']:.2f}"
-            logger.info(message)
-            if notify_callback:
-                await notify_callback(message)
-            
-            return True
+                
+                return True
+                
+            # For sell orders, get current position
+            else:
+                try:
+                    position = self.trading_client.get_open_position(self.symbol)
+                    qty = abs(float(position.qty))
+                    
+                    # Submit sell order
+                    order = MarketOrderRequest(
+                        symbol=self.symbol,
+                        qty=qty,
+                        side=OrderSide.SELL,
+                        time_in_force=TimeInForce.DAY
+                    )
+                    
+                    self.trading_client.submit_order(order)
+                    
+                    message = f"SELL {qty} {self.symbol} at ${analysis['current_price']:.2f}"
+                    logger.info(message)
+                    if notify_callback:
+                        await notify_callback(message)
+                    
+                    return True
+                    
+                except Exception as e:
+                    if "no position" in str(e).lower():
+                        message = f"No position to sell for {self.symbol}"
+                        logger.info(message)
+                        if notify_callback:
+                            await notify_callback(message)
+                        return False
+                    raise
 
         except Exception as e:
             error_msg = f"Error executing trade for {self.symbol}: {str(e)}"
