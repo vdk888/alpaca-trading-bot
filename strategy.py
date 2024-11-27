@@ -26,14 +26,26 @@ class TradingStrategy:
         # Get the latest signal
         latest_signal = signals.iloc[-1]
         
+        # Calculate price changes
+        price_change_5m = df['close'].pct_change().iloc[-1]
+        price_change_1h = df['close'].pct_change(12).iloc[-1]  # 12 5-minute bars = 1 hour
+        
         # Prepare the analysis result
         analysis = {
             'signal': latest_signal['Signal'],
             'daily_composite': latest_signal['Daily_Composite'],
+            'daily_upper_limit': latest_signal['Daily_Up_Lim'],
+            'daily_lower_limit': latest_signal['Daily_Down_Lim'],
             'weekly_composite': latest_signal['Weekly_Composite'],
+            'weekly_upper_limit': latest_signal['Weekly_Up_Lim'],
+            'weekly_lower_limit': latest_signal['Weekly_Down_Lim'],
             'current_price': df['close'].iloc[-1],
+            'price_change_5m': price_change_5m,
+            'price_change_1h': price_change_1h,
             'timestamp': df.index[-1],
-            'position': self.current_position
+            'position': self.current_position,
+            'data_points': len(df),
+            'weekly_bars': len(df.resample('35min').last())
         }
         
         return analysis

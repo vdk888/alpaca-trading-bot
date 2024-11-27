@@ -54,15 +54,39 @@ def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[fl
     }), composite, rolling_std
 
 def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], reactivity: float = 1.0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    # Calculate daily composite and thresholds (now 5-minute timeframe)
+    print(f"Debug: Starting signal generation with {len(data)} data points")
+    
+    # Calculate daily composite and thresholds (5-minute timeframe)
     daily_data, daily_composite, daily_std = calculate_composite_indicator(data, params, reactivity)
     
-    # Calculate "weekly" composite (35-minute timeframe = 7 * 5min)
-    weekly_data = data.resample('35min').last()  # Use 'min' instead of 'T'
+    # Calculate weekly composite (35-minute timeframe = 7 * 5min)
+    weekly_data = data.resample('35min').agg({
+        'open': 'first',
+        'high': 'max',
+        'low': 'min',
+        'close': 'last',
+        'volume': 'sum'
+    })
+    
+    # Debug information
+    print(f"Debug: Generated {len(weekly_data)} weekly bars")
+    print(f"Debug: Weekly data range: {weekly_data.index[0]} to {weekly_data.index[-1]}")
+    
+    # Verify we have enough data for weekly calculations
+    min_weekly_bars = 20  # Minimum bars needed for reliable signals
+    if len(weekly_data) < min_weekly_bars:
+        print(f"Warning: Insufficient weekly data. Have {len(weekly_data)} bars, need {min_weekly_bars}")
+        # Still calculate but with a warning
+    
     weekly_data, weekly_composite, weekly_std = calculate_composite_indicator(weekly_data, params, reactivity, is_weekly=True)
     weekly_data = weekly_data.reindex(data.index, method='ffill')
-    print(f"Debug: generate_signals called with reactivity={reactivity}")
-
+    
+    # Print weekly composite stats for debugging
+    print(f"Debug: Weekly Composite stats:")
+    print(f"Mean: {weekly_composite.mean():.4f}")
+    print(f"Std: {weekly_composite.std():.4f}")
+    print(f"Non-zero values: {(weekly_composite != 0).sum()}")
+    
     # Initialize signals DataFrame with zeros
     signals = pd.DataFrame(0, index=data.index, columns=['Signal', 'Daily_Composite', 'Daily_Down_Lim', 'Daily_Up_Lim', 'Weekly_Composite', 'Weekly_Down_Lim', 'Weekly_Up_Lim'])
     
@@ -83,6 +107,11 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     # Generate sell signals (weekly crossing below lower limit)
     sell_mask = (weekly_data['Composite'] < weekly_data['Down_Lim']) & (weekly_data['Composite'].shift(1) >= weekly_data['Down_Lim'].shift(1))
     signals.loc[sell_mask, 'Signal'] = -1
+    
+    # Print final signal counts for debugging
+    buy_count = (signals['Signal'] == 1).sum()
+    sell_count = (signals['Signal'] == -1).sum()
+    print(f"Debug: Generated {buy_count} buy signals and {sell_count} sell signals")
     
     return signals, daily_data, weekly_data
 
