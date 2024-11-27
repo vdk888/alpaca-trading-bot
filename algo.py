@@ -2,7 +2,8 @@ import asyncio
 import os
 import logging
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler, Update, ContextTypes
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 from alpaca.trading.client import TradingClient
 from strategy import TradingStrategy
 from telegram_bot import TradingBot

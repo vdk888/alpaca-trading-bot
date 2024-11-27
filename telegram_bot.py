@@ -172,21 +172,22 @@ Current Equity: ${float(account.equity):.2f}
         try:
             analysis = self.strategy.analyze()
             message = f"""
-📊 Technical Indicators for {self.symbol}:
-MACD:
-  - Line: {analysis['macd_line']:.4f}
-  - Signal: {analysis['macd_signal']:.4f}
-  - Histogram: {analysis['macd_hist']:.4f}
+📈 {self.symbol} Indicators:
 
-RSI: {analysis['rsi']:.2f}
+Daily Composite: {analysis['daily_composite']:.4f}
+• Upper Limit: {analysis['daily_upper_limit']:.4f}
+• Lower Limit: {analysis['daily_lower_limit']:.4f}
 
-Stochastic:
-  - %K: {analysis['stoch_k']:.2f}
-  - %D: {analysis['stoch_d']:.2f}
+Weekly Composite: {analysis['weekly_composite']:.4f}
+• Upper Limit: {analysis['weekly_upper_limit']:.4f}
+• Lower Limit: {analysis['weekly_lower_limit']:.4f}
 
-Composite Scores:
-  - Daily: {analysis['daily_composite']:.4f}
-  - Weekly: {analysis['weekly_composite']:.4f}
+Price Changes:
+• 5min: {analysis['price_change_5m']*100:.2f}%
+• 1hr: {analysis['price_change_1h']*100:.2f}%
+
+Current Price: ${analysis['current_price']:.2f}
+Last Update: {analysis['timestamp']}
             """
             await update.message.reply_text(message)
         except Exception as e:

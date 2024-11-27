@@ -32,13 +32,13 @@ class TradingStrategy:
         
         # Prepare the analysis result
         analysis = {
-            'signal': latest_signal['Signal'],
-            'daily_composite': latest_signal['Daily_Composite'],
-            'daily_upper_limit': latest_signal['Daily_Up_Lim'],
-            'daily_lower_limit': latest_signal['Daily_Down_Lim'],
-            'weekly_composite': latest_signal['Weekly_Composite'],
-            'weekly_upper_limit': latest_signal['Weekly_Up_Lim'],
-            'weekly_lower_limit': latest_signal['Weekly_Down_Lim'],
+            'signal': latest_signal['signal'],
+            'daily_composite': latest_signal['daily_composite'],
+            'daily_upper_limit': latest_signal['daily_up_lim'],
+            'daily_lower_limit': latest_signal['daily_down_lim'],
+            'weekly_composite': latest_signal['weekly_composite'],
+            'weekly_upper_limit': latest_signal['weekly_up_lim'],
+            'weekly_lower_limit': latest_signal['weekly_down_lim'],
             'current_price': df['close'].iloc[-1],
             'price_change_5m': price_change_5m,
             'price_change_1h': price_change_1h,
