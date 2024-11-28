@@ -107,6 +107,36 @@ class TradingStrategy:
             logger.error(f"Error analyzing {self.symbol}: {str(e)}")
             return None
             
+    def should_trade(self, analysis: Dict) -> tuple[bool, Optional[str]]:
+        """
+        Determine if we should trade based on the analysis
+        
+        Args:
+            analysis: Dict containing analysis data
+            
+        Returns:
+            tuple(bool, str): (should_trade, action)
+            where action is "BUY" or "SELL" if should_trade is True
+        """
+        if not analysis:
+            return False, None
+            
+        signal = analysis['signal']
+        
+        # No signal
+        if signal == 0:
+            return False, None
+            
+        # Long signal - always allow buying
+        if signal == 1:
+            return True, "BUY"
+                
+        # Short signal - will close entire position
+        elif signal == -1:
+            return True, "SELL"
+                
+        return False, None
+
     def update_position(self, new_position: int) -> None:
         """Update the current position"""
         self.current_position = new_position
