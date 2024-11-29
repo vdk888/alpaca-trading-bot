@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from matplotlib.dates import HourLocator, DateFormatter
+from matplotlib.dates import HourLocator, DateFormatter, num2date
 from datetime import datetime, timedelta
 import yfinance as yf
 from indicators import generate_signals, get_default_params
@@ -8,6 +8,7 @@ import pandas as pd
 import pytz
 import numpy as np
 import logging
+import matplotlib
 
 logger = logging.getLogger(__name__)
 
@@ -35,13 +36,14 @@ def is_market_hours(timestamp, market_config):
         minute=start_time.minute,
         second=0,
         microsecond=0
-    )
+    ).replace(tzinfo=ts_market.tzinfo)  # Preserve timezone
+    
     market_end = ts_market.replace(
         hour=end_time.hour,
         minute=end_time.minute,
         second=0,
         microsecond=0
-    )
+    ).replace(tzinfo=ts_market.tzinfo)  # Preserve timezone
     
     return market_start <= ts_market <= market_end
 
@@ -51,8 +53,17 @@ def split_into_sessions(data):
     current_session = []
     last_timestamp = None
     
+    # Ensure data index is timezone-aware
+    if data.index.tz is None:
+        data.index = data.index.tz_localize('UTC')
+    
     for timestamp, row in data.iterrows():
         if last_timestamp is not None:
+            # Ensure both timestamps are timezone-aware for comparison
+            if timestamp.tz is None:
+                timestamp = timestamp.tz_localize('UTC')
+            if last_timestamp.tz is None:
+                last_timestamp = last_timestamp.tz_localize('UTC')
             # Check if there's a gap larger than 5 minutes (typical interval)
             time_diff = (timestamp - last_timestamp).total_seconds() / 60
             if time_diff > 6:  # Allow for small delays
@@ -76,7 +87,7 @@ def create_strategy_plot(symbol='SPY', days=5):
     yf_symbol = symbol_config['yfinance']
     
     # Calculate date range with extra days to account for market closures
-    end_date = datetime.now()
+    end_date = datetime.now(pytz.UTC)
     start_date = end_date - timedelta(days=days + 2)  # Add buffer days
     
     # Create Ticker object
@@ -170,7 +181,13 @@ def create_strategy_plot(symbol='SPY', days=5):
             if last_timestamp is not None:
                 # Add a small gap between sessions
                 gap = pd.Timedelta(minutes=5)
-                time_shift = (last_timestamp + gap) - session_df.index[0]
+                # Ensure both timestamps are timezone-aware
+                session_start = session_df.index[0]
+                if session_start.tz is None:
+                    session_start = session_start.tz_localize('UTC')
+                if last_timestamp.tz is None:
+                    last_timestamp = last_timestamp.tz_localize('UTC')
+                time_shift = (last_timestamp + gap) - session_start
                 session_df.index = session_df.index + time_shift
             
             # Store original start time of session
@@ -190,8 +207,17 @@ def create_strategy_plot(symbol='SPY', days=5):
         # Create timestamp mapping for signals
         original_to_shifted = {}
         for orig_session, shifted_session in zip(trading_sessions, session_boundaries):
-            time_diff = shifted_session - orig_session.index[0]
+            # Ensure timestamps are timezone-aware
+            orig_start = orig_session.index[0]
+            shifted_start = shifted_session
+            if orig_start.tz is None:
+                orig_start = orig_start.tz_localize('UTC')
+            if shifted_start.tz is None:
+                shifted_start = shifted_start.tz_localize('UTC')
+            time_diff = shifted_start - orig_start
             for orig_time in orig_session.index:
+                if orig_time.tz is None:
+                    orig_time = orig_time.tz_localize('UTC')
                 original_to_shifted[orig_time] = orig_time + time_diff
         
         # Plot signals with correct timestamps
@@ -223,20 +249,25 @@ def create_strategy_plot(symbol='SPY', days=5):
         # Format x-axis to show dates without gaps
         def format_date(x, p):
             try:
+                # Convert matplotlib's date format to pandas timestamp
+                x_ts = pd.Timestamp(num2date(x, tz=pytz.UTC))
+                
                 # Find the closest session start time
                 for shifted_time, original_time in session_start_times:
-                    if abs((pd.Timestamp(x) - shifted_time).total_seconds()) < 300:  # Within 5 minutes
+                    if abs((x_ts - shifted_time).total_seconds()) < 300:  # Within 5 minutes
                         # Show full date at session boundaries
                         return original_time.strftime('%Y-%m-%d\n%H:%M')
                 
                 # For other times, find the corresponding original time
                 for shifted_time, original_time in session_start_times:
-                    if pd.Timestamp(x) >= shifted_time:
+                    if x_ts >= shifted_time:
                         last_session_start = shifted_time
                         last_original_start = original_time
                         break
+                else:
+                    return ''  # No matching session found
                 
-                time_since_session_start = pd.Timestamp(x) - last_session_start
+                time_since_session_start = x_ts - last_session_start
                 original_time = last_original_start + time_since_session_start
                 return original_time.strftime('%H:%M')
                 

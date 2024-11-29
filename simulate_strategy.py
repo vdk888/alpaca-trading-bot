@@ -5,6 +5,7 @@ from strategy import TradingStrategy
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import yfinance as yf
+import pytz
 
 def generate_sample_data(periods=2000):
     """Generate sample price data with a trend and some volatility"""
@@ -26,7 +27,12 @@ def generate_sample_data(periods=2000):
         'low': close - np.abs(np.random.normal(1.5, 0.8, periods)),
         'close': close,
         'volume': np.random.randint(1000, 50000, periods) * (1 + np.abs(np.random.normal(0, 0.3, periods)))
-    }, index=pd.date_range(start=datetime.now() - timedelta(days=30), periods=periods, freq='5min'))
+    }, index=pd.date_range(
+        start=datetime.now(pytz.UTC) - timedelta(days=30),
+        periods=periods,
+        freq='5min',
+        tz='UTC'  # Explicitly set timezone to UTC
+    ))
     
     return data
 

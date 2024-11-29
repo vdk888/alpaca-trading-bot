@@ -33,10 +33,10 @@ def is_market_hours():
         return False
     
     # Market hours are 9:30 AM - 4:00 PM Eastern
-    market_start = now.replace(hour=9, minute=30, second=0, microsecond=0)
-    market_end = now.replace(hour=16, minute=0, second=0, microsecond=0)
+    market_start = now.astimezone(et_tz).replace(hour=9, minute=30, second=0, microsecond=0)
+    market_end = now.astimezone(et_tz).replace(hour=16, minute=0, second=0, microsecond=0)
     
-    return market_start <= now <= market_end
+    return market_start <= now.astimezone(et_tz) <= market_end
 
 async def run_bot():
     """Main function to run the trading bot"""

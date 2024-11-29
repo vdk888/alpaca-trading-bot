@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from config import TRADING_SYMBOLS
 import logging
+import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> p
     ticker = yf.Ticker(yf_symbol)
     
     # Calculate start and end dates
-    end = datetime.now()
+    end = datetime.now(pytz.UTC)
     start = end - timedelta(days=days)
     
     # Fetch data with retry mechanism
@@ -113,7 +114,7 @@ def is_market_open(symbol: str = 'SPY') -> bool:
     """Check if market is currently open for the given symbol"""
     try:
         market_hours = TRADING_SYMBOLS[symbol]['market_hours']
-        now = datetime.now()
+        now = datetime.now(pytz.UTC)
         
         # For 24/7 markets
         if market_hours['start'] == '00:00' and market_hours['end'] == '23:59':
@@ -121,7 +122,7 @@ def is_market_open(symbol: str = 'SPY') -> bool:
             
         # Convert current time to market timezone
         market_tz = market_hours['timezone']
-        market_time = now.astimezone(pd.Timezone(market_tz))
+        market_time = now.astimezone(pytz.timezone(market_tz))
         
         # Check if it's a weekday
         if market_time.weekday() >= 5:  # Saturday = 5, Sunday = 6

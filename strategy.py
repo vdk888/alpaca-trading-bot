@@ -3,6 +3,7 @@ import pandas as pd
 from indicators import generate_signals, get_default_params
 from fetch import get_latest_data, fetch_historical_data
 import logging
+import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class TradingStrategy:
         try:
             # Fetch 3 days of historical data
             self.data = fetch_historical_data(self.symbol, self.interval, days=3)
-            self.last_update = pd.Timestamp.now()
+            self.last_update = pd.Timestamp.now(tz=pytz.UTC)
             logger.info(f"Initialized data for {self.symbol}: {len(self.data)} bars")
         except Exception as e:
             logger.error(f"Error initializing data for {self.symbol}: {str(e)}")
@@ -30,7 +31,7 @@ class TradingStrategy:
         
     def _update_data(self) -> None:
         """Update data if needed"""
-        now = pd.Timestamp.now()
+        now = pd.Timestamp.now(tz=pytz.UTC)
         
         # If no data or last update was more than 5 minutes ago
         if self.data is None or (now - self.last_update).total_seconds() > 300:
