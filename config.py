@@ -14,34 +14,14 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'DAX': {
-        'market': 'EU',
-        'yfinance': '^GDAXI',  # Yahoo Finance symbol for DAX
+    'NDAQ': {
+        'market': 'US',
+        'yfinance': 'NDAQ',  # Yahoo Finance symbol for NASDAQ
         'interval': '5m',
         'market_hours': {
             'start': '09:00',
-            'end': '17:30',
-            'timezone': 'Europe/Berlin'
-        }
-    },
-    'NIKKEI': {
-        'market': 'JP',
-        'yfinance': '^N225',  # Yahoo Finance symbol for Nikkei
-        'interval': '5m',
-        'market_hours': {
-            'start': '09:00',
-            'end': '15:15',
-            'timezone': 'Asia/Tokyo'
-        }
-    },
-    'EUR/USD': {
-        'market': 'FX',
-        'yfinance': 'EURUSD=X',  # Yahoo Finance symbol for EUR/USD
-        'interval': '5m',
-        'market_hours': {
-            'start': '00:00',
-            'end': '23:59',
-            'timezone': 'UTC'
+            'end': '16:00',
+            'timezone': 'US/Eastern'
         }
     }
 }

@@ -79,7 +79,7 @@ def split_into_sessions(data):
     
     return sessions
 
-def create_strategy_plot(symbol='SPY', days=5):
+def create_strategy_plot(symbol='SPY', days=5, return_data=False):
     """Create a strategy visualization plot for a single symbol and return it as bytes"""
     # Get the correct Yahoo Finance symbol and market configuration
     from config import TRADING_SYMBOLS
@@ -128,6 +128,9 @@ def create_strategy_plot(symbol='SPY', days=5):
         # Generate signals
         params = get_default_params()
         signals, daily_data, weekly_data = generate_signals(data, params)
+        
+        if return_data:
+            return data, signals
         
         # Calculate trading days using pandas
         trading_days = len(pd.Series([idx.date() for idx in data.index]).unique())
@@ -357,7 +360,7 @@ def create_strategy_plot(symbol='SPY', days=5):
         
         plt.tight_layout()
         
-        # Convert plot to bytes
+        # Save plot to bytes
         buf = io.BytesIO()
         plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
         plt.close()
