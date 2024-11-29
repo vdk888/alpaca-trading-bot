@@ -8,6 +8,7 @@ from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
 from trading import TradingExecutor
+from backtest import run_backtest, create_backtest_plot
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ class TradingBot:
         application.add_handler(CommandHandler("symbols", self.symbols_command))
         application.add_handler(CommandHandler("open", self.open_command))
         application.add_handler(CommandHandler("close", self.close_command))
+        application.add_handler(CommandHandler("backtest", self.backtest_command))
 
     @property
     def bot(self):
@@ -120,6 +122,7 @@ class TradingBot:
 /indicators [symbol] - View current indicator values
 /plot [symbol] [days] - Generate strategy visualization
 /signals - View latest signals for all symbols
+/backtest [symbol] [days] - Run backtest simulation (default: all symbols, 5 days)
 
 🔧 Trading Commands:
 /open <symbol> <amount> - Open a position with specified amount
@@ -550,3 +553,65 @@ Price: ${analysis['current_price']:.2f}
             
         except Exception as e:
             await update.message.reply_text(f"❌ Error closing positions: {str(e)}")
+
+    async def backtest_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Run backtest simulation"""
+        try:
+            # Parse arguments
+            args = context.args if context.args else []
+            
+            # Handle specific symbol request
+            if len(args) >= 2:
+                symbol = args[0].upper()
+                days = int(args[1])
+                if symbol not in self.symbols:
+                    await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
+                    return
+                symbols_to_test = [symbol]
+            else:
+                # Default: all symbols
+                symbols_to_test = self.symbols
+                days = int(args[0]) if args else 5
+            
+            if days <= 0 or days > 30:
+                await update.message.reply_text("❌ Days must be between 1 and 30")
+                return
+            
+            await update.message.reply_text(f"🔄 Running backtest for the last {days} days...")
+            
+            # Run backtest for each symbol
+            for symbol in symbols_to_test:
+                try:
+                    # Run backtest simulation
+                    result = run_backtest(symbol, days)
+                    
+                    # Generate plot
+                    buf, stats = create_backtest_plot(result)
+                    
+                    # Create performance message
+                    message = f"""
+📊 {symbol} Backtest Results ({days} days):
+• Total Return: {stats['total_return']:.2f}%
+• Total Trades: {stats['total_trades']}
+• Win Rate: {stats['win_rate']:.1f}%
+• Max Drawdown: {stats['max_drawdown']:.2f}%
+• Sharpe Ratio: {stats['sharpe_ratio']:.2f}
+                    """
+                    
+                    # Send plot and statistics
+                    await update.message.reply_document(
+                        document=buf,
+                        filename=f"{symbol}_backtest_{days}d.png",
+                        caption=message
+                    )
+                
+                except Exception as e:
+                    logger.error(f"Error backtesting {symbol}: {str(e)}")
+                    await update.message.reply_text(f"❌ Could not run backtest for {symbol}: {str(e)}")
+                    continue
+                
+        except ValueError as e:
+            await update.message.reply_text(f"❌ Invalid input: {str(e)}")
+        except Exception as e:
+            logger.error(f"Backtest command error: {str(e)}")
+            await update.message.reply_text(f"❌ Error: {str(e)}")
