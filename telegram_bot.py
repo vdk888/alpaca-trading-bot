@@ -93,7 +93,10 @@ class TradingBot:
     async def send_message(self, message: str):
         """Send message to Telegram"""
         try:
-            await self.bot.send_message(chat_id=self.chat_id, text=message)
+            # Split message into chunks of 4096 characters (Telegram's limit)
+            chunks = [message[i:i+4096] for i in range(0, len(message), 4096)]
+            for chunk in chunks:
+                await self.bot.send_message(chat_id=self.chat_id, text=chunk)
         except Exception as e:
             logger.error(f"Failed to send Telegram message: {e}")
 
@@ -372,65 +375,66 @@ Last Update: {analysis['timestamp']}
             signal_messages = []
             has_data = False
             
-            for sym in symbols_to_check:
-                try:
-                    analysis = self.strategies[sym].analyze()
-                    if not analysis:
-                        signal_messages.append(f"No data available for {sym}")
-                        continue
+            # Process symbols in chunks of 3
+            for i in range(0, len(symbols_to_check), 3):
+                chunk_messages = []
+                chunk_symbols = symbols_to_check[i:i+3]
+                
+                for sym in chunk_symbols:
+                    try:
+                        analysis = self.strategies[sym].analyze()
+                        if not analysis:
+                            chunk_messages.append(f"No data available for {sym}")
+                            continue
+                            
+                        has_data = True
+                        # Get signal strength and direction
+                        signal_strength = abs(analysis['daily_composite'])
+                        signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                         
-                    has_data = True
-                    # Get signal strength and direction
-                    signal_strength = abs(analysis['daily_composite'])
-                    signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
-                    
-                    # Format last signal time
-                    last_signal_str = "No signals generated yet"
-                    if analysis.get('last_signal_time'):
-                        last_signal_time = analysis['last_signal_time']
-                        if isinstance(last_signal_time, str):
-                            last_signal_time = pd.to_datetime(last_signal_time)
-                        last_signal_str = f"Last Signal: {last_signal_time.strftime('%H:%M')} ({signal_direction})"
-                    
-                    # Check if signal crosses thresholds
-                    daily_signal = (
-                        "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
-                        else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
-                        else "WEAK " + signal_direction if signal_strength > 0.5
-                        else "NEUTRAL"
-                    )
-                    
-                    weekly_signal = (
-                        "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
-                        else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
-                        else "WEAK BUY" if analysis['weekly_composite'] > 0
-                        else "WEAK SELL" if analysis['weekly_composite'] < 0
-                        else "NEUTRAL"
-                    )
-                    
-                    message = f"""
+                        # Format last signal time
+                        last_signal_str = "No signals generated yet"
+                        if analysis.get('last_signal_time'):
+                            last_signal_time = analysis['last_signal_time']
+                            if isinstance(last_signal_time, str):
+                                last_signal_time = pd.to_datetime(last_signal_time)
+                            last_signal_str = f"Last Signal: {last_signal_time.strftime('%H:%M')} ({signal_direction})"
+                        
+                        # Check if signal crosses thresholds
+                        daily_signal = (
+                            "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
+                            else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
+                            else "WEAK " + signal_direction if signal_strength > 0.5
+                            else "NEUTRAL"
+                        )
+                        
+                        weekly_signal = (
+                            "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
+                            else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
+                            else "WEAK BUY" if analysis['weekly_composite'] > 0
+                            else "WEAK SELL" if analysis['weekly_composite'] < 0
+                            else "NEUTRAL"
+                        )
+                        
+                        message = f"""
 📊 {sym} Signals:
-
 Daily Signal: {daily_signal}
 • Composite: {analysis['daily_composite']:.4f}
 • Strength: {signal_strength:.2f}
-
 Weekly Signal: {weekly_signal}
 • Composite: {analysis['weekly_composite']:.4f}
-
-Current Price: ${analysis['current_price']:.2f}
-Last Update: {analysis['timestamp']}
-{last_signal_str}
-                    """
-                    signal_messages.append(message)
-                except Exception as e:
-                    signal_messages.append(f"Error analyzing {sym}: {str(e)}")
+Price: ${analysis['current_price']:.2f}
+{last_signal_str}"""
+                        chunk_messages.append(message)
+                    except Exception as e:
+                        chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
+                
+                if chunk_messages:
+                    await update.message.reply_text("\n---\n".join(chunk_messages))
             
             if not has_data:
                 await update.message.reply_text("❌ No signals available. The market may be closed or there might be connection issues.")
-                return
                 
-            await update.message.reply_text("\n---\n".join(signal_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting signals: {str(e)}")
 
