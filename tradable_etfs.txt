@@ -1,0 +1,2557 @@
+Symbol     Exchange  Name
+--------------------------------------------------------------------------------
+AAA        AssetExchange.ARCA Alternative Access First Priority CLO Bond ETF
+AADR       AssetExchange.NASDAQ AdvisorShares Dorsey Wright ADR ETF
+AAPB       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long AAPL Daily ETF
+AAPD       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AAPL Bear 1X Shares
+AAPU       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AAPL Bull 2X Shares
+AAXJ       AssetExchange.NASDAQ iShares MSCI All Country Asia ex Japan ETF
+ABCS       AssetExchange.NASDAQ EA Series Trust Alpha Blue Capital US Small-Mid Cap Dynamic ETF
+ABEQ       AssetExchange.ARCA Absolute Select Value ETF
+ABNY       AssetExchange.ARCA YieldMax ABNB Option Income Strategy ETF
+ACES       AssetExchange.ARCA ALPS Clean Energy ETF
+ACLO       AssetExchange.NYSE TCW AAA CLO ETF
+ACTV       AssetExchange.ARCA LeaderShares Activist Leaders ETF
+ACVF       AssetExchange.ARCA American Conservative Values ETF
+ACWI       AssetExchange.NASDAQ iShares MSCI ACWI ETF
+ACWX       AssetExchange.NASDAQ iShares MSCI ACWI ex US ETF
+ADIV       AssetExchange.ARCA SmartETFs Asia Pacific Dividend Builder ETF
+ADPV       AssetExchange.ARCA Adaptiv Select ETF
+ADVE       AssetExchange.ARCA Matthews Asia Dividend Active ETF
+AFK        AssetExchange.ARCA VanEck Africa Index ETF
+AFLG       AssetExchange.ARCA First Trust Active Factor Large Cap ETF
+AFMC       AssetExchange.ARCA First Trust Active Factor Mid Cap ETF
+AFSM       AssetExchange.ARCA First Trust Active Factor Small Cap ETF
+AGG        AssetExchange.ARCA iShares Core U.S. Aggregate Bond ETF
+AGGH       AssetExchange.ARCA Simplify Aggregate Bond ETF
+AGGS       AssetExchange.ARCA Harbor Disciplined Bond ETF
+AGIH       AssetExchange.ARCA iShares Inflation Hedged U.S. Aggregate Bond ETF
+AGIX       AssetExchange.NASDAQ KraneShares Trust KraneShares Artificial Intelligence & Technology ETF
+AGMI       AssetExchange.NASDAQ Themes ETF Trust Themes Silver Miners ETF
+AGNG       AssetExchange.NASDAQ Global X Funds Global X Aging Population ETF
+AGOX       AssetExchange.ARCA Adaptive Alpha Opportunities ETF
+AGQI       AssetExchange.ARCA First Trust Active Global Quality Income ETF
+AGRH       AssetExchange.ARCA iShares Interest Rate Hedged U.S. Aggregate Bond ETF
+AGZ        AssetExchange.ARCA iShares Agency Bond ETF
+AHLT       AssetExchange.ARCA American Beacon AHL Trend ETF
+AHOY       AssetExchange.ARCA Newday Ocean Health ETF
+AHYB       AssetExchange.ARCA American Century Select High Yield ETF
+AIA        AssetExchange.NASDAQ iShares Asia 50 ETF
+AIEQ       AssetExchange.ARCA Amplify AI Powered Equity ETF
+AIFD       AssetExchange.NYSE TCW Artificial Intelligence ETF
+AIPI       AssetExchange.NASDAQ ETF Opportunities Trust REX AI Equity Premium Income ETF
+AIQ        AssetExchange.NASDAQ Global X Funds Global X Artificial Intelligence & Technology ETF
+AIRL       AssetExchange.NASDAQ Themes ETF Trust Themes Airlines ETF
+AIRR       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust RBA American Industrial Renaissance ETF
+AIVC       AssetExchange.ARCA Amplify Bloomberg AI Value Chain ETF
+AIYY       AssetExchange.ARCA YieldMax AI Option Income Strategy ETF
+ALAI       AssetExchange.ARCA Alger AI Enablers & Adopters ETF
+ALTL       AssetExchange.ARCA Pacer Lunt Large Cap Alternator ETF
+ALTY       AssetExchange.NASDAQ Global X Funds Global X Alternative Income ETF
+AMAX       AssetExchange.ARCA Adaptive Hedged Multi-Asset Income ETF
+AMDL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long AMD Daily ETF
+AMDS       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 1x Short AMD Daily ETF
+AMDY       AssetExchange.ARCA YieldMax AMD Option Income Strategy ETF
+AMID       AssetExchange.NASDAQ EA Series Trust Argent Mid Cap ETF
+AMLP       AssetExchange.ARCA Alerian MLP ETF
+AMOM       AssetExchange.ARCA Qraft AI-Enhanced US Large Cap Momentum ETF
+AMPD       AssetExchange.ARCA CNIC ICE U.S. Carbon Neutral Power Futures Index ETF
+AMZA       AssetExchange.ARCA InfraCap MLP ETF
+AMZD       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AMZN Bear 1X Shares
+AMZU       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AMZN Bull 2X Shares
+AMZY       AssetExchange.ARCA YieldMax AMZN Option Income Strategy ETF
+AMZZ       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long AMZN Daily ETF
+ANEW       AssetExchange.ARCA ProShares MSCI Transformational Changes ETF
+ANGL       AssetExchange.NASDAQ VanEck Fallen Angel High Yield Bond ETF
+AOA        AssetExchange.ARCA iShares Core Aggressive Allocation ETF
+AOHY       AssetExchange.ARCA Angel Oak High Yield Opportunities ETF
+AOK        AssetExchange.ARCA iShares Core Conservative Allocation ETF
+AOM        AssetExchange.ARCA iShares Core Moderate Allocation ETF
+AOR        AssetExchange.ARCA iShares Core Growth Allocation ETF
+AOTG       AssetExchange.NASDAQ EA Series Trust AOT Growth and Innovation ETF
+APCB       AssetExchange.ARCA ActivePassive Core Bond ETF
+APIE       AssetExchange.ARCA ActivePassive International Equity ETF
+APLY       AssetExchange.ARCA YieldMax AAPL Option Income Strategy ETF
+APMU       AssetExchange.ARCA ActivePassive Intermediate Municipal Bond ETF
+APRT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Apr ETF
+APRW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Apr ETF
+APUE       AssetExchange.ARCA ActivePassive U.S. Equity ETF
+AQWA       AssetExchange.NASDAQ Global X Funds Global X Clean Water ETF
+ARB        AssetExchange.ARCA AltShares Merger Arbitrage ETF
+AREA       AssetExchange.ARCA Harbor AlphaEdge Next Generation REITs ETF
+ARGT       AssetExchange.ARCA Global X MSCI Argentina ETF
+ARKF       AssetExchange.ARCA ARK Fintech Innovation ETF
+ARKK       AssetExchange.ARCA ARK Innovation ETF
+ARKW       AssetExchange.ARCA ARK Next Generation Internet ETF
+ARP        AssetExchange.ARCA PMV Adaptive Risk Parity ETF
+ARTY       AssetExchange.ARCA iShares Future AI & Tech ETF
+ARVR       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust Indxx Metaverse ETF
+ASEA       AssetExchange.ARCA Global X FTSE Southeast Asia ETF
+ASHR       AssetExchange.ARCA Xtrackers Harvest CSI 300 China A-Shares ETF
+ASHS       AssetExchange.ARCA Xtrackers Harvest CSI 500 China A-Shares Small Cap ETF
+ASIA       AssetExchange.ARCA Matthews Pacific Tiger Active ETF
+ASMF       AssetExchange.ARCA Virtus AlphaSimplex Managed Futures ETF
+ATFV       AssetExchange.ARCA Alger 35 ETF
+AUGT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Aug ETF
+AUGW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Aug ETF
+AUMI       AssetExchange.NASDAQ Themes ETF Trust Themes Gold Miners ETF
+AUSF       AssetExchange.ARCA Global X Adaptive U.S. Factor ETF
+AVDE       AssetExchange.ARCA Avantis International Equity ETF
+AVDS       AssetExchange.ARCA Avantis International Small Cap Equity ETF
+AVDV       AssetExchange.ARCA Avantis International Small Cap Value ETF
+AVEE       AssetExchange.ARCA Avantis Emerging Markets Small Cap Equity ETF
+AVEM       AssetExchange.ARCA Avantis Emerging Markets Equity ETF
+AVES       AssetExchange.ARCA Avantis Emerging Markets Value ETF
+AVGE       AssetExchange.ARCA Avantis All Equity Markets ETF
+AVGV       AssetExchange.ARCA Avantis All Equity Markets Value ETF
+AVGX       AssetExchange.NASDAQ Tidal Trust II Defiance Daily Target 2X Long AVGO ETF
+AVIE       AssetExchange.ARCA Avantis Inflation Focused Equity ETF
+AVIG       AssetExchange.ARCA Avantis Core Fixed Income ETF
+AVIV       AssetExchange.ARCA Avantis International Large Cap Value ETF
+AVL        AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AVGO Bull 2X Shares
+AVLC       AssetExchange.ARCA Avantis U.S. Large Cap Equity ETF
+AVLV       AssetExchange.ARCA Avantis U.S. Large Cap Value ETF
+AVMA       AssetExchange.ARCA Avantis Moderate Allocation ETF
+AVMC       AssetExchange.ARCA Avantis U.S. Mid Cap Equity ETF
+AVMU       AssetExchange.ARCA Avantis Core Municipal Fixed Income ETF
+AVMV       AssetExchange.ARCA Avantis U.S. Mid Cap Value ETF
+AVNM       AssetExchange.ARCA Avantis All International Markets Equity ETF
+AVNV       AssetExchange.ARCA Avantis All International Markets Value ETF
+AVRE       AssetExchange.ARCA Avantis Real Estate ETF
+AVS        AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily AVGO Bear 1X Shares
+AVSC       AssetExchange.ARCA Avantis U.S. Small Cap Equity ETF
+AVSD       AssetExchange.ARCA Avantis Responsible International Equity ETF
+AVSE       AssetExchange.ARCA Avantis Responsible Emerging Markets Equity ETF
+AVSF       AssetExchange.ARCA Avantis Short-Term Fixed Income ETF
+AVSU       AssetExchange.ARCA Avantis Responsible U.S. Equity ETF
+AVUS       AssetExchange.ARCA Avantis U.S. Equity ETF
+AVUV       AssetExchange.ARCA Avantis U.S. Small Cap Value ETF
+AVXC       AssetExchange.NASDAQ American Century ETF Trust Avantis Emerging Markets ex-China Equity ETF
+AWAY       AssetExchange.ARCA Amplify Travel Tech ETF
+AWEG       AssetExchange.ARCA Alger Weatherbie Enduring Growth ETF
+AZTD       AssetExchange.ARCA Aztlan Global Stock Selection DM SMID ETF
+BAB        AssetExchange.ARCA Invesco Taxable Municipal Bond ETF
+BABO       AssetExchange.ARCA YieldMax BABA Option Income Strategy ETF
+BABX       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long BABA Daily ETF
+BAFE       AssetExchange.NASDAQ The Advisors' Inner Circle Fund III Brown Advisory Flexible Equity ETF
+BAI        AssetExchange.ARCA iShares A.I. Innovation and Tech Active ETF
+BATT       AssetExchange.ARCA Amplify Lithium & Battery Technology ETF
+BBAG       AssetExchange.ARCA JPMorgan BetaBuilders U.S. Aggregate Bond ETF
+BBBI       AssetExchange.ARCA BondBloxx BBB Rated 5-10 Year Corporate Bond ETF
+BBBL       AssetExchange.ARCA BondBloxx BBB Rated 10+ Year Corporate Bond ETF
+BBBS       AssetExchange.ARCA BondBloxx BBB Rated 1-5 Year Corporate Bond ETF
+BBC        AssetExchange.ARCA Virtus LifeSci Biotech Clinical Trials ETF
+BBCB       AssetExchange.ARCA JPMorgan BetaBuilders USD Investment Grade Corporate Bond ETF
+BBH        AssetExchange.NASDAQ VanEck Biotech ETF
+BBLU       AssetExchange.ARCA EA Bridgeway Blue Chip ETF
+BBMC       AssetExchange.ARCA JPMorgan BetaBuilders U.S. Mid Cap Equity ETF
+BBP        AssetExchange.ARCA Virtus LifeSci Biotech Products ETF
+BBSC       AssetExchange.ARCA JPMorgan BetaBuilders U.S. Small Cap Equity ETF
+BCD        AssetExchange.ARCA abrdn Bloomberg All Commodity Longer Dated Strategy K-1 Free ETF
+BCDF       AssetExchange.ARCA Horizon Kinetics Blockchain Development ETF
+BCI        AssetExchange.ARCA abrdn Bloomberg All Commodity Strategy K-1 Free ETF
+BCIL       AssetExchange.ARCA Bancreek International Large Cap ETF
+BCIM       AssetExchange.ARCA abrdn Bloomberg Industrial Metals Strategy K-1 Free ETF
+BCUS       AssetExchange.ARCA Bancreek U.S. Large Cap ETF
+BDGS       AssetExchange.NASDAQ EA Series Trust Bridges Capital Tactical ETF
+BDIV       AssetExchange.ARCA AAM Brentview Dividend Growth ETF
+BDRY       AssetExchange.ARCA Breakwave Dry Bulk Shipping ETF
+BDVG       AssetExchange.ARCA IMGP Berkshire Dividend Growth ETF
+BEDZ       AssetExchange.ARCA AdvisorShares Hotel ETF
+BEEZ       AssetExchange.NASDAQ EA Series Trust Honeytree U.S. Equity ETF
+BELT       AssetExchange.NASDAQ BlackRock ETF Trust iShares Long-Term U.S. Equity Active ETF
+BETE       AssetExchange.ARCA ProShares Bitcoin & Ether Equal Weight ETF
+BETH       AssetExchange.ARCA ProShares Bitcoin & Ether Market Cap Weight ETF
+BETZ       AssetExchange.ARCA Roundhill Sports Betting & iGaming ETF
+BFIX       AssetExchange.ARCA Build Bond Innovation ETF
+BFOR       AssetExchange.ARCA Barron's 400 ETF
+BGIG       AssetExchange.ARCA Bahl & Gaynor Income Growth ETF
+BGRN       AssetExchange.NASDAQ iShares Trust iShares USD Green Bond ETF
+BGRO       AssetExchange.NASDAQ BlackRock ETF Trust iShares Large Cap Growth Active ETF
+BIBL       AssetExchange.ARCA Inspire 100 ETF
+BIDD       AssetExchange.ARCA BlackRock International Dividend ETF
+BIGY       AssetExchange.ARCA YieldMax Target 12 Big 50 Option Income ETF
+BIL        AssetExchange.ARCA SPDR Bloomberg 1-3 Month T-Bill ETF
+BILD       AssetExchange.ARCA Macquarie Global Listed Infrastructure ETF
+BILS       AssetExchange.ARCA SPDR Bloomberg 3-12 Month T-Bill ETF
+BILZ       AssetExchange.ARCA PIMCO Ultra Short Government Active ETF
+BINC       AssetExchange.ARCA iShares Flexible Income Active ETF
+BITB       AssetExchange.ARCA Bitwise Bitcoin ETF
+BITC       AssetExchange.ARCA Bitwise Bitcoin Strategy Optimum Roll ETF
+BITI       AssetExchange.ARCA ProShares Short Bitcoin ETF
+BITO       AssetExchange.ARCA ProShares Bitcoin ETF
+BITQ       AssetExchange.ARCA Bitwise Crypto Industry Innovators ETF
+BITS       AssetExchange.NASDAQ Global X Funds Global X Blockchain & Bitcoin Strategy ETF
+BITU       AssetExchange.ARCA ProShares Ultra Bitcoin ETF
+BIV        AssetExchange.ARCA Vanguard Intermediate-Term Bond ETF
+BIZD       AssetExchange.ARCA VanEck BDC Income ETF
+BJK        AssetExchange.NASDAQ VanEck Gaming ETF
+BKAG       AssetExchange.ARCA BNY Mellon Core Bond ETF
+BKCH       AssetExchange.NASDAQ Global X Funds Global X Blockchain ETF
+BKCI       AssetExchange.ARCA BNY Mellon Concentrated International ETF
+BKDV       AssetExchange.ARCA BNY Mellon Dynamic Value ETF
+BKEM       AssetExchange.ARCA BNY Mellon Emerging Markets Equity ETF
+BKF        AssetExchange.ARCA iShares MSCI BIC ETF
+BKHY       AssetExchange.ARCA BNY Mellon High Yield ETF
+BKIE       AssetExchange.ARCA BNY Mellon International Equity ETF
+BKIV       AssetExchange.NASDAQ BNY Mellon ETF Trust BNY Mellon Innovators ETF
+BKLC       AssetExchange.ARCA BNY Mellon US Large Cap Core Equity ETF
+BKLN       AssetExchange.ARCA Invesco Senior Loan ETF
+BKMC       AssetExchange.ARCA BNY Mellon US Mid Cap Core Equity ETF
+BKSE       AssetExchange.ARCA BNY Mellon US Small Cap Core Equity ETF
+BKUI       AssetExchange.ARCA BNY Mellon Ultra Short Income ETF
+BKWO       AssetExchange.NASDAQ BNY Mellon ETF Trust BNY Mellon Women's Opportunities ETF
+BLCN       AssetExchange.NASDAQ Siren ETF Trust Siren Nasdaq NexGen Economy ETF
+BLCR       AssetExchange.NASDAQ BlackRock ETF Trust iShares Large Cap Core Active ETF
+BLCV       AssetExchange.ARCA iShares Large Cap Value Active ETF
+BLES       AssetExchange.ARCA Inspire Global Hope ETF
+BLLD       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Sustainable Infrastructure ETF
+BLOK       AssetExchange.ARCA Amplify Transformational Data Sharing ETF
+BLV        AssetExchange.ARCA Vanguard Long-Term Bond ETF
+BMDL       AssetExchange.NASDAQ Victory Portfolios II VictoryShares WestEnd Economic Cycle Bond ETF
+BMED       AssetExchange.ARCA iShares Health Innovation Active ETF
+BMVP       AssetExchange.ARCA Invesco Bloomberg MVP Multi-factor ETF
+BND        AssetExchange.NASDAQ Vanguard Total Bond Market ETF
+BNDD       AssetExchange.ARCA Quadratic Deflation ETF
+BNDI       AssetExchange.ARCA NEOS Enhanced Income Aggregate Bond ETF
+BNDW       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Total World Bond ETF
+BNDX       AssetExchange.NASDAQ Vanguard Charlotte Funds Vanguard Total International Bond ETF
+BNGE       AssetExchange.ARCA First Trust S-Network Streaming and Gaming ETF
+BOAT       AssetExchange.ARCA SonicShares Global Shipping ETF
+BOTT       AssetExchange.NASDAQ Themes ETF Trust Themes Robotics & Automation ETF
+BOTZ       AssetExchange.NASDAQ Global X Funds Global X Robotics & Artificial Intelligence ETF
+BOUT       AssetExchange.ARCA Innovator IBD Breakout Opportunities ETF
+BPAY       AssetExchange.ARCA iShares FinTech Active ETF
+BRAZ       AssetExchange.ARCA Global X Brazil Active ETF
+BRF        AssetExchange.ARCA VanEck Brazil Small-Cap ETF
+BRHY       AssetExchange.NASDAQ BlackRock ETF Trust II iShares High Yield Active ETF
+BRNY       AssetExchange.NASDAQ EA Series Trust Burney U.S. Factor Rotation ETF
+BRTR       AssetExchange.NASDAQ BlackRock ETF Trust II iShares Total Return Active ETF
+BSCO       AssetExchange.NASDAQ Invesco BulletShares 2024 Corporate Bond ETF
+BSCP       AssetExchange.NASDAQ Invesco BulletShares 2025 Corporate Bond ETF
+BSCQ       AssetExchange.NASDAQ Invesco BulletShares 2026 Corporate Bond ETF
+BSCR       AssetExchange.NASDAQ Invesco BulletShares 2027 Corporate Bond ETF
+BSCS       AssetExchange.NASDAQ Invesco BulletShares 2028 Corporate Bond ETF
+BSCT       AssetExchange.NASDAQ Invesco BulletShares 2029 Corporate Bond ETF
+BSCU       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2030 Corporate Bond ETF
+BSCV       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2031 Corporate Bond ETF
+BSCW       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2032 Corporate Bond ETF
+BSCX       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2033 Corporate Bond ETF
+BSCY       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2034 Corporate Bond ETF
+BSJO       AssetExchange.NASDAQ Invesco BulletShares 2024 High Yield Corporate Bond ETF
+BSJP       AssetExchange.NASDAQ Invesco BulletShares 2025 High Yield Corporate Bond ETF
+BSJQ       AssetExchange.NASDAQ Invesco BulletShares 2026 High Yield Corporate Bond ETF
+BSJR       AssetExchange.NASDAQ Invesco BulletShares 2027 High Yield Corporate Bond ETF
+BSJS       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2028 High Yield Corporate Bond ETF
+BSJT       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2029 High Yield Corporate Bond ETF
+BSJU       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2030 High Yield Corporate Bond ETF
+BSJV       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2031 High Yield Corporate Bond ETF
+BSJW       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2032 High Yield Corporate Bond ETF
+BSMO       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2024 Municipal Bond ETF
+BSMP       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2025 Municipal Bond ETF
+BSMQ       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2026 Municipal Bond ETF
+BSMR       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2027 Municipal Bond ETF
+BSMS       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2028 Municipal Bond ETF
+BSMT       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2029 Municipal Bond ETF
+BSMU       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2030 Municipal Bond ETF
+BSMV       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2031 Municipal Bond ETF
+BSMW       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2032 Municipal Bond ETF
+BSMY       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2034 Municipal Bond ETF
+BSR        AssetExchange.ARCA Beacon Selective Risk ETF
+BSSX       AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco BulletShares 2033 Municipal Bond ETF
+BSTP       AssetExchange.ARCA Innovator Buffer Step-Up Strategy ETF
+BSV        AssetExchange.ARCA Vanguard Short-Term Bond ETF
+BSVO       AssetExchange.NASDAQ EA Series Trust EA Bridgeway Omni Small-Cap Value ETF
+BTC        AssetExchange.ARCA Grayscale Bitcoin Mini Trust ETF
+BTF        AssetExchange.NASDAQ Valkyrie ETF Trust II CoinShares Valkyrie Bitcoin and Ether Strategy ETF
+BTFX       AssetExchange.NASDAQ Valkyrie ETF Trust II CoinShares Valkyrie Bitcoin Futures Leveraged Strategy ETF
+BTGD       AssetExchange.NASDAQ Tidal Trust II STKD Bitcoin & Gold ETF
+BTOP       AssetExchange.ARCA Bitwise Bitcoin and Ether Equal Weight Strategy ETF
+BTR        AssetExchange.ARCA Beacon Tactical Risk ETF
+BTRN       AssetExchange.ARCA Global X Bitcoin Trend Strategy ETF
+BUCK       AssetExchange.ARCA Simplify Stable Income ETF
+BUFC       AssetExchange.NASDAQ AB Active ETFs, Inc. AB Conservative Buffer ETF
+BUG        AssetExchange.NASDAQ Global X Funds Global X Cybersecurity ETF
+BUL        AssetExchange.ARCA Pacer US Cash Cows Growth ETF
+BULD       AssetExchange.NASDAQ Pacer Funds Pacer BlueStar Engineering the Future ETF
+BUXX       AssetExchange.NYSE Strive Enhanced Income Short Maturity ETF
+BUYO       AssetExchange.ARCA KraneShares Man Buyout Beta Index ETF
+BUZZ       AssetExchange.ARCA VanEck Social Sentiment ETF
+BWEB       AssetExchange.ARCA Bitwise Web3 ETF
+BWET       AssetExchange.ARCA Breakwave Tanker Shipping ETF
+BWX        AssetExchange.ARCA SPDR Bloomberg International Treasury Bond ETF
+BWZ        AssetExchange.ARCA SPDR Bloomberg Short Term International Treasury Bond ETF
+BYLD       AssetExchange.ARCA iShares Yield Optimized Bond ETF
+BYRE       AssetExchange.ARCA Principal Real Estate Active Opportunities ETF
+CA         AssetExchange.NASDAQ DBX ETF Trust Xtrackers California Municipal Bonds ETF
+CAAA       AssetExchange.ARCA First Trust Commercial Mortgage Opportunities ETF
+CAFG       AssetExchange.NASDAQ Pacer Funds Trust Pacer US Small Cap Cash Cows Growth Leaders ETF
+CAFX       AssetExchange.ARCA Congress Intermediate Bond ETF
+CALI       AssetExchange.NASDAQ BlackRock ETF Trust II iShares Short-Term California Muni Active ETF
+CAML       AssetExchange.ARCA Congress Large Cap Growth ETF
+CAMX       AssetExchange.ARCA Cambiar Aggressive Value ETF
+CANC       AssetExchange.NASDAQ Tema ETF Trust Tema Oncology ETF
+CANQ       AssetExchange.NASDAQ Calamos ETF Trust Calamos Alternative Nasdaq & Bond ETF
+CAPE       AssetExchange.ARCA DoubleLine Shiller CAPE U.S. Equities ETF
+CARK       AssetExchange.ARCA CastleArk Large Growth ETF
+CARY       AssetExchange.ARCA Angel Oak Income ETF
+CARZ       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust S-Network Future Vehicles & Technology ETF
+CATF       AssetExchange.ARCA American Century California Municipal Bond ETF
+CATH       AssetExchange.NASDAQ Global X Funds Global X S&P 500 Catholic Values ETF
+CBLS       AssetExchange.ARCA Clough Hedged Equity ETF
+CBON       AssetExchange.ARCA VanEck China Bond ETF
+CBSE       AssetExchange.ARCA Clough Select Equity ETF
+CCEF       AssetExchange.ARCA Calamos CEF Income & Arbitrage ETF
+CCMG       AssetExchange.ARCA CCM Global Equity ETF
+CCNR       AssetExchange.NASDAQ Financial Investors Trust ALPS/CoreCommodity Natural Resources ETF
+CCRV       AssetExchange.ARCA iShares Commodity Curve Carry Strategy ETF
+CCSB       AssetExchange.NASDAQ Tidal Trust II Carbon Collective Short Duration Green Bond ETF
+CCSO       AssetExchange.NASDAQ Tidal ETF Trust II Carbon Collective Climate Solutions U.S. Equity ETF
+CDC        AssetExchange.NASDAQ VictoryShares US EQ Income Enhanced Volatility Wtd ETF
+CDEI       AssetExchange.ARCA Calvert US Large-Cap Diversity, Equity and Inclusion Index ETF
+CDL        AssetExchange.NASDAQ VictoryShares US Large Cap High Div Volatility Wtd ETF
+CDX        AssetExchange.ARCA Simplify High Yield PLUS Credit Hedge ETF
+CEFA       AssetExchange.NASDAQ Global X Funds Global X S&P Catholic Values Developed ex-U.S. ETF
+CERY       AssetExchange.ARCA SPDR Bloomberg Enhanced Roll Yield Commodity Strategy No K-1 ETF
+CFA        AssetExchange.NASDAQ VictoryShares US 500 Volatility Wtd ETF
+CFO        AssetExchange.NASDAQ VictoryShares US 500 Enhanced Volatility Wtd ETF
+CGBL       AssetExchange.ARCA Capital Group Core Balanced ETF
+CGCB       AssetExchange.ARCA Capital Group Core Bond ETF
+CGCP       AssetExchange.ARCA Capital Group Core Plus Income ETF
+CGCV       AssetExchange.ARCA Capital Group Conservative Equity ETF
+CGDG       AssetExchange.ARCA Capital Group Dividend Growers ETF
+CGDV       AssetExchange.ARCA Capital Group Dividend Value ETF
+CGGE       AssetExchange.ARCA Capital Group Global Equity ETF
+CGGO       AssetExchange.ARCA Capital Group Global Growth Equity ETF
+CGGR       AssetExchange.ARCA Capital Group Growth ETF
+CGHM       AssetExchange.ARCA Capital Group Municipal High-Income ETF
+CGIB       AssetExchange.ARCA Capital Group International Bond ETF (USD-Hedged)
+CGIC       AssetExchange.ARCA Capital Group International Core Equity ETF
+CGIE       AssetExchange.ARCA Capital Group International Equity ETF
+CGMS       AssetExchange.ARCA Capital Group U.S. Multi-Sector Income ETF
+CGMU       AssetExchange.ARCA Capital Group Municipal Income ETF
+CGNG       AssetExchange.ARCA Capital Group New Geography Equity ETF
+CGRO       AssetExchange.ARCA CoreValues Alpha Greater China Growth ETF
+CGSD       AssetExchange.ARCA Capital Group Short Duration Income ETF
+CGSM       AssetExchange.ARCA Capital Group Short Duration Municipal Income ETF
+CGUI       AssetExchange.ARCA Capital Group Ultra Short Income ETF
+CGUS       AssetExchange.ARCA Capital Group Core Equity ETF
+CGV        AssetExchange.NYSE Conductor Global Equity Value ETF
+CGW        AssetExchange.ARCA Invesco S&P Global Water Index ETF
+CGXU       AssetExchange.ARCA Capital Group International Focus Equity ETF
+CHAT       AssetExchange.ARCA Roundhill Generative AI & Technology ETF
+CHGX       AssetExchange.ARCA AXS Change Finance ESG ETF
+CHIQ       AssetExchange.ARCA Global X MSCI China Consumer Discretionary ETF
+CHPS       AssetExchange.NASDAQ DBX ETF Trust Xtrackers Semiconductor Select Equity ETF
+CIBR       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust NASDAQ Cybersecurity ETF
+CIL        AssetExchange.NASDAQ VictoryShares International Volatility Wtd ETF
+CLIP       AssetExchange.ARCA Global X 1-3 Month T-Bill ETF
+CLIX       AssetExchange.ARCA ProShares Long Online/Short Stores ETF
+CLNR       AssetExchange.ARCA NYLI Cleaner Transport ETF
+CLOA       AssetExchange.NASDAQ BlackRock ETF Trust II iShares AAA CLO Active ETF
+CLOB       AssetExchange.ARCA VanEck AA-BB CLO ETF
+CLOD       AssetExchange.NASDAQ Themes ETF Trust Themes Cloud Computing ETF
+CLOI       AssetExchange.ARCA VanEck CLO ETF
+CLOU       AssetExchange.NASDAQ Global X Funds Global X Cloud Computing ETF
+CLOX       AssetExchange.ARCA Panagram AAA CLO ETF
+CLOZ       AssetExchange.ARCA Panagram BBB-B CLO ETF
+CLSM       AssetExchange.NASDAQ Cabana Target Leading Sector Moderate ETF
+CMBS       AssetExchange.ARCA iShares CMBS ETF
+CMDY       AssetExchange.ARCA iShares Bloomberg Roll Select Commodity Strategy ETF
+CMF        AssetExchange.ARCA iShares California Muni Bond ETF
+CNBS       AssetExchange.ARCA Amplify Seymour Cannabis ETF
+CNCR       AssetExchange.NASDAQ ETF Series Solutions Trust Range Cancer Therapeutics ETF
+CNEQ       AssetExchange.ARCA Alger Concentrated Equity ETF
+CNRG       AssetExchange.ARCA SPDR S&P Kensho Clean Power ETF
+CNXT       AssetExchange.ARCA VanEck ChiNext ETF
+COAL       AssetExchange.ARCA Range Global Coal Index ETF
+COM        AssetExchange.ARCA Direxion Auspice Broad Commodity Strategy ETF
+COMB       AssetExchange.ARCA GraniteShares Bloomberg Commodity Broad Strategy No K-1 ETF
+COMT       AssetExchange.NASDAQ iShares U.S. ETF Trust iShares GSCI Commodity Dynamic Roll Strategy ETF
+CONI       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 1x Short COIN Daily ETF
+CONL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long COIN Daily ETF
+CONY       AssetExchange.ARCA YieldMax COIN Option Income Strategy ETF
+COPJ       AssetExchange.NASDAQ Sprott Funds Trust Sprott Junior Copper Miners ETF
+COPP       AssetExchange.NASDAQ Sprott Funds Trust Sprott Copper Miners ETF
+COPX       AssetExchange.ARCA Global X Copper Miners ETF (NEW)
+COWG       AssetExchange.NASDAQ Pacer Funds Trust Pacer US Large Cap Cash Cows Growth Leaders ETF
+COWS       AssetExchange.NASDAQ Amplify ETF Trust Amplify Cash Flow Dividend Leaders ETF
+CPAI       AssetExchange.NYSE Counterpoint Quantitative Equity ETF
+CPII       AssetExchange.ARCA Ionic Inflation Protection ETF
+CPLS       AssetExchange.NASDAQ AB Active ETFs, Inc. AB Core Plus Bond ETF
+CPNJ       AssetExchange.ARCA Calamos Nasdaq-100 Structured Alt Protection ETF - June
+CPNS       AssetExchange.ARCA Calamos Nasdaq-100 Structured Alt Protection ETF - September
+CPRJ       AssetExchange.ARCA Calamos Russell 2000 Structured Alt Protection ETF - July
+CPRO       AssetExchange.ARCA Calamos Russell 2000 Structured Alt Protection ETF - October
+CPSA       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - August
+CPSJ       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - July
+CPSM       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - May
+CPSN       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - November
+CPSO       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - October
+CPST       AssetExchange.ARCA Calamos S&P 500 Structured Alt Protection ETF - September
+CQQQ       AssetExchange.ARCA Invesco China Technology ETF
+CRAK       AssetExchange.ARCA VanEck Oil Refiners ETF
+CRBN       AssetExchange.ARCA iShares MSCI ACWI Low Carbon Target ETF
+CRDT       AssetExchange.ARCA Simplify Opportunistic Income ETF
+CRED       AssetExchange.ARCA Columbia Research Enhanced Real Estate ETF
+CRIT       AssetExchange.ARCA Optica Rare Earths & Critical Materials ETF
+CRPT       AssetExchange.ARCA First Trust SkyBridge Crypto Industry and Digital Economy ETF
+CRSH       AssetExchange.ARCA YieldMax Short TSLA Option Income Strategy ETF
+CRTC       AssetExchange.ARCA Xtrackers US National Critical Technologies ETF
+CRUZ       AssetExchange.ARCA Defiance Hotel, Airline, and Cruise ETF
+CRWL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long CRWD Daily ETF
+CSA        AssetExchange.NASDAQ VictoryShares US Small Cap Volatility Wtd ETF
+CSB        AssetExchange.NASDAQ VictoryShares US Small Cap High Div Volatility Wtd ETF
+CSD        AssetExchange.ARCA Invesco S&P Spin-Off ETF
+CSF        AssetExchange.NASDAQ VictoryShares US Discovery Enhanced Volatility Wtd ETF
+CSHI       AssetExchange.ARCA NEOS Enhanced Income 1-3 Month T-Bill ETF
+CSHP       AssetExchange.ARCA iShares Enhanced Short-Term Bond Active ETF
+CSMD       AssetExchange.ARCA Congress SMid Growth ETF
+CTA        AssetExchange.ARCA Simplify Managed Futures Strategy ETF
+CTEC       AssetExchange.NASDAQ Global X Funds Global X CleanTech ETF
+CTEX       AssetExchange.ARCA ProShares S&P Kensho Cleantech ETF
+CUT        AssetExchange.ARCA Invesco MSCI Global Timber ETF
+CVIE       AssetExchange.ARCA Calvert International Responsible Index ETF
+CVLC       AssetExchange.ARCA Calvert US Large-Cap Core Responsible Index ETF
+CVMC       AssetExchange.ARCA Calvert US Mid-Cap Core Responsible Index ETF
+CVRD       AssetExchange.ARCA Madison Covered Call ETF
+CVRT       AssetExchange.ARCA Calamos Convertible Equity Alternative ETF
+CVSB       AssetExchange.ARCA Calvert Ultra-Short Investment Grade ETF
+CVSE       AssetExchange.ARCA Calvert US Select Equity ETF
+CVY        AssetExchange.ARCA Invesco Zacks Multi-Asset Income ETF
+CWB        AssetExchange.ARCA SPDR Bloomberg Convertible Securities ETF
+CWI        AssetExchange.ARCA SPDR MSCI ACWI ex-US ETF
+CWS        AssetExchange.ARCA AdvisorShares Focused Equity ETF
+CZA        AssetExchange.ARCA Invesco Zacks Mid-Cap ETF
+CZAR       AssetExchange.NASDAQ Themes ETF Trust Themes Natural Monopoly ETF
+DALI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright DALI 1 ETF
+DAPP       AssetExchange.NASDAQ VanEck Digital Transformation ETF
+DARP       AssetExchange.ARCA Grizzle Growth ETF
+DAT        AssetExchange.ARCA ProShares Big Data Refiners ETF
+DAX        AssetExchange.NASDAQ Global X Funds Global X DAX Germany ETF
+DBAW       AssetExchange.ARCA Xtrackers MSCI All World ex US Hedged Equity ETF
+DBEF       AssetExchange.ARCA Xtrackers MSCI EAFE Hedged Equity ETF
+DBEM       AssetExchange.ARCA Xtrackers MSCI Emerging Markets Hedged Equity ETF
+DBEU       AssetExchange.ARCA Xtrackers MSCI Europe Hedged Equity ETF
+DBEZ       AssetExchange.ARCA Xtrackers MSCI Eurozone Hedged Equity ETF
+DBJP       AssetExchange.ARCA Xtrackers MSCI Japan Hedged Equity ETF
+DBMF       AssetExchange.ARCA iMGP DBi Managed Futures Strategy ETF
+DBND       AssetExchange.ARCA DoubleLine Opportunistic Bond ETF
+DCAP       AssetExchange.NASDAQ Tidal Trust III Unity Wealth Partners Dynamic Capital Appreciation & Options ETF
+DCMT       AssetExchange.ARCA DoubleLine Commodity Strategy ETF
+DCOR       AssetExchange.ARCA Dimensional US Core Equity 1 ETF
+DCRE       AssetExchange.ARCA DoubleLine Commercial Real Estate ETF
+DDIV       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright Momentum & Dividend ETF
+DECO       AssetExchange.NASDAQ SSGA Active Trust SPDR Galaxy Digital Asset Ecosystem ETF
+DECT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Dec ETF
+DECW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Dec ETF
+DEED       AssetExchange.ARCA First Trust TCW Securitized Plus ETF
+DEEF       AssetExchange.ARCA Xtrackers FTSE Developed ex US Multifactor ETF
+DEEP       AssetExchange.ARCA Roundhill Acquirers Deep Value ETF
+DEFI       AssetExchange.ARCA Hashdex Bitcoin ETF
+DEHP       AssetExchange.ARCA Dimensional Emerging Markets High Profitability ETF
+DEMZ       AssetExchange.NASDAQ The Advisors' Inner Circle Fund III Democratic Large Cap Core ETF
+DESK       AssetExchange.ARCA VanEck Office and Commercial REIT ETF
+DEUS       AssetExchange.ARCA Xtrackers Russell US Multifactor ETF
+DEXC       AssetExchange.ARCA Dimensional Emerging Markets ex China Core Equity ETF
+DFAC       AssetExchange.ARCA Dimensional U.S. Core Equity 2 ETF
+DFAE       AssetExchange.ARCA Dimensional Emerging Core Equity Market ETF
+DFAI       AssetExchange.ARCA Dimensional International Core Equity Market ETF
+DFAR       AssetExchange.ARCA Dimensional US Real Estate ETF
+DFAS       AssetExchange.ARCA Dimensional U.S. Small Cap ETF
+DFAT       AssetExchange.ARCA Dimensional U.S. Targeted Value ETF
+DFAU       AssetExchange.ARCA Dimensional US Core Equity Market ETF
+DFAW       AssetExchange.ARCA Dimensional World Equity ETF
+DFAX       AssetExchange.ARCA Dimensional World ex U.S. Core Equity 2 ETF
+DFCA       AssetExchange.ARCA Dimensional California Municipal Bond ETF
+DFCF       AssetExchange.ARCA Dimensional Core Fixed Income ETF
+DFEM       AssetExchange.ARCA Dimensional Emerging Markets Core Equity 2 ETF
+DFEV       AssetExchange.ARCA Dimensional Emerging Markets Value ETF
+DFGP       AssetExchange.NASDAQ Dimensional ETF Trust Dimensional Global Core Plus Fixed Income ETF
+DFGR       AssetExchange.ARCA Dimensional Global Real Estate ETF
+DFGX       AssetExchange.NASDAQ Dimensional ETF Trust Dimensional Global ex US Core Fixed Income ETF
+DFIP       AssetExchange.ARCA Dimensional Inflation-Protected Securities ETF
+DFIV       AssetExchange.ARCA Dimensional International Value ETF
+DFLV       AssetExchange.ARCA Dimensional US Large Cap Value ETF
+DFNM       AssetExchange.ARCA Dimensional National Municipal Bond ETF
+DFSB       AssetExchange.ARCA Dimensional Global Sustainability Fixed Income ETF
+DFSD       AssetExchange.ARCA Dimensional Short-Duration Fixed Income ETF
+DFSE       AssetExchange.ARCA Dimensional Emerging Markets Sustainability Core 1 ETF
+DFSI       AssetExchange.ARCA Dimensional International Sustainability Core 1 ETF
+DFSU       AssetExchange.ARCA Dimensional US Sustainability Core 1 ETF
+DFSV       AssetExchange.ARCA Dimensional US Small Cap Value ETF
+DFUS       AssetExchange.ARCA Dimensional U.S. Equity Market ETF
+DFUV       AssetExchange.ARCA Dimensional US Marketwide Value ETF
+DFVE       AssetExchange.ARCA DoubleLine Fortune 500 Equal Weight ETF
+DFVX       AssetExchange.ARCA Dimensional US Large Cap Vector ETF
+DGCB       AssetExchange.NASDAQ Dimensional ETF Trust Dimensional Global Credit ETF
+DGIN       AssetExchange.ARCA VanEck Digital India ETF
+DGRO       AssetExchange.ARCA iShares Core Dividend Growth ETF
+DGT        AssetExchange.ARCA SPDR Global Dow ETF (based on The Global Dow)
+DIA        AssetExchange.ARCA SPDR Dow Jones Industrial Average ETF Trust
+DIAL       AssetExchange.ARCA Columbia Diversified Fixed Income Allocation ETF
+DIEM       AssetExchange.ARCA Franklin Emerging Market Core Dividend Tilt Index ETF
+DIPS       AssetExchange.ARCA YieldMax Short NVDA Option Income Strategy ETF
+DISO       AssetExchange.ARCA YieldMax DIS Option Income Strategy ETF
+DIV        AssetExchange.ARCA Global X SuperDividend U.S. ETF
+DIVD       AssetExchange.NASDAQ EA Series Trust Altrius Global Dividend ETF
+DIVG       AssetExchange.ARCA Invesco S&P 500 High Dividend Growers ETF
+DIVI       AssetExchange.ARCA Franklin International Core Dividend Tilt Index ETF
+DIVL       AssetExchange.ARCA Madison Dividend Value ETF
+DIVO       AssetExchange.ARCA Amplify CWP Enhanced Dividend Income ETF
+DIVP       AssetExchange.ARCA Cullen Enhanced Equity Income ETF
+DIVS       AssetExchange.ARCA SmartETFs Dividend Builder ETF
+DIVY       AssetExchange.NYSE Sound Equity Dividend Income ETF
+DIVZ       AssetExchange.ARCA Opal Dividend Income ETF
+DJD        AssetExchange.ARCA Invesco Dow Jones Industrial Average Dividend ETF
+DJIA       AssetExchange.ARCA Global X Dow 30 Covered Call ETF
+DMAT       AssetExchange.NASDAQ Global X Funds Global X Disruptive Materials ETF
+DMBS       AssetExchange.ARCA DoubleLine Mortgage ETF
+DMXF       AssetExchange.NASDAQ iShares Trust iShares ESG Advanced MSCI EAFE ETF
+DRAI       AssetExchange.ARCA Draco Evolution AI ETF
+DRIV       AssetExchange.NASDAQ Global X Funds Global X Autonomous & Electric Vehicles ETF
+DRLL       AssetExchange.NYSE Strive U.S. Energy ETF
+DRUP       AssetExchange.ARCA GraniteShares Nasdaq Select Disruptors ETF
+DSI        AssetExchange.ARCA iShares MSCI KLD 400 Social ETF
+DSMC       AssetExchange.NYSE Distillate Small/Mid Cash Flow ETF
+DSTL       AssetExchange.ARCA Distillate U.S. Fundamental Stability & Value ETF
+DSTX       AssetExchange.NYSE Distillate International Fundamental Stability & Value ETF
+DTAN       AssetExchange.ARCA Sparkline International Intangible Value ETF
+DTCR       AssetExchange.NASDAQ Global X Funds Global X Data Center & Digital Infrastructure ETF
+DTEC       AssetExchange.ARCA ALPS Disruptive Technologies ETF
+DTRE       AssetExchange.ARCA First Trust Alerian Disruptive Technology Real Estate ETF
+DUHP       AssetExchange.ARCA Dimensional US High Profitability ETF
+DUKH       AssetExchange.NASDAQ Northern Lights Fund Trust Ocean Park High Income ETF
+DUKQ       AssetExchange.ARCA Ocean Park Domestic ETF
+DUKX       AssetExchange.NASDAQ Northern Lights Fund Trust Ocean Park International ETF
+DUKZ       AssetExchange.ARCA Ocean Park Diversified Income ETF
+DUSB       AssetExchange.ARCA Dimensional Ultrashort Fixed Income ETF
+DVAL       AssetExchange.NASDAQ Franklin Templeton ETF Trust BrandywineGLOBAL - Dynamic US Large Cap Value ETF
+DVDN       AssetExchange.ARCA Kingsbarn Dividend Opportunity ETF
+DVLU       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright Momentum & Value ETF
+DVND       AssetExchange.ARCA Touchstone Dividend Select ETF
+DVOL       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright Momentum & Low Volatility ETF
+DVY        AssetExchange.NASDAQ iShares Select Dividend ETF
+DVYA       AssetExchange.ARCA iShares Asia/Pacific Dividend ETF
+DVYE       AssetExchange.ARCA iShares Emerging Markets Dividend ETF
+DWAS       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Dorsey Wright SmallCap Momentum ETF
+DWAW       AssetExchange.NASDAQ AdvisorShares Trust AdvisorShares Dorsey Wright FSM All Cap World ETF
+DWSH       AssetExchange.NASDAQ AdvisorShares Trust AdvisorShares Dorsey Wright Short ETF
+DWUS       AssetExchange.NASDAQ AdvisorShares Trust AdvisorShares Dorsey Wright FSM US Core ETF
+DWX        AssetExchange.ARCA SPDR S&P International Dividend ETF
+DXIV       AssetExchange.ARCA Dimensional International Vector Equity ETF
+DXUV       AssetExchange.ARCA Dimensional US Vector Equity ETF
+DYFI       AssetExchange.NASDAQ ETF Opportunities Trust IDX Dynamic Fixed Income ETF
+DYLD       AssetExchange.ARCA LeaderShares Dynamic Yield ETF
+DYLG       AssetExchange.ARCA Global X Dow 30 Covered Call & Growth ETF
+DYNF       AssetExchange.ARCA iShares U.S. Equity Factor Rotation Active ETF
+DYNI       AssetExchange.NASDAQ ETF Opportunities Trust IDX Dynamic Innovation ETF
+DYTA       AssetExchange.NASDAQ The RBB Fund, Inc. SGI Dynamic Tactical ETF
+EAFG       AssetExchange.ARCA Pacer Developed Markets Cash Cows Growth Leaders ETF
+EAGG       AssetExchange.ARCA iShares ESG Aware U.S. Aggregate Bond ETF
+EAGL       AssetExchange.ARCA Eagle Capital Select Equity ETF
+EAPR       AssetExchange.ARCA Innovator Emerging Markets Power Buffer ETF - April
+EASG       AssetExchange.ARCA Xtrackers MSCI EAFE ESG Leaders Equity ETF
+EATV       AssetExchange.ARCA VegTech Plant-based Innovation & Climate ETF
+EATZ       AssetExchange.ARCA AdvisorShares Restaurant ETF
+EBIT       AssetExchange.ARCA Harbor AlphaEdge Small Cap Earners ETF
+EBIZ       AssetExchange.NASDAQ Global X Funds Global X E-commerce ETF
+EBND       AssetExchange.ARCA SPDR Bloomberg Emerging Markets Local Bond ETF
+EBUF       AssetExchange.ARCA Innovator Emerging Markets 10 Buffer ETF - Quarterly
+ECLN       AssetExchange.ARCA First Trust EIP Carbon Impact ETF
+ECML       AssetExchange.ARCA Euclidean Fundamental Value ETF
+ECNS       AssetExchange.ARCA iShares MSCI China Small-Cap ETF
+ECON       AssetExchange.ARCA Columbia Research Enhanced Emerging Economies ETF
+ECOW       AssetExchange.NASDAQ Pacer Funds Pacer Emerging Markets Cash Cows 100 ETF
+EDGF       AssetExchange.ARCA 3EDGE Dynamic Fixed Income ETF
+EDGH       AssetExchange.ARCA 3EDGE Dynamic Hard Assets ETF
+EDGI       AssetExchange.ARCA 3EDGE Dynamic International Equity ETF
+EDGU       AssetExchange.ARCA 3EDGE Dynamic US Equity ETF
+EDIV       AssetExchange.ARCA SPDR S&P Emerging Markets Dividend ETF
+EDOC       AssetExchange.NASDAQ Global X Funds Global X Telemedicine & Digital Health ETF
+EDOG       AssetExchange.ARCA ALPS Emerging Sector Dividend Dogs ETF
+EDOW       AssetExchange.ARCA First Trust Dow 30 Equal Weight ETF
+EDV        AssetExchange.ARCA Vanguard World Funds Extended Duration ETF
+EELV       AssetExchange.ARCA Invesco S&P Emerging Markets Low Volatility ETF
+EEM        AssetExchange.ARCA iShares MSCI Emerging Markets ETF
+EEMA       AssetExchange.NASDAQ iShares MSCI Emerging Markets Asia ETF
+EEMO       AssetExchange.ARCA Invesco S&P Emerging Markets Momentum ETF
+EEMS       AssetExchange.ARCA iShares MSCI Emerging Markets Small-Cap ETF
+EEMX       AssetExchange.ARCA SPDR MSCI Emerging Markets Fossil Fuel Reserves Free ETF
+EETH       AssetExchange.ARCA ProShares Ether ETF
+EFA        AssetExchange.ARCA iShares MSCI EAFE ETF
+EFAA       AssetExchange.ARCA Invesco MSCI EAFE Income Advantage ETF
+EFAS       AssetExchange.NASDAQ Global X Funds Global X MSCI SuperDividend EAFE ETF
+EFAX       AssetExchange.ARCA SPDR MSCI EAFE Fossil Fuel Reserves Free ETF
+EFIV       AssetExchange.ARCA SPDR S&P 500 ESG ETF
+EFIX       AssetExchange.ARCA First Trust TCW Emerging Markets Debt ETF
+EFRA       AssetExchange.NASDAQ iShares Trust iShares Environmental Infrastructure and Industrials ETF
+EHLS       AssetExchange.NASDAQ Tidal Trust II Even Herd Long Short ETF
+EIDO       AssetExchange.ARCA iShares MSCI Indonesia ETF
+EINC       AssetExchange.ARCA VanEck Energy Income ETF
+EIPI       AssetExchange.ARCA FT Energy Income Partners Enhanced Income ETF
+EIPX       AssetExchange.ARCA FT Energy Income Partners Strategy ETF
+EIRL       AssetExchange.ARCA iShares MSCI Ireland ETF
+EIS        AssetExchange.ARCA iShares MSCI Israel ETF
+EJAN       AssetExchange.ARCA Innovator Emerging Markets Power Buffer ETF - January
+EJUL       AssetExchange.ARCA Innovator Emerging Markets Power Buffer ETF - July
+EKG        AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust Nasdaq Lux Digital Health Solutions ETF
+ELCV       AssetExchange.ARCA Eventide High Dividend ETF
+ELQD       AssetExchange.ARCA iShares ESG Advanced Investment Grade Corporate Bond ETF
+EMB        AssetExchange.NASDAQ iShares J,P. Morgan USD Emerging Markets Bond ETF
+EMBD       AssetExchange.ARCA Global X Emerging Markets Bond ETF
+EMC        AssetExchange.ARCA Global X Emerging Markets Great Consumer ETF
+EMCC       AssetExchange.ARCA Global X MSCI Emerging Markets Covered Call ETF
+EMCR       AssetExchange.ARCA Xtrackers Emerging Markets Carbon Reduction and Climate Improvers ETF
+EMCS       AssetExchange.ARCA Xtrackers MSCI Emerging Markets Climate Selection ETF
+EMDM       AssetExchange.ARCA First Trust Bloomberg Emerging Market Democracies ETF
+EMEQ       AssetExchange.NASDAQ Macquarie ETF Trust Macquarie Focused Emerging Markets Equity ETF
+EMHC       AssetExchange.ARCA SPDR Bloomberg Emerging Markets USD Bond ETF
+EMIF       AssetExchange.NASDAQ iShares Emerging Markets Infrastructure ETF
+EMLC       AssetExchange.ARCA VanEck J. P. Morgan EM Local Currency Bond ETF
+EMM        AssetExchange.ARCA Global X Emerging Markets ex-China ETF
+EMNT       AssetExchange.ARCA PIMCO Enhanced Short Maturity Active ESG ETF
+EMOT       AssetExchange.ARCA First Trust S&P 500 Economic Moat ETF
+EMQQ       AssetExchange.ARCA EMQQ The Emerging Markets Internet ETF
+EMSF       AssetExchange.ARCA Matthews Emerging Markets Sustainable Future Active ETF
+EMTY       AssetExchange.ARCA ProShares Decline of the Retail Store ETF
+EMXC       AssetExchange.NASDAQ iShares, Inc. iShares MSCI Emerging Markets ex China ETF
+EMXF       AssetExchange.NASDAQ iShares Trust iShares ESG Advanced MSCI EM ETF
+ENFR       AssetExchange.ARCA Alerian Energy Infrastructure ETF
+ENZL       AssetExchange.NASDAQ iShares Trust iShares MSCI New Zealand ETF
+EOCT       AssetExchange.ARCA Innovator Emerging Markets Power Buffer ETF-October
+EPHE       AssetExchange.ARCA iShares MSCI Philippines ETF
+EPI        AssetExchange.ARCA WisdomTree India Earnings Fund ETF
+EPOL       AssetExchange.ARCA iShares MSCI Poland ETF
+EPP        AssetExchange.ARCA iShares MSCI Pacific ex Japan ETF
+EPU        AssetExchange.ARCA iShares MSCI Peru and Global Exposure ETF
+EQAL       AssetExchange.ARCA Invesco Russell 1000 Equal Weight ETF
+EQIN       AssetExchange.ARCA Columbia U.S. Equity Income ETF
+EQL        AssetExchange.ARCA ALPS Equal Sector Weight ETF
+EQLS       AssetExchange.ARCA Simplify Market Neutral Equity Long/Short ETF
+EQRR       AssetExchange.NASDAQ ProShares Trust ProShares Equities for Rising Rates ETF
+EQTY       AssetExchange.ARCA Kovitz Core Equity ETF
+EQWL       AssetExchange.ARCA Invesco S&P 100 Equal Weight ETF
+ERET       AssetExchange.NASDAQ iShares Trust iShares Environmentally Aware Real Estate ETF
+ERNZ       AssetExchange.NASDAQ Listed Funds Trust TrueShares Active Yield ETF
+ERTH       AssetExchange.ARCA Invesco MSCI Sustainable Future ETF
+ESGA       AssetExchange.ARCA American Century Sustainable Equity ETF
+ESGB       AssetExchange.ARCA NYLI MacKay ESG Core Plus Bond ETF
+ESGD       AssetExchange.NASDAQ iShares Trust iShares ESG Aware MSCI EAFE ETF
+ESGE       AssetExchange.NASDAQ iShares, Inc. iShares ESG Aware MSCI EM ETF
+ESGU       AssetExchange.NASDAQ iShares Trust iShares ESG Aware MSCI USA ETF
+ESGY       AssetExchange.ARCA American Century Sustainable Growth ETF
+ESIX       AssetExchange.ARCA SPDR S&P SmallCap 600 ESG ETF
+ESMV       AssetExchange.NASDAQ iShares Trust iShares ESG MSCI USA Min Vol Factor ETF
+ESN        AssetExchange.NASDAQ Northern Lights Fund Trust II Essential 40 Stock ETF
+ESPO       AssetExchange.NASDAQ VanEck Video Gaming and eSports ETF
+ETEC       AssetExchange.NASDAQ iShares Trust iShares Breakthrough Environmental Solutions ETF
+ETH        AssetExchange.ARCA Grayscale Ethereum Mini Trust ETF
+ETHA       AssetExchange.NASDAQ iShares Ethereum Trust ETF
+ETHD       AssetExchange.ARCA ProShares UltraShort Ether ETF
+ETHE       AssetExchange.ARCA Grayscale Ethereum Trust ETF
+ETHO       AssetExchange.ARCA Amplify Etho Climate Leadership U.S. ETF
+ETHT       AssetExchange.ARCA ProShares Ultra Ether ETF
+ETHW       AssetExchange.ARCA Bitwise Ethereum ETF
+EUFN       AssetExchange.NASDAQ iShares MSCI Europe Financials ETF
+EUSA       AssetExchange.ARCA iShares MSCI USA Equal Weighted ETF
+EUSB       AssetExchange.ARCA iShares ESG Advanced Total USD Bond Market ETF
+EV         AssetExchange.ARCA Mast Global Battery Recycling & Production ETF
+EVHY       AssetExchange.ARCA Eaton Vance High Yield ETF
+EVIM       AssetExchange.ARCA Eaton Vance Intermediate Municipal Income ETF
+EVLN       AssetExchange.ARCA Eaton Vance Floating-Rate ETF
+EVMT       AssetExchange.NASDAQ Invesco Actively Managed Exchange-Traded Commodity Fund Trust Invesco Electric Vehicle Metals Commodity Strategy No K-1 ETF
+EVNT       AssetExchange.ARCA AltShares Event-Driven ETF
+EVSB       AssetExchange.ARCA Eaton Vance Ultra-Short Income ETF
+EVSD       AssetExchange.NASDAQ Morgan Stanley ETF Trust Eaton Vance Short Duration Income ETF
+EVSM       AssetExchange.ARCA Eaton Vance Short Duration Municipal Income ETF
+EVTR       AssetExchange.NYSE Eaton Vance Total Return Bond ETF
+EVX        AssetExchange.ARCA VanEck Environmental Services ETF
+EWA        AssetExchange.ARCA iShares MSCI Australia ETF
+EWC        AssetExchange.ARCA iShares MSCI Canada ETF
+EWD        AssetExchange.ARCA iShares MSCI Sweden ETF
+EWG        AssetExchange.ARCA iShares MSCI Germany ETF
+EWH        AssetExchange.ARCA iShares MSCI Hong Kong ETF
+EWI        AssetExchange.ARCA iShares MSCI Italy ETF
+EWJ        AssetExchange.ARCA iShares MSCI Japan ETF
+EWJV       AssetExchange.NASDAQ iShares Trust iShares MSCI Japan Value ETF
+EWK        AssetExchange.ARCA iShares MSCI Belgium ETF
+EWL        AssetExchange.ARCA iShares MSCI Switzerland ETF
+EWM        AssetExchange.ARCA iShares MSCI Malaysia ETF
+EWN        AssetExchange.ARCA iShares MSCI Netherlands ETF
+EWO        AssetExchange.ARCA iShares MSCI Austria ETF
+EWP        AssetExchange.ARCA iShares MSCI Spain ETF
+EWQ        AssetExchange.ARCA iShares MSCI France ETF
+EWS        AssetExchange.ARCA iShares MSCI Singapore ETF
+EWT        AssetExchange.ARCA iShares MSCI Taiwan ETF
+EWU        AssetExchange.ARCA iShares MSCI United Kingdom ETF
+EWW        AssetExchange.ARCA iShares MSCI Mexico ETF
+EWX        AssetExchange.ARCA SPDR S&P Emerging Markets Small Cap ETF
+EWY        AssetExchange.ARCA iShares MSCI South Korea ETF
+EWZ        AssetExchange.ARCA iShares MSCI Brazil ETF
+EWZS       AssetExchange.NASDAQ iShares MSCI Brazil Small-Cap ETF
+EXI        AssetExchange.ARCA iShares Global Industrials ETF
+EYEG       AssetExchange.NASDAQ AB Active ETFs, Inc. AB Corporate Bond ETF
+EZA        AssetExchange.ARCA iShares MSCI South Africa ETF
+FAAR       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VII First Trust Alternative Absolute Return Strategy ETF
+FAI        AssetExchange.ARCA First Trust Bloomberg Artificial Intelligence ETF
+FALN       AssetExchange.NASDAQ iShares Trust iShares Fallen Angels USD Bond ETF
+FAN        AssetExchange.ARCA First Trust Global Wind Energy ETF
+FBL        AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long META Daily ETF
+FBND       AssetExchange.ARCA Fidelity Total Bond ETF
+FBOT       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptive Automation ETF
+FBY        AssetExchange.ARCA YieldMax META Option Income Strategy ETF
+FCAL       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust California Municipal High Income ETF
+FCEF       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VIII First Trust Income Opportunities ETF
+FCFY       AssetExchange.ARCA First Trust S&P 500 Diversified Free Cash Flow ETF
+FCG        AssetExchange.ARCA First Trust Natural Gas ETF
+FCOM       AssetExchange.ARCA Fidelity MSCI Communication Services Index ETF
+FCOR       AssetExchange.ARCA Fidelity Corporate Bond ETF
+FCSH       AssetExchange.ARCA Federated Hermes Short Duration Corporate ETF
+FCTE       AssetExchange.NASDAQ ETF Opportunities Trust SMI 3Fourteen Full-Cycle Trend ETF
+FCUS       AssetExchange.ARCA Pinnacle Focused Opportunities ETF
+FCVT       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust SSI Strategic Convertible Securities ETF
+FDAT       AssetExchange.ARCA Tactical Advantage ETF
+FDCF       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptive Communications ETF
+FDFF       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptive Finance ETF
+FDG        AssetExchange.ARCA American Century Focused Dynamic Growth ETF
+FDHY       AssetExchange.ARCA Fidelity Enhanced High Yield ETF
+FDIF       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptors ETF
+FDIG       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Crypto Industry and Digital Payments ETF
+FDIS       AssetExchange.ARCA Fidelity MSCI Consumer Discretionary Index ETF
+FDIV       AssetExchange.NASDAQ EA Series Trust MarketDesk Focused U.S. Dividend ETF
+FDLO       AssetExchange.ARCA Fidelity Low Volatility Factor ETF
+FDLS       AssetExchange.ARCA Inspire Fidelis Multi Factor ETF
+FDMO       AssetExchange.ARCA Fidelity Momentum Factor ETF
+FDN        AssetExchange.ARCA First Trust Dow Jones Internet Index Fund ETF
+FDNI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust Dow Jones International Internet ETF
+FDRR       AssetExchange.ARCA Fidelity Dividend ETF for Rising Rates
+FDTX       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptive Technology ETF
+FDV        AssetExchange.ARCA Federated Hermes U.S. Strategic Dividend ETF
+FDVV       AssetExchange.ARCA Fidelity High Dividend ETF
+FDWM       AssetExchange.ARCA Fidelity Women's Leadership ETF
+FEAC       AssetExchange.ARCA Fidelity Enhanced U.S. All-Cap Equity ETF
+FEBT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Feb ETF
+FEBW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Feb ETF
+FELC       AssetExchange.ARCA Fidelity Enhanced Large Cap Core ETF
+FELG       AssetExchange.ARCA Fidelity Enhanced Large Cap Growth ETF
+FELV       AssetExchange.ARCA Fidelity Enhanced Large Cap Value ETF
+FEMB       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust Emerging Markets Local Currency Bond ETF
+FEMR       AssetExchange.ARCA Fidelity Enhanced Emerging Markets ETF
+FENI       AssetExchange.ARCA Fidelity Enhanced International ETF
+FENY       AssetExchange.ARCA Fidelity MSCI Energy Index ETF
+FEPI       AssetExchange.NASDAQ ETF Opportunities Trust REX FANG & Innovation Equity Premium Income ETF
+FESM       AssetExchange.ARCA Fidelity Enhanced Small Cap ETF
+FEUZ       AssetExchange.NASDAQ First Trust Exchange-Traded AlphDEX Fund II First Trust Eurozone AlphaDEX ETF
+FEZ        AssetExchange.ARCA SPDR EURO STOXX 50 ETF
+FFIU       AssetExchange.ARCA UVA Unconstrained Medium-Term Fixed Income ETF
+FFLS       AssetExchange.ARCA The Future Fund Long/Short ETF
+FFND       AssetExchange.ARCA The Future Fund Active ETF
+FFTY       AssetExchange.ARCA Innovator IBD 50 ETF
+FGDL       AssetExchange.ARCA Franklin Responsibly Sourced Gold ETF
+FHLC       AssetExchange.ARCA Fidelity MSCI Health Care Index ETF
+FHYS       AssetExchange.ARCA Federated Hermes Short Duration High Yield ETF
+FIAT       AssetExchange.ARCA YieldMax Short COIN Option Income Strategy ETF
+FIAX       AssetExchange.ARCA Nicholas Fixed Income Alternative ETF
+FICS       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust International Developed Capital Strength ETF
+FID        AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust S&P International Dividend Aristocrats ETF
+FIDI       AssetExchange.ARCA Fidelity International High Dividend ETF
+FIDU       AssetExchange.ARCA Fidelity MSCI Industrials Index ETF
+FIG        AssetExchange.ARCA Simplify Macro Strategy ETF
+FIGB       AssetExchange.ARCA Fidelity Investment Grade Bond ETF
+FIIG       AssetExchange.ARCA First Trust Intermediate Duration Investment Grade Corporate ETF
+FILL       AssetExchange.ARCA iShares MSCI Global Energy Producers ETF
+FINE       AssetExchange.NASDAQ Themes ETF Trust Themes European Luxury ETF
+FINX       AssetExchange.NASDAQ Global X Funds Global X FinTech ETF
+FIRI       AssetExchange.ARCA FIRE Funds Income Target ETF
+FIRS       AssetExchange.ARCA FIRE Funds Wealth Builder ETF
+FISR       AssetExchange.ARCA SPDR SSGA Fixed Income Sector Rotation ETF
+FITE       AssetExchange.ARCA SPDR S&P Kensho Future Security ETF
+FIVA       AssetExchange.ARCA Fidelity International Value Factor ETF
+FIW        AssetExchange.ARCA First Trust Water ETF
+FIXD       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VIII First Trust TCW Opportunistic Fixed Income ETF
+FLAO       AssetExchange.ARCA AllianzIM U.S. Equity 6 Month Floor5 Apr/Oct ETF
+FLAU       AssetExchange.ARCA Franklin FTSE Australia ETF
+FLAX       AssetExchange.ARCA Franklin FTSE Asia ex Japan ETF
+FLBR       AssetExchange.ARCA Franklin FTSE Brazil ETF
+FLCA       AssetExchange.ARCA Franklin FTSE Canada ETF
+FLCB       AssetExchange.ARCA Franklin U.S. Core Bond ETF
+FLCC       AssetExchange.ARCA Federated Hermes MDT Large Cap Core ETF
+FLCG       AssetExchange.ARCA Federated Hermes MDT Large Cap Growth ETF
+FLCH       AssetExchange.ARCA Franklin FTSE China ETF
+FLCO       AssetExchange.ARCA Franklin Investment Grade Corporate ETF
+FLCV       AssetExchange.ARCA Federated Hermes MDT Large Cap Value ETF
+FLDB       AssetExchange.NASDAQ Fidelity Merrimack Street Trust Fidelity Low Duration Bond ETF
+FLEE       AssetExchange.ARCA Franklin FTSE Europe ETF
+FLEU       AssetExchange.ARCA Franklin FTSE Eurozone ETF
+FLGB       AssetExchange.ARCA Franklin FTSE United Kingdom ETF
+FLGR       AssetExchange.ARCA Franklin FTSE Germany ETF
+FLGV       AssetExchange.ARCA Franklin U.S. Treasury Bond ETF
+FLHK       AssetExchange.ARCA Franklin FTSE Hong Kong ETF
+FLIN       AssetExchange.ARCA Franklin FTSE India ETF
+FLJH       AssetExchange.ARCA Franklin FTSE Japan Hedged ETF
+FLJJ       AssetExchange.ARCA AllianzIM U.S. Equity 6 Month Floor5 Jan/Jul ETF
+FLJP       AssetExchange.ARCA Franklin FTSE Japan ETF
+FLKR       AssetExchange.ARCA Franklin FTSE South Korea ETF
+FLMB       AssetExchange.ARCA Franklin Municipal Green Bond ETF
+FLMI       AssetExchange.ARCA Franklin Dynamic Municipal Bond ETF
+FLMX       AssetExchange.ARCA Franklin FTSE Mexico ETF
+FLOW       AssetExchange.ARCA Global X U.S. Cash Flow Kings 100 ETF
+FLRG       AssetExchange.ARCA Fidelity U.S. Multifactor ETF
+FLRN       AssetExchange.ARCA SPDR Bloomberg Investment Grade Floating Rate ETF
+FLRT       AssetExchange.ARCA Pacer Pacific Asset Floating Rate High Income ETF
+FLSA       AssetExchange.ARCA Franklin FTSE Saudi Arabia ETF
+FLSP       AssetExchange.ARCA Franklin Systematic Style Premia ETF
+FLSW       AssetExchange.ARCA Franklin FTSE Switzerland ETF
+FLTB       AssetExchange.ARCA Fidelity Limited Term Bond ETF
+FLTR       AssetExchange.ARCA VanEck IG Floating Rate ETF
+FLTW       AssetExchange.ARCA Franklin FTSE Taiwan ETF
+FLUD       AssetExchange.ARCA Franklin Ultra Short Bond ETF
+FLV        AssetExchange.ARCA American Century Focused Large Cap Value ETF
+FLXR       AssetExchange.NYSE TCW Flexible Income ETF
+FM         AssetExchange.ARCA iShares Frontier and Select EM ETF
+FMAT       AssetExchange.ARCA Fidelity MSCI Materials Index ETF
+FMB        AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust Managed Municipal ETF
+FMCE       AssetExchange.ARCA FM Compounders Equity ETF
+FMCX       AssetExchange.ARCA FM Focus Equity ETF
+FMDE       AssetExchange.ARCA Fidelity Enhanced Mid Cap ETF
+FMED       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Disruptive Medicine ETF
+FMET       AssetExchange.NASDAQ Fidelity Covington Trust Fidelity Metaverse ETF
+FMHI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust Municipal High Income ETF
+FMNY       AssetExchange.ARCA First Trust New York Municipal High Income ETF
+FMQQ       AssetExchange.ARCA FMQQ The Next Frontier Internet ETF
+FNCL       AssetExchange.ARCA Fidelity MSCI Financials Index ETF
+FNDA       AssetExchange.ARCA Schwab Fundamental U.S. Small Company ETF
+FNDB       AssetExchange.ARCA Schwab Fundamental U.S. Broad Market ETF
+FNDC       AssetExchange.ARCA Schwab Fundamental International Small Equity ETF
+FNDE       AssetExchange.ARCA Schwab Fundamental Emerging Markets Equity ETF
+FNDF       AssetExchange.ARCA Schwab Fundamental International Equity ETF
+FNDX       AssetExchange.ARCA Schwab Fundamental U.S. Large Company ETF
+FORH       AssetExchange.ARCA Formidable ETF
+FOVL       AssetExchange.ARCA iShares Focused Value Factor ETF
+FPE        AssetExchange.ARCA First Trust Preferred Securities and Income ETF
+FPEI       AssetExchange.ARCA First Trust Institutional Preferred Securities and Income ETF
+FPX        AssetExchange.ARCA First Trust US Equity Opportunities ETF
+FPXE       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust IPOX Europe Equity Opportunities ETF
+FPXI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust International Equity Opportunities ETF
+FQAL       AssetExchange.ARCA Fidelity Quality Factor ETF
+FREL       AssetExchange.ARCA Fidelity MSCI Real Estate Index ETF
+FRTY       AssetExchange.ARCA Alger Mid Cap 40 ETF
+FSBD       AssetExchange.ARCA Fidelity Sustainable Core Plus Bond ETF
+FSCC       AssetExchange.ARCA Federated Hermes MDT Small Cap Core ETF
+FSCS       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust SMID Capital Strength ETF
+FSEC       AssetExchange.ARCA Fidelity Investment Grade Securitized ETF
+FSIG       AssetExchange.ARCA First Trust Limited Duration Investment Grade Corporate ETF
+FSLD       AssetExchange.ARCA Fidelity Sustainable Low Duration Bond ETF
+FSMB       AssetExchange.ARCA First Trust Short Duration Managed Municipal ETF
+FSMD       AssetExchange.ARCA Fidelity Small-Mid Multifactor ETF
+FSST       AssetExchange.ARCA Fidelity Sustainable U.S. Equity ETF
+FSTA       AssetExchange.ARCA Fidelity MSCI Consumer Staples Index ETF
+FSYD       AssetExchange.ARCA Fidelity Sustainable High Yield ETF
+FTAG       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust Indxx Global Agriculture ETF
+FTBD       AssetExchange.ARCA Fidelity Tactical Bond ETF
+FTCB       AssetExchange.ARCA First Trust Core Investment Grade ETF
+FTCE       AssetExchange.ARCA First Trust New Constructs Core Earnings Leaders ETF
+FTCS       AssetExchange.NASDAQ First Trust Capital Strength ETF
+FTDS       AssetExchange.NASDAQ First Trust Dividend Strength ETF
+FTEC       AssetExchange.ARCA Fidelity MSCI Information Technology Index ETF
+FTGS       AssetExchange.NASDAQ First Trust Exchange-Traded Fund First Trust Growth Strength ETF
+FTHF       AssetExchange.ARCA First Trust Emerging Markets Human Flourishing ETF
+FTHI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust BuyWrite Income ETF
+FTIF       AssetExchange.ARCA First Trust Bloomberg Inflation Sensitive Equity ETF
+FTLS       AssetExchange.ARCA First Trust Long/Short Equity ETF
+FTQI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq BuyWrite Income ETF
+FTRB       AssetExchange.ARCA Federated Hermes Total Return Bond ETF
+FTRI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund II First Trust Indxx Global Natural Resources Income ETF
+FTSD       AssetExchange.ARCA Franklin Short Duration U.S. Government ETF
+FTSL       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust Senior Loan Fund ETF
+FTSM       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust Enhanced Short Maturity ETF
+FTWO       AssetExchange.NYSE Strive Natural Resources and Security ETF
+FTXG       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Food & Beverage ETF
+FTXH       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Pharmaceuticals ETF
+FTXL       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Semiconductor ETF
+FTXN       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Oil & Gas ETF
+FTXO       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Bank ETF
+FTXR       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Transportation ETF
+FUMB       AssetExchange.ARCA First Trust Ultra Short Duration Municipal ETF
+FUSI       AssetExchange.ARCA American Century Multisector Floating Income ETF
+FUTY       AssetExchange.ARCA Fidelity MSCI Utilities Index ETF
+FV         AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright Focus 5 ETF
+FVAL       AssetExchange.ARCA Fidelity Value Factor ETF
+FVC        AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright Dynamic Focus 5 ETF
+FWD        AssetExchange.ARCA AB Disruptors ETF
+FXED       AssetExchange.NYSE Sound Enhanced Fixed Income ETF
+FXI        AssetExchange.ARCA iShares China Large-Cap ETF
+FYLG       AssetExchange.ARCA Global X Financials Covered Call & Growth ETF
+GABF       AssetExchange.ARCA Gabelli Financial Services Opportunities ETF
+GAEM       AssetExchange.ARCA Simplify Gamma Emerging Market Bond ETF
+GAL        AssetExchange.ARCA SPDR SSgA Global Allocation ETF of SSgA Active Trust
+GAMR       AssetExchange.ARCA Amplify Video Game Tech ETF
+GAST       AssetExchange.ARCA Gabelli Automation ETF
+GBF        AssetExchange.ARCA iShares Government/Credit Bond ETF
+GBIL       AssetExchange.ARCA Goldman Sachs Access Treasury 0-1 Year ETF
+GBLD       AssetExchange.ARCA Invesco MSCI Green Building ETF
+GBTC       AssetExchange.ARCA Grayscale Bitcoin Trust ETF
+GBUY       AssetExchange.ARCA Goldman Sachs Future Consumer Equity ETF
+GCAD       AssetExchange.ARCA Gabelli Commercial Aerospace and Defense ETF
+GCAL       AssetExchange.ARCA Goldman Sachs Dynamic California Municipal Income ETF
+GCOR       AssetExchange.ARCA Goldman Sachs Access U.S. Aggregate Bond ETF
+GDIV       AssetExchange.NYSE Harbor Dividend Growth Leaders ETF
+GDOC       AssetExchange.ARCA Goldman Sachs Future Health Care Equity ETF
+GDX        AssetExchange.ARCA VanEck Gold Miners ETF
+GDXJ       AssetExchange.ARCA VanEck Junior Gold Miners ETF
+GDXY       AssetExchange.ARCA YieldMax Gold Miners Option Income Strategy ETF
+GEM        AssetExchange.ARCA Goldman Sachs ActiveBeta Emerging Markets Equity ETF
+GENM       AssetExchange.ARCA Genter Capital Municipal Quality Intermediate ETF
+GENT       AssetExchange.ARCA Genter Capital Taxable Quality Intermediate ETF
+GFGF       AssetExchange.NASDAQ EA Series Trust Guru Favorite Stocks ETF
+GFOF       AssetExchange.ARCA Grayscale Future of Finance ETF
+GGLL       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily GOOGL Bull 2X Shares
+GGLS       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily GOOGL Bear 1X Shares
+GGM        AssetExchange.ARCA GGM Macro Alignment ETF
+GGME       AssetExchange.ARCA Invesco Next Gen Media and Gaming ETF
+GGRW       AssetExchange.ARCA Gabelli Growth Innovators ETF
+GGUS       AssetExchange.ARCA Goldman Sachs MarketBeta Russell 1000 Growth Equity ETF
+GHYB       AssetExchange.ARCA Goldman Sachs Access High Yield Corporate Bond ETF
+GIAX       AssetExchange.ARCA Nicholas Global Equity and Income ETF
+GIGB       AssetExchange.ARCA Goldman Sachs Access Investment Grade Corporate Bond ETF
+GII        AssetExchange.ARCA SPDR S&P Global Infrastructure ETF
+GINN       AssetExchange.ARCA Goldman Sachs Innovate Equity ETF
+GINX       AssetExchange.NASDAQ The RBB Fund, Inc. SGI Enhanced Global Income ETF
+GK         AssetExchange.ARCA AdvisorShares Gerber Kawasaki ETF
+GLIN       AssetExchange.ARCA VanEck India Growth Leaders ETF
+GLOF       AssetExchange.ARCA iShares Global Equity Factor ETF
+GLOW       AssetExchange.NASDAQ Victory Portfolios II VictoryShares WestEnd Global Equity ETF
+GLRY       AssetExchange.ARCA Inspire Momentum ETF
+GLTR       AssetExchange.ARCA abrdn Physical Precious Metals Basket Shares ETF
+GMET       AssetExchange.ARCA VanEck Green Metals ETF
+GMF        AssetExchange.ARCA SPDR S&P Emerging Asia Pacific ETF
+GMMA       AssetExchange.ARCA GammaRoad Market Navigation ETF
+GMNY       AssetExchange.ARCA Goldman Sachs Dynamic New York Municipal Income ETF
+GMOI       AssetExchange.ARCA GMO International Value ETF
+GMOV       AssetExchange.ARCA GMO US Value ETF
+GMUB       AssetExchange.ARCA Goldman Sachs Municipal Income ETF
+GMUN       AssetExchange.ARCA Goldman Sachs Community Municipal Bond ETF
+GNMA       AssetExchange.NASDAQ iShares GNMA Bond ETF
+GNOM       AssetExchange.NASDAQ Global X Funds Global X Genomics & Biotechnology ETF
+GNR        AssetExchange.ARCA SPDR S&P Global Natural Resources ETF
+GOAU       AssetExchange.ARCA US Global GO Gold and Precious Metal Miners ETF
+GOEX       AssetExchange.ARCA Global X Gold Explorers ETF (NEW)
+GOOY       AssetExchange.ARCA YieldMax GOOGL Option Income Strategy ETF
+GOVI       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Equal Weight 0-30 Year Treasury ETF
+GPIQ       AssetExchange.NASDAQ Goldman Sachs ETF Trust Goldman Sachs Nasdaq-100 Core Premium Income ETF
+GPIX       AssetExchange.NASDAQ Goldman Sachs ETF Trust Goldman Sachs S&P 500 Core Premium Income ETF
+GPRF       AssetExchange.NASDAQ Goldman Sachs ETF Trust Goldman Sachs Access U.S. Preferred Stock and Hybrid Securities ETF
+GQI        AssetExchange.ARCA Natixis Gateway Quality Income ETF
+GQQQ       AssetExchange.NASDAQ EA Series Trust Astoria US Quality Growth Kings ETF
+GREI       AssetExchange.ARCA Goldman Sachs Future Real Estate and Infrastructure Equity ETF
+GREK       AssetExchange.ARCA Global X MSCI Greece ETF
+GRNB       AssetExchange.ARCA VanEck Green Bond ETF
+GRNY       AssetExchange.ARCA FundStrat Granny Shots US Large Cap ETF
+GRPM       AssetExchange.ARCA Invesco S&P MidCap 400 GARP ETF
+GRPZ       AssetExchange.ARCA Invesco S&P SmallCap 600 GARP ETF
+GRW        AssetExchange.NYSE TCW Compounders ETF
+GSC        AssetExchange.ARCA Goldman Sachs Small Cap Core Equity ETF
+GSEU       AssetExchange.ARCA Goldman Sachs ActiveBeta Europe Equity ETF
+GSFP       AssetExchange.ARCA Goldman Sachs Future Planet Equity ETF
+GSIB       AssetExchange.NASDAQ Themes ETF Trust Themes Global Systemically Important Banks ETF
+GSIE       AssetExchange.ARCA Goldman Sachs ActiveBeta International Equity ETF
+GSIG       AssetExchange.ARCA Goldman Sachs Access Investment Grade Corporate 1-5 Year Bond ETF
+GSJY       AssetExchange.ARCA Goldman Sachs ActiveBeta Japan Equity ETF
+GSLC       AssetExchange.ARCA Goldman Sachs ActiveBeta U.S. Large Cap Equity ETF
+GSPY       AssetExchange.ARCA Gotham Enhanced 500 ETF
+GSSC       AssetExchange.ARCA GS ActiveBeta U.S. Small Cap Equity ETF
+GSY        AssetExchange.ARCA Invesco Ultra Short Duration ETF
+GTEK       AssetExchange.ARCA Goldman Sachs Future Tech Leaders Equity ETF
+GTO        AssetExchange.ARCA Invesco Total Return Bond ETF
+GUMI       AssetExchange.ARCA Goldman Sachs Ultra Short Municipal Income ETF
+GURU       AssetExchange.ARCA Global X Guru Index ETF
+GUSA       AssetExchange.ARCA Goldman Sachs MarketBeta U.S. 1000 Equity ETF
+GVIP       AssetExchange.ARCA Goldman Sachs Hedge Industry VIP ETF
+GVLU       AssetExchange.ARCA Gotham 1000 Value ETF
+GVUS       AssetExchange.ARCA Goldman Sachs MarketBeta Russell 1000 Value Equity ETF
+GWX        AssetExchange.ARCA SPDR S&P International Small Cap ETF
+GXC        AssetExchange.ARCA SPDR S&P China ETF
+GXG        AssetExchange.ARCA Global X MSCI Colombia ETF
+GXTG       AssetExchange.NASDAQ Global X Funds Global X Thematic Growth ETF
+GXUS       AssetExchange.ARCA Goldman Sachs MarketBeta Total International Equity ETF
+GYLD       AssetExchange.NYSE Arrow Dow Jones Global Yield ETF
+HACK       AssetExchange.ARCA Amplify Cybersecurity ETF
+HAIL       AssetExchange.ARCA SPDR S&P Kensho Smart Mobility ETF
+HAP        AssetExchange.ARCA VanEck Natural Resources ETF
+HAPI       AssetExchange.ARCA Harbor Human Capital Factor US Large Cap ETF
+HAPS       AssetExchange.ARCA Harbor Human Capital Factor US Small Cap ETF
+HAPY       AssetExchange.ARCA Harbor Human Capital Factor Unconstrained ETF
+HARD       AssetExchange.ARCA Simplify Commodities Strategy No K-1 ETF
+HART       AssetExchange.ARCA NYLI Healthy Hearts ETF
+HAUZ       AssetExchange.ARCA Xtrackers International Real Estate ETF
+HAWX       AssetExchange.ARCA iShares Currency Hedged MSCI ACWI ex U.S. ETF
+HCMT       AssetExchange.ARCA Direxion HCM Tactical Enhanced US ETF
+HCOM       AssetExchange.ARCA Hartford Schroders Commodity Strategy ETF
+HCOW       AssetExchange.NASDAQ Amplify ETF Trust Amplify Cash Flow High Income ETF
+HDEF       AssetExchange.ARCA Xtrackers MSCI EAFE High Dividend Yield Equity ETF
+HDG        AssetExchange.ARCA ProShares Hedge Replication ETF
+HDGE       AssetExchange.ARCA AdvisorShares Ranger Equity Bear ETF
+HDMV       AssetExchange.ARCA First Trust Horizon Managed Volatility Developed International ETF
+HDRO       AssetExchange.ARCA Defiance Next Gen H2 ETF
+HDUS       AssetExchange.ARCA Hartford Disciplined US Equity ETF
+HDV        AssetExchange.ARCA iShares Core High Dividend ETF
+HECO       AssetExchange.NASDAQ SSGA Active Trust SPDR Galaxy Hedged Digital Asset Ecosystem ETF
+HEJD       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Hedged Equity Income ETF
+HELO       AssetExchange.ARCA JPMorgan Hedged Equity Laddered Overlay ETF
+HEQT       AssetExchange.ARCA Simplify Hedged Equity ETF
+HERD       AssetExchange.NASDAQ Pacer Funds Pacer Cash Cows Fund of Funds ETF
+HERO       AssetExchange.NASDAQ Global X Funds Global X Video Games & Esports ETF
+HEWJ       AssetExchange.ARCA iShares Currency Hedged MSCI Japan ETF
+HEZU       AssetExchange.ARCA iShares Currency Hedged MSCI Eurozone ETF of ISHARES TRUST
+HF         AssetExchange.ARCA DGA Core Plus Absolute Return ETF
+HFND       AssetExchange.ARCA Unlimited HFND Multi-Strategy Return Tracker ETF
+HFSP       AssetExchange.NASDAQ Tidal Trust III TradersAI Large Cap Equity & Cash ETF
+HFXI       AssetExchange.ARCA NYLI FTSE International Equity Currency Neutral ETF
+HGER       AssetExchange.NYSE Harbor Commodity All-Weather Strategy ETF
+HIDE       AssetExchange.NASDAQ EA Series Trust Alpha Architect High Inflation and Deflation ETF
+HIDV       AssetExchange.ARCA AB US High Dividend ETF
+HIGH       AssetExchange.ARCA Simplify Enhanced Income ETF
+HIPS       AssetExchange.ARCA GraniteShares HIPS US High Income ETF
+HISF       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust High Income Strategic Focus ETF
+HKND       AssetExchange.ARCA Humankind US Stock ETF
+HLAL       AssetExchange.NASDAQ Listed Funds Trust Wahed FTSE USA Shariah ETF
+HLGE       AssetExchange.ARCA Hartford Longevity Economy ETF
+HMOP       AssetExchange.ARCA Hartford Municipal Opportunities ETF
+HNDL       AssetExchange.NASDAQ Strategy Shares Nasdaq 7HANDL Index ETF
+HOMZ       AssetExchange.ARCA Hoya Capital Housing ETF
+HQGO       AssetExchange.NASDAQ Lattice Strategies Trust Hartford US Quality Growth ETF
+HRTS       AssetExchange.NASDAQ Tema ETF Trust Tema GLP-1, Obesity & Cardiometabolic ETF
+HSCZ       AssetExchange.ARCA iShares Currency Hedged MSCI EAFE Small-Cap ETF
+HSMV       AssetExchange.ARCA First Trust Horizon Managed Volatility Small/Mid ETF
+HTAB       AssetExchange.ARCA Hartford Schroders Tax-Aware Bond ETF
+HTEC       AssetExchange.ARCA ROBO Global Healthcare Technology and Innovation ETF
+HTRB       AssetExchange.ARCA Hartford Total Return Bond ETF
+HTUS       AssetExchange.ARCA Hull Tactical US ETF
+HUSV       AssetExchange.ARCA First Trust Horizon Managed Volatility Domestic ETF
+HWAY       AssetExchange.NASDAQ Themes ETF Trust Themes US Infrastructure ETF
+HYBB       AssetExchange.ARCA iShares BB Rated Corporate Bond ETF
+HYBI       AssetExchange.NASDAQ NEOS ETF Trust NEOS Enhanced Income Credit Select ETF
+HYBX       AssetExchange.NYSE TCW High Yield Bond ETF
+HYDR       AssetExchange.NASDAQ Global X Funds Global X Hydrogen ETF
+HYDW       AssetExchange.ARCA Xtrackers Low Beta High Yield Bond ETF
+HYEM       AssetExchange.ARCA VanEck Emerging Markets High Yield Bond ETF
+HYFI       AssetExchange.ARCA AB High Yield ETF
+HYG        AssetExchange.ARCA iShares iBoxx $ High Yield Corporate Bond ETF
+HYGH       AssetExchange.ARCA iShares Interest Rate Hedged High Yield Bond ETF
+HYGI       AssetExchange.ARCA iShares Inflation Hedged High Yield Bond ETF
+HYLB       AssetExchange.ARCA Xtrackers USD High Yield Corporate Bond ETF
+HYLG       AssetExchange.ARCA Global X Health Care Covered Call & Growth ETF
+HYLS       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust Tactical High Yield ETF
+HYMB       AssetExchange.ARCA SPDR Nuveen Bloomberg High Yield Municipal Bond ETF
+HYRM       AssetExchange.ARCA Xtrackers Risk Managed USD High Yield Strategy ETF
+HYSA       AssetExchange.ARCA BondBloxx USD High Yield Bond Sector Rotation ETF
+HYSD       AssetExchange.ARCA Columbia Short Duration High Yield ETF
+HYTR       AssetExchange.NYSE Counterpoint High Yield Trend ETF
+HYUP       AssetExchange.ARCA Xtrackers High Beta High Yield Bond ETF
+HYXF       AssetExchange.NASDAQ iShares Trust iShares ESG Advanced High Yield Corporate Bond ETF
+IAI        AssetExchange.ARCA iShares U.S. Broker-Dealers & Securities Exchanges ETF
+IAK        AssetExchange.ARCA iShares U.S. Insurance ETF
+IAPR       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - April
+IAT        AssetExchange.ARCA iShares U.S. Regional Banks ETF
+IAUG       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - August
+IBAT       AssetExchange.NASDAQ iShares Trust iShares Energy Storage & Materials ETF
+IBB        AssetExchange.NASDAQ iShares Biotechnology ETF
+IBBQ       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Nasdaq Biotechnology ETF
+IBD        AssetExchange.ARCA Inspire Corporate Bond ETF
+IBDP       AssetExchange.ARCA iShares iBonds Dec 2024 Term Corporate ETF
+IBDQ       AssetExchange.ARCA iShares iBonds Dec 2025 Term Corporate ETF
+IBDR       AssetExchange.ARCA iShares iBonds Dec 2026 Term Corporate ETF
+IBDS       AssetExchange.ARCA iShares iBonds Dec 2027 Term Corporate ETF
+IBDT       AssetExchange.ARCA iShares iBonds Dec 2028 Term Corporate ETF
+IBDU       AssetExchange.ARCA iShares iBonds Dec 2029 Term Corporate ETF
+IBDV       AssetExchange.ARCA iShares iBonds Dec 2030 Term Corporate ETF
+IBDW       AssetExchange.ARCA iShares iBonds Dec 2031 Term Corporate ETF
+IBDX       AssetExchange.ARCA iShares iBonds Dec 2032 Term Corporate ETF
+IBDY       AssetExchange.ARCA iShares iBonds Dec 2033 Term Corporate ETF
+IBDZ       AssetExchange.ARCA iShares iBonds Dec 2034 Term Corporate ETF
+IBGA       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2044 Term Treasury ETF
+IBGK       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2054 Term Treasury ETF
+IBIB       AssetExchange.ARCA iShares iBonds Oct 2025 Term TIPS ETF
+IBIC       AssetExchange.ARCA iShares iBonds Oct 2026 Term TIPS ETF
+IBID       AssetExchange.ARCA iShares iBonds Oct 2027 Term TIPS ETF
+IBIE       AssetExchange.ARCA iShares iBonds Oct 2028 Term TIPS ETF
+IBIF       AssetExchange.ARCA iShares iBonds Oct 2029 Term TIPS ETF
+IBIG       AssetExchange.ARCA iShares iBonds Oct 2030 Term TIPS ETF
+IBIH       AssetExchange.ARCA iShares iBonds Oct 2031 Term TIPS ETF
+IBII       AssetExchange.ARCA iShares iBonds Oct 2032 Term TIPS ETF
+IBIJ       AssetExchange.ARCA iShares iBonds Oct 2033 Term TIPS ETF
+IBIK       AssetExchange.ARCA iShares iBonds Oct 2034 Term TIPS ETF
+IBIT       AssetExchange.NASDAQ iShares Bitcoin Trust ETF
+IBLC       AssetExchange.ARCA iShares Blockchain and Tech ETF
+IBND       AssetExchange.ARCA SPDR Bloomberg International Corporate Bond ETF
+IBOT       AssetExchange.NASDAQ VanEck ETF Trust VanEck Robotics ETF
+IBRN       AssetExchange.ARCA iShares Neuroscience and Healthcare ETF
+IBTE       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2024 Term Treasury ETF
+IBTF       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2025 Term Treasury ETF
+IBTG       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2026 Term Treasury ETF
+IBTH       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2027 Term Treasury ETF
+IBTI       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2028 Term Treasury ETF
+IBTJ       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2029 Term Treasury ETF
+IBTK       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2030 Term Treasury ETF
+IBTL       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2031 Term Treasury ETF
+IBTM       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2032 Term Treasury ETF
+IBTO       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2033 Term Treasury ETF
+IBTP       AssetExchange.NASDAQ iShares Trust iShares iBonds Dec 2034 Term Treasury ETF
+IBUF       AssetExchange.ARCA Innovator International Developed 10 Buffer ETF - Quarterly
+IBUY       AssetExchange.ARCA Amplify Online Retail ETF
+ICAP       AssetExchange.ARCA InfraCap Equity Income Fund ETF
+ICLN       AssetExchange.NASDAQ iShares Global Clean Energy ETF
+ICOP       AssetExchange.NASDAQ iShares Trust iShares Copper and Metals Mining ETF
+IDAT       AssetExchange.ARCA iShares Future Cloud 5G and Tech ETF
+IDEC       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - December
+IDEV       AssetExchange.ARCA iShares Core MSCI International Developed Markets ETF
+IDGT       AssetExchange.ARCA iShares U.S. Digital Infrastructure and Real Estate ETF
+IDHQ       AssetExchange.ARCA Invesco S&P International Developed Quality ETF
+IDLV       AssetExchange.ARCA Invesco S&P International Developed Low Volatility ETF
+IDMO       AssetExchange.ARCA Invesco S&P International Developed Momentum ETF
+IDNA       AssetExchange.ARCA iShares Genomics Immunology and Healthcare ETF
+IDOG       AssetExchange.ARCA ALPS International Sector Dividend Dogs ETF
+IDRV       AssetExchange.ARCA iShares Self-Driving EV and Tech ETF
+IDU        AssetExchange.ARCA iShares U.S. Utilities ETF
+IDVO       AssetExchange.ARCA Amplify CWP International Enhanced Dividend Income ETF
+IDX        AssetExchange.ARCA VanEck Indonesia Index ETF
+IEF        AssetExchange.NASDAQ iShares 7-10 Year Treasury Bond ETF
+IEI        AssetExchange.NASDAQ iShares 3-7 Year Treasury Bond ETF
+IEMG       AssetExchange.ARCA iShares Core MSCI Emerging Markets ETF
+IEUR       AssetExchange.ARCA iShares Core MSCI Europe ETF
+IEUS       AssetExchange.NASDAQ iShares MSCI Europe Small-Cap ETF
+IEV        AssetExchange.ARCA iShares Europe ETF
+IEZ        AssetExchange.ARCA iShares U.S. Oil Equipment & Services ETF
+IFEB       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - February
+IFGL       AssetExchange.NASDAQ iShares International Developed Real Estate ETF
+IFV        AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Dorsey Wright International Focus 5 ETF
+IG         AssetExchange.ARCA Principal Investment Grade Corporate Active ETF
+IGBH       AssetExchange.ARCA iShares Interest Rate Hedged Long-Term Corporate Bond ETF
+IGCB       AssetExchange.NYSE TCW Corporate Bond ETF
+IGF        AssetExchange.NASDAQ iShares Global Infrastructure ETF
+IGIB       AssetExchange.NASDAQ iShares Trust iShares 5-10 Year Investment Grade Corporate Bond ETF
+IGLB       AssetExchange.ARCA iShares 10+ Year Investment Grade Corporate Bond ETF
+IGM        AssetExchange.ARCA iShares Expanded Tech Sector ETF
+IGOV       AssetExchange.NASDAQ iShares Trust iShares International Treasury Bond ETF
+IGPT       AssetExchange.ARCA Invesco AI and Next Gen Software ETF
+IGSB       AssetExchange.NASDAQ iShares Trust iShares 1-5 Year Investment Grade Corporate Bond ETF
+IGTR       AssetExchange.ARCA Innovator Gradient Tactical Rotation Strategy ETF
+IHAK       AssetExchange.ARCA iShares Cybersecurity and Tech ETF
+IHE        AssetExchange.ARCA iShares U.S. Pharmaceuticals ETF
+IHF        AssetExchange.ARCA iShares U.S. Healthcare Providers ETF
+IHI        AssetExchange.ARCA iShares U.S. Medical Devices ETF
+IHY        AssetExchange.ARCA VanEck International High Yield Bond ETF
+IHYF       AssetExchange.NASDAQ Invesco Actively Managed Exchange-Traded Fund Trus Invesco High Yield Bond Factor ETF
+IIGD       AssetExchange.ARCA Invesco Investment Grade Defensive ETF
+IJAN       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - January
+IJH        AssetExchange.ARCA iShares Core S&P Mid-Cap ETF
+IJJ        AssetExchange.ARCA iShares S&P Mid-Cap 400 Value ETF
+IJK        AssetExchange.ARCA iShares S&P Mid-Cap 400 Growth ETF
+IJR        AssetExchange.ARCA iShares Core S&P Small-Cap ETF
+IJS        AssetExchange.ARCA iShares S&P Small-Cap 600 Value ETF
+IJT        AssetExchange.NASDAQ iShares S&P SmallCap 600 Growth ETF
+IJUL       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - July
+IJUN       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - June
+ILCB       AssetExchange.ARCA iShares Morningstar U.S. Equity ETF
+ILCG       AssetExchange.ARCA iShares Morningstar Growth ETF
+ILCV       AssetExchange.ARCA iShares Morningstar Value ETF
+ILDR       AssetExchange.ARCA First Trust Innovation Leaders ETF
+ILF        AssetExchange.ARCA iShares Latin America 40 ETF
+ILIT       AssetExchange.NASDAQ iShares Trust iShares Lithium Miners and Producers ETF
+ILOW       AssetExchange.ARCA AB International Low Volatility Equity ETF
+ILTB       AssetExchange.ARCA iShares Core 10+ Year USD Bond ETFof iShares Trust
+IMAR       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - March
+IMAY       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - May
+IMCB       AssetExchange.ARCA iShares Morningstar Mid-Cap ETF
+IMCG       AssetExchange.ARCA iShares Morningstar Mid-Cap Growth ETF
+IMCV       AssetExchange.NASDAQ iShares Morningstar Mid-Cap Value ETF
+IMOM       AssetExchange.NASDAQ EA Series Trust Alpha Architect International Quantitative Momentum ETF
+IMTB       AssetExchange.ARCA iShares Core 5-10 Year USD Bond ETF
+IMTM       AssetExchange.ARCA iShares MSCI Intl Momentum Factor ETF
+INCE       AssetExchange.ARCA Franklin Income Equity Focus ETF
+INCM       AssetExchange.ARCA Franklin Income Focus ETF
+INCO       AssetExchange.ARCA Columbia India Consumer ETF
+INDE       AssetExchange.ARCA Matthews India Active ETF
+INDF       AssetExchange.ARCA Range India Financials ETF
+INDS       AssetExchange.ARCA Pacer Industrial Real Estate ETF
+INDY       AssetExchange.NASDAQ iShares India 50 ETF
+INEQ       AssetExchange.ARCA Columbia International Equity Income ETF
+INFL       AssetExchange.ARCA Horizon Kinetics Inflation Beneficiaries ETF
+INFO       AssetExchange.ARCA Harbor PanAgora Dynamic Large Cap Core ETF
+INFR       AssetExchange.NASDAQ Franklin Templeton ETF Trust ClearBridge Sustainable Infrastructure ETF
+INKM       AssetExchange.ARCA SPDR SSgA Income Allocation ETF of SSgA Active Trust
+INMU       AssetExchange.ARCA iShares Intermediate Muni Income Active ETF
+INNO       AssetExchange.ARCA Harbor Disruptive Innovation ETF
+INOV       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - November
+INQQ       AssetExchange.ARCA INQQ The India Internet ETF
+INRO       AssetExchange.NASDAQ BlackRock ETF Trust iShares U.S. Industry Rotation Active ETF
+INTF       AssetExchange.ARCA iShares International Equity Factor ETF
+IOCT       AssetExchange.ARCA Innovator International Developed Power Buffer ETF-October
+ION        AssetExchange.ARCA ProShares S&P Global Core Battery Metals ETF
+IOO        AssetExchange.ARCA iShares Global 100 ETF
+IOPP       AssetExchange.ARCA Simplify Tara India Opportunities ETF
+IPAC       AssetExchange.ARCA iShares Core MSCI Pacific ETF
+IPAY       AssetExchange.ARCA Amplify Digital Payments ETF
+IPKW       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco International BuyBack Achievers ETF
+IPO        AssetExchange.ARCA Renaissance IPO ETF
+IPOS       AssetExchange.ARCA Renaissance International IPO ETF
+IQHI       AssetExchange.ARCA NYLI MacKay ESG High Income ETF
+IQLT       AssetExchange.ARCA iShares MSCI Intl Quality Factor ETF
+IQQQ       AssetExchange.NASDAQ ProShares Trust Nasdaq-100 High Income ETF
+IQRA       AssetExchange.ARCA NYLI CBRE Real Assets ETF
+IQSI       AssetExchange.ARCA NYLI Candriam International Equity ETF
+IQSM       AssetExchange.ARCA NYLI Candriam U.S. Mid Cap Equity ETF
+IQSU       AssetExchange.ARCA NYLI Candriam U.S. Large Cap Equity ETF
+IRET       AssetExchange.ARCA iREIT MarketVector Quality REIT Index ETF
+IRTR       AssetExchange.ARCA iShares LifePath Retirement ETF
+IRVH       AssetExchange.ARCA Global X Interest Rate Volatility & Inflation Hedge ETF
+ISCB       AssetExchange.ARCA iShares Morningstar Small-Cap ETF
+ISCF       AssetExchange.ARCA iShares International Small Cap Equity Factor ETF
+ISCG       AssetExchange.ARCA iShares Morningstar Small-Cap Growth ETF
+ISCV       AssetExchange.ARCA iShares Morningstar Small-Cap Value ETF
+ISEP       AssetExchange.ARCA Innovator International Developed Power Buffer ETF - September
+ISHG       AssetExchange.NASDAQ iShares Trust iShares 1-3 Year International Treasury Bond ETF
+ISHP       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust S-Network E-Commerce ETF
+ISMD       AssetExchange.ARCA Inspire Small/Mid Cap ETF
+ISRA       AssetExchange.ARCA VanEck Israel ETF
+ISTB       AssetExchange.NASDAQ iShares Core 1-5 Year USD Bond ETF
+ISWN       AssetExchange.ARCA Amplify BlackSwan ISWN ETF
+ITAN       AssetExchange.ARCA Sparkline Intangible Value ETF
+ITDB       AssetExchange.ARCA iShares LifePath Target Date 2030 ETF
+ITDC       AssetExchange.ARCA iShares LifePath Target Date 2035 ETF
+ITDD       AssetExchange.ARCA iShares LifePath Target Date 2040 ETF
+ITDE       AssetExchange.ARCA iShares LifePath Target Date 2045 ETF
+ITDF       AssetExchange.ARCA iShares LifePath Target Date 2050 ETF
+ITDG       AssetExchange.ARCA iShares LifePath Target Date 2055 ETF
+ITDH       AssetExchange.ARCA iShares LifePath Target Date 2060 ETF
+ITDI       AssetExchange.ARCA iShares LifePath Target Date 2065 ETF
+ITDJ       AssetExchange.ARCA iShares LifePath Target Date 2070 ETF
+ITEQ       AssetExchange.ARCA Amplify BlueStar Israel Technology ETF
+ITOT       AssetExchange.ARCA iShares Core S&P Total U.S. Stock Market ETF
+IUS        AssetExchange.NASDAQ Invesco Exchange-Traded Self-Indexed Fund Trust Invesco RAFI Strategic US ETF
+IUSB       AssetExchange.NASDAQ iShares Core Total USD Bond Market ETF
+IUSG       AssetExchange.NASDAQ iShares Core S&P U.S. Growth ETF
+IUSV       AssetExchange.NASDAQ iShares Core S&P U.S. Value ETF
+IVAL       AssetExchange.NASDAQ EA Series Trust Alpha Architect International Quantitative Value ETF
+IVE        AssetExchange.ARCA iShares S&P 500 Value ETF
+IVEG       AssetExchange.NASDAQ iShares Trust iShares Emergent Food and AgTech Multisector ETF
+IVLU       AssetExchange.ARCA iShares MSCI Intl Value Factor ETF
+IVOG       AssetExchange.ARCA Vanguard S&P Mid-Cap 400 Growth ETF
+IVOL       AssetExchange.ARCA Quadratic Interest Rate Volatility and Inflation Hedge ETF
+IVOO       AssetExchange.ARCA Vanguard S&P Mid-Cap 400 ETF
+IVOV       AssetExchange.ARCA Vanguard S&P Mid-Cap 400 Value ETF
+IVRS       AssetExchange.ARCA iShares Future Metaverse Tech and Communications ETF
+IVV        AssetExchange.ARCA iShares Core S&P 500 ETF
+IVW        AssetExchange.ARCA iShares S&P 500 Growth ETF
+IWB        AssetExchange.ARCA iShares Russell 1000 ETF
+IWC        AssetExchange.ARCA iShares Micro-Cap ETF
+IWD        AssetExchange.ARCA iShares Russell 1000 Value ETF
+IWF        AssetExchange.ARCA iShares Russell 1000 Growth ETF
+IWFG       AssetExchange.ARCA NYLI Winslow Focused Large Cap Growth ETF
+IWL        AssetExchange.ARCA iShares Russell Top 200 ETF
+IWLG       AssetExchange.ARCA NYLI Winslow Large Cap Growth ETF
+IWM        AssetExchange.ARCA iShares Russell 2000 ETF
+IWMY       AssetExchange.ARCA Defiance R2000 Enhanced Options & 0DTE Income ETF
+IWN        AssetExchange.ARCA iShares Russell 2000 Value ETF
+IWO        AssetExchange.ARCA iShares Russell 2000 Growth ETF
+IWP        AssetExchange.ARCA iShares Russell Mid-Cap Growth ETF
+IWR        AssetExchange.ARCA iShares Russell Mid-Cap ETF
+IWS        AssetExchange.ARCA iShares Russell Mid-Cap Value ETF
+IWTR       AssetExchange.NASDAQ iShares Trust iShares MSCI Water Management Multisector ETF
+IWV        AssetExchange.ARCA iShares Russell 3000 ETF
+IWX        AssetExchange.ARCA iShares Russell Top 200 Value ETF
+IWY        AssetExchange.ARCA iShares Russell Top 200 Growth ETF
+IXC        AssetExchange.ARCA iShares Global Energy ETF
+IXG        AssetExchange.ARCA iShares Global Financials ETF
+IXJ        AssetExchange.ARCA iShares Global Healthcare ETF
+IXN        AssetExchange.ARCA iShares Global Tech ETF
+IXP        AssetExchange.ARCA iShares Global Comm Services ETF
+IXUS       AssetExchange.NASDAQ iShares Core MSCI Total International Stock ETF
+IYC        AssetExchange.ARCA iShares U.S. Consumer Discretionary ETF
+IYE        AssetExchange.ARCA iShares U.S. Energy ETF
+IYF        AssetExchange.ARCA iShares U.S. Financials ETF
+IYG        AssetExchange.ARCA iShares U.S. Financial Services ETF
+IYH        AssetExchange.ARCA iShares U.S. Healthcare ETF
+IYK        AssetExchange.ARCA iShares U.S. Consumer Staples ETF
+IYM        AssetExchange.ARCA iShares U.S. Basic Materials ETF
+IYR        AssetExchange.ARCA iShares U.S. Real Estate ETF
+IYW        AssetExchange.ARCA iShares U.S. Technology ETF
+IYY        AssetExchange.ARCA iShares Dow Jones U.S. ETF
+JAAA       AssetExchange.ARCA Janus Henderson AAA CLO ETF
+JADE       AssetExchange.ARCA JPMorgan Active Developing Markets Equity ETF
+JANT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Jan ETF
+JANW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Jan ETF
+JAVA       AssetExchange.ARCA JPMorgan Active Value ETF
+JBND       AssetExchange.NYSE JPMorgan Active Bond ETF
+JCHI       AssetExchange.ARCA JPMorgan Active China ETF
+JCTR       AssetExchange.ARCA JPMorgan Carbon Transition U.S. Equity ETF
+JDIV       AssetExchange.ARCA JPMorgan Dividend Leaders ETF
+JDOC       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Healthcare Leaders ETF
+JDVI       AssetExchange.ARCA John Hancock Disciplined Value International Select ETF
+JEMB       AssetExchange.ARCA Janus Henderson Emerging Markets Debt Hard Currency ETF
+JEPI       AssetExchange.ARCA JPMorgan Equity Premium Income ETF
+JEPQ       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Nasdaq Equity Premium Income ETF
+JETS       AssetExchange.ARCA U.S. Global Jets ETF
+JFWD       AssetExchange.ARCA Jacob Forward ETF
+JGLO       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Global Select Equity ETF
+JGRO       AssetExchange.ARCA JPMorgan Active Growth ETF
+JGRW       AssetExchange.ARCA Jensen Quality Growth ETF
+JHAC       AssetExchange.ARCA John Hancock Fundamental All Cap Core ETF
+JHCB       AssetExchange.ARCA John Hancock Corporate Bond ETF
+JHDV       AssetExchange.ARCA John Hancock U.S. High Dividend ETF
+JHEM       AssetExchange.ARCA John Hancock Multifactor Emerging Markets ETF
+JHHY       AssetExchange.ARCA John Hancock High Yield ETF
+JHID       AssetExchange.ARCA John Hancock International High Dividend ETF
+JHMB       AssetExchange.ARCA John Hancock Mortgage-Backed Securities ETF
+JHMD       AssetExchange.ARCA John Hancock Multifactor Developed International ETF
+JHML       AssetExchange.ARCA John Hancock Multifactor Large Cap ETF
+JHMM       AssetExchange.ARCA John Hancock Multifactor Mid Cap ETF
+JHMU       AssetExchange.ARCA John Hancock Dynamic Municipal Bond ETF
+JHPI       AssetExchange.ARCA John Hancock Preferred Income ETF
+JHSC       AssetExchange.ARCA John Hancock Multifactor Small Cap ETF
+JIG        AssetExchange.ARCA JPMorgan International Growth ETF
+JIII       AssetExchange.ARCA Janus Henderson Income ETF
+JIRE       AssetExchange.ARCA JPMorgan International Research Enhanced Equity ETF
+JIVE       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan International Value ETF
+JLQD       AssetExchange.ARCA Janus Henderson Corporate Bond ETF
+JMBS       AssetExchange.ARCA Janus Henderson Mortgage-Backed Securities ETF
+JMEE       AssetExchange.ARCA JPMorgan Small & Mid Cap Enhanced Equity ETF
+JMHI       AssetExchange.ARCA JPMorgan High Yield Municipal ETF
+JMID       AssetExchange.NASDAQ Janus Detroit Street Trust Janus Henderson Mid Cap Growth Alpha ETF
+JMOM       AssetExchange.ARCA JPMorgan U.S. Momentum Factor ETF
+JMSI       AssetExchange.ARCA JPMorgan Sustainable Municipal Income ETF
+JNK        AssetExchange.ARCA SPDR Bloomberg High Yield Bond ETF
+JOET       AssetExchange.ARCA Virtus Terranova U.S. Quality Momentum ETF
+JOJO       AssetExchange.ARCA ATAC Credit Rotation ETF
+JPAN       AssetExchange.ARCA Matthews Japan Active ETF
+JPEF       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Equity Focus ETF
+JPEM       AssetExchange.ARCA JPMorgan Diversified Return Emerging Markets Equity ETF
+JPIE       AssetExchange.ARCA JPMorgan Income ETF
+JPIN       AssetExchange.ARCA JPMorgan Diversified Return International Equity ETF
+JPMB       AssetExchange.ARCA JPMorgan USD Emerging Markets Sovereign Bond ETF
+JPME       AssetExchange.ARCA JPMorgan Diversified Return US Mid Cap Equity ETF
+JPMO       AssetExchange.ARCA YieldMax JPM Option Income Strategy ETF
+JPRE       AssetExchange.ARCA JPMorgan Realty Income ETF
+JPSE       AssetExchange.ARCA JPMorgan Diversified Return US Small Cap Equity ETF
+JPST       AssetExchange.ARCA JPMorgan Ultra-Short Income ETF
+JPSV       AssetExchange.ARCA JPMorgan Active Small Cap Value ETF
+JPUS       AssetExchange.ARCA JPMorgan Diversified Return US Equity ETF
+JPXN       AssetExchange.ARCA iShares JPX-Nikkei 400 ETF
+JQUA       AssetExchange.ARCA JPMorgan U.S. Quality Factor ETF
+JRE        AssetExchange.ARCA Janus Henderson U.S. Real Estate ETF
+JSCP       AssetExchange.ARCA JPMorgan Short Duration Core Plus ETF
+JSI        AssetExchange.ARCA Janus Henderson Securitized Income ETF
+JSMD       AssetExchange.NASDAQ Janus Detroit Street Trust Janus Henderson Small/Mid Cap Growth Alpha ETF
+JSML       AssetExchange.NASDAQ Janus Detroit Street Trust Janus Henderson Small Cap Growth Alpha ETF
+JSTC       AssetExchange.ARCA Adasina Social Justice All Cap Global ETF
+JTEK       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan U.S. Tech Leaders ETF
+JULT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Jul ETF
+JULW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Jul ETF
+JUNT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Jun ETF
+JUNW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Jun ETF
+JUST       AssetExchange.ARCA Goldman Sachs JUST U.S. Large Cap Equity ETF
+JVAL       AssetExchange.ARCA JPMorgan U.S. Value Factor ETF
+JXI        AssetExchange.ARCA iShares Global Utilities ETF
+KALL       AssetExchange.ARCA KraneShares MSCI All China Index ETF
+KARS       AssetExchange.ARCA KraneShares Electric Vehicles and Future Mobility Index ETF
+KBA        AssetExchange.ARCA KraneShares Bosera MSCI China A 50 Connect Index ETF
+KBE        AssetExchange.ARCA SPDR S&P Bank ETF
+KBUF       AssetExchange.ARCA KraneShares 90% KWEB Defined Outcome January 2026 ETF
+KBWB       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco KBW Bank ETF
+KBWD       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco KBW High Dividend Yield Financial ETF
+KBWP       AssetExchange.NASDAQ Invesco Exchange-Traded Fd Tr II Invesco KBW Property & Casualty Insurance ETF
+KBWR       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco KBW Regional Banking ETF
+KBWY       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco KBW Premium Yield Equity REIT ETF
+KCAI       AssetExchange.ARCA KraneShares China Alpha Index ETF
+KCCA       AssetExchange.ARCA KraneShares California Carbon Allowance Strategy ETF
+KCE        AssetExchange.ARCA SPDR S&P Capital Markets ETF
+KCSH       AssetExchange.ARCA KraneShares Sustainable Ultra Short Duration Index ETF
+KDRN       AssetExchange.ARCA Kingsbarn Tactical Bond ETF
+KEAT       AssetExchange.NASDAQ EA Series Trust Keating Active ETF
+KEM        AssetExchange.ARCA KraneShares Dynamic Emerging Markets Strategy ETF
+KEMQ       AssetExchange.ARCA KraneShares Emerging Markets Consumer Technology Index ETF
+KEMX       AssetExchange.ARCA KraneShares MSCI Emerging Markets Ex China Index ETF
+KEUA       AssetExchange.ARCA KraneShares European Carbon Allowance Strategy ETF
+KGRN       AssetExchange.ARCA KraneShares MSCI China Clean Technology Index ETF
+KHYB       AssetExchange.ARCA KraneShares Asia Pacific High Income USD Bond ETF
+KIE        AssetExchange.ARCA SPDR S&P Insurance ETF
+KLIP       AssetExchange.ARCA KraneShares China Internet and Covered Call Strategy ETF
+KLMT       AssetExchange.ARCA Invesco MSCI Global Climate 500 ETF
+KLXY       AssetExchange.ARCA KraneShares Global Luxury Index ETF
+KMID       AssetExchange.ARCA Virtus KAR Mid-Cap ETF
+KMLM       AssetExchange.ARCA KraneShares Mount Lucas Managed Futures Index Strategy ETF
+KNCT       AssetExchange.ARCA Invesco Next Gen Connectivity ETF
+KNGZ       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust S&P 500 Diversified Dividend Aristocrats ETF
+KNO        AssetExchange.ARCA AXS Knowledge Leaders ETF
+KOCG       AssetExchange.ARCA FIS Knights of Columbus Global Belief ETF
+KOKU       AssetExchange.ARCA Xtrackers MSCI Kokusai Equity ETF
+KOMP       AssetExchange.ARCA SPDR S&P Kensho New Economies Composite ETF
+KONG       AssetExchange.ARCA Formidable Fortress ETF
+KOOL       AssetExchange.ARCA North Shore Equity Rotation ETF
+KORP       AssetExchange.ARCA American Century Diversified Corporate Bond ETF
+KPOP       AssetExchange.ARCA JAKOTA K-Pop and Korean Entertainment ETF
+KPRO       AssetExchange.ARCA KraneShares 100% KWEB Defined Outcome January 2026 ETF
+KQQQ       AssetExchange.NASDAQ Kurv ETF Trust Kurv Technology Titans Select ETF
+KRBN       AssetExchange.ARCA KraneShares Global Carbon Strategy ETF
+KRE        AssetExchange.ARCA SPDR S&P Regional Banking ETF
+KRMA       AssetExchange.NASDAQ Global X Funds Global X Conscious Companies ETF
+KROP       AssetExchange.NASDAQ Global X Funds Global X AgTech & Food Innovation ETF
+KSA        AssetExchange.ARCA iShares MSCI Saudi Arabia ETF
+KSEA       AssetExchange.ARCA KraneShares Rockefeller Ocean Engagement ETF
+KSPY       AssetExchange.ARCA KraneShares Hedgeye Hedged Equity Index ETF
+KSTR       AssetExchange.ARCA KraneShares SSE STAR Market 50 Index ETF
+KTEC       AssetExchange.ARCA KraneShares Hang Seng TECH Index ETF
+KURE       AssetExchange.ARCA KraneShares MSCI All China Health Care Index ETF
+KVLE       AssetExchange.ARCA KraneShares Value Line Dynamic Dividend Equity Index ETF
+KWEB       AssetExchange.ARCA KraneShares CSI China Internet ETF
+KXI        AssetExchange.ARCA iShares Global Consumer Staples ETF
+LALT       AssetExchange.ARCA First Trust Multi-Strategy Alternative ETF
+LBAY       AssetExchange.ARCA Leatherback Long/Short Alternative Yield ETF
+LCDS       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Fundamental Data Science Large Core ETF
+LCG        AssetExchange.ARCA Sterling Capital Focus Equity ETF
+LCLG       AssetExchange.ARCA Logan Capital Broad Innovative Growth ETF
+LCR        AssetExchange.ARCA Leuthold Core ETF
+LCTD       AssetExchange.ARCA BlackRock World ex U.S. Carbon Transition Readiness ETF
+LCTU       AssetExchange.ARCA BlackRock U.S. Carbon Transition Readiness ETF
+LDEM       AssetExchange.NASDAQ iShares Trust iShares ESG MSCI EM Leaders ETF
+LDRC       AssetExchange.ARCA iShares iBonds 1-5 Year Corporate Ladder ETF
+LDRH       AssetExchange.ARCA iShares iBonds 1-5 Year High Yield and Income Ladder ETF
+LDRI       AssetExchange.ARCA iShares iBonds 1-5 Year TIPS Ladder ETF
+LDRT       AssetExchange.ARCA iShares iBonds 1-5 Year Treasury Ladder ETF
+LDSF       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VIII First Trust Low Duration Strategic Focus ETF
+LEGR       AssetExchange.NASDAQ First Trust Indxx Innovative Transaction & Process ETF
+LEMB       AssetExchange.ARCA iShares J.P. Morgan EM Local Currency Bond ETF
+LEXI       AssetExchange.ARCA Alexis Practical Tactical ETF
+LFEQ       AssetExchange.ARCA VanEck Long/Flat Trend ETF
+LFSC       AssetExchange.NASDAQ The RBB Fund, Inc. F/m Emerald Life Sciences Innovation ETF
+LGH        AssetExchange.ARCA HCM Defender 500 Index ETF
+LGHT       AssetExchange.ARCA Langar Global HealthTech ETF
+LGLV       AssetExchange.ARCA SPDR SSGA US Large Cap Low Volatility Index ETF
+LGOV       AssetExchange.ARCA First Trust Long Duration Opportunities ETF
+LGRO       AssetExchange.NASDAQ ALPS ETF Trust Level Four Large Cap Growth Active ETF
+LIT        AssetExchange.ARCA Global X Lithium & Battery Tech ETF
+LITP       AssetExchange.NASDAQ Sprott Funds Trust Sprott Lithium Miners ETF
+LIVR       AssetExchange.NASDAQ EA Series Trust Intelligent Livermore ETF
+LLDR       AssetExchange.ARCA Global X Long-Term Treasury Ladder ETF
+LLYX       AssetExchange.ARCA Defiance Daily Target 2x Long LLY ETF
+LMBS       AssetExchange.NASDAQ First Trust Exchange-Traded Fund IV First Trust Low Duration Opportunities ETF
+LNGZ       AssetExchange.ARCA Range Global LNG Ecosystem Index ETF
+LOPP       AssetExchange.ARCA Gabelli Love Our Planet & People ETF
+LOUP       AssetExchange.ARCA Innovator Deepwater Frontier Tech ETF
+LOWV       AssetExchange.ARCA AB US Low Volatility Equity ETF
+LQAI       AssetExchange.ARCA LG QRAFT AI-Powered U.S. Large Cap Core ETF
+LQD        AssetExchange.ARCA iShares iBoxx $ Investment Grade Corporate Bond ETF
+LQDB       AssetExchange.ARCA iShares BBB Rated Corporate Bond ETF
+LQDH       AssetExchange.ARCA iShares Interest Rate Hedged Corporate Bond ETF
+LQIG       AssetExchange.ARCA SPDR MarketAxess Investment Grade 400 Corporate Bond ETF
+LRGC       AssetExchange.ARCA AB US Large Cap Strategic Equities ETF
+LRGE       AssetExchange.NASDAQ Legg Mason ETF Investment Trust ClearBridge Large Cap Growth ESG ETF
+LRGF       AssetExchange.ARCA iShares U.S. Equity Factor ETF
+LRGG       AssetExchange.ARCA Macquarie Focused Large Growth ETF
+LRND       AssetExchange.NASDAQ New York Life Investments ETF Trust NYLI U.S. Large Cap R&D Leaders ETF
+LRNZ       AssetExchange.ARCA TrueShares Technology, AI & Deep Learning ETF
+LSAF       AssetExchange.ARCA LeaderShares AlphaFactor US Core Equity ETF
+LSAT       AssetExchange.ARCA LeaderShares AlphaFactor Tactical Focused ETF
+LSEQ       AssetExchange.ARCA Harbor Long-Short Equity ETF
+LSGR       AssetExchange.ARCA Natixis Loomis Sayles Focused Growth ETF
+LUX        AssetExchange.ARCA Tema Luxury ETF
+LVHD       AssetExchange.NASDAQ Franklin U.S. Low Volatility High Dividend Index ETF
+LVOL       AssetExchange.ARCA American Century Low Volatility ETF
+MADE       AssetExchange.ARCA iShares U.S. Manufacturing ETF
+MAGG       AssetExchange.ARCA Madison Aggregate Bond ETF
+MAGS       AssetExchange.NASDAQ Listed Funds Trust Roundhill Magnificent Seven ETF
+MAGX       AssetExchange.NASDAQ Roundhill ETF Trust Roundhill Daily 2X Long Magnificent Seven ETF
+MAKX       AssetExchange.ARCA ProShares S&P Kensho Smart Factories ETF
+MAPP       AssetExchange.ARCA Harbor Multi Asset Explorers ETF
+MARB       AssetExchange.ARCA First Trust Merger Arbitrage ETF
+MART       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Mar ETF
+MARW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Mar ETF
+MAXI       AssetExchange.NASDAQ Simplify Exchange Traded Funds Simplify Bitcoin Strategy PLUS Income ETF
+MAYT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 May ETF
+MAYW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 May ETF
+MBB        AssetExchange.NASDAQ iShares MBS ETF
+MBOX       AssetExchange.ARCA Freedom Day Dividend ETF
+MBS        AssetExchange.ARCA Angel Oak Mortgage-Backed Securities ETF
+MBSF       AssetExchange.ARCA Regan Floating Rate MBS ETF
+MCDS       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Fundamental Data Science Mid Core ETF
+MCH        AssetExchange.ARCA Matthews China Active ETF
+MCHI       AssetExchange.NASDAQ iShares MSCI China ETF
+MCHS       AssetExchange.NASDAQ Matthews International Funds Matthews China Discovery Active ETF
+MCSE       AssetExchange.NASDAQ Franklin Templeton ETF Trust Martin Currie Sustainable International Equity ETF
+MDCP       AssetExchange.NASDAQ Victory Portfolios II VictoryShares THB Mid Cap ETF
+MDST       AssetExchange.NYSE Westwood Salient Enhanced Midstream Income ETF
+MDY        AssetExchange.ARCA SPDR S&P MidCap 400 ETF Trust
+MDYG       AssetExchange.ARCA SPDR S&P 400 Mid Cap Growth ETF (Based on S&P MidCap 400 Growth Index--symbol MUV)
+MDYV       AssetExchange.ARCA SPDR S&P 400 Mid Cap Value ETF (based on S&P MidCap 400 Value Index--symbol: MGD)
+MEDI       AssetExchange.ARCA Harbor Health Care ETF
+MEDX       AssetExchange.NASDAQ Listed Funds Trust Horizon Kinetics Medical ETF
+MEM        AssetExchange.ARCA Matthews Emerging Markets Equity Active ETF
+MEMS       AssetExchange.NASDAQ Matthews International Funds Matthews Emerging Markets Discovery Active ETF
+MEMX       AssetExchange.ARCA Matthews Emerging Markets ex China Active ETF
+METD       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily META Bear 1X Shares
+METU       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily META Bull 2X Shares
+METV       AssetExchange.ARCA Roundhill Ball Metaverse ETF
+MFDX       AssetExchange.ARCA PIMCO RAFI Multi-Factor International Equity ETF
+MFEM       AssetExchange.ARCA PIMCO RAFI Dynamic Multi-Factor Emerging Markets Equity ETF
+MFLX       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VIII First Trust Flexible Municipal High Income ETF
+MFUS       AssetExchange.ARCA PIMCO RAFI Dynamic Multi-Factor U.S. Equity ETF
+MGC        AssetExchange.ARCA Vanguard Mega Cap 300 Index ETF
+MGK        AssetExchange.ARCA Vanguard Mega Cap Growth ETF
+MGMT       AssetExchange.ARCA Ballast Small/Mid Cap ETF
+MGNR       AssetExchange.ARCA American Beacon GLG Natural Resources ETF
+MGOV       AssetExchange.ARCA First Trust Intermediate Government Opportunities ETF
+MGV        AssetExchange.ARCA Vanguard Mega Cap  Value ETF
+MID        AssetExchange.ARCA American Century Mid Cap Growth Impact ETF
+MIDE       AssetExchange.ARCA Xtrackers S&P MidCap 400 ESG ETF
+MILN       AssetExchange.NASDAQ Global X Funds Global X Millennial Consumer ETF
+MINO       AssetExchange.ARCA PIMCO Municipal Income Opportunities Active ETF
+MINV       AssetExchange.ARCA Matthews Asia Innovators Active ETF
+MISL       AssetExchange.ARCA First Trust Indxx Aerospace & Defense ETF
+MJ         AssetExchange.ARCA Amplify Alternative Harvest ETF
+MJUS       AssetExchange.ARCA Amplify U.S. Alternative Harvest ETF
+MKAM       AssetExchange.NASDAQ EA Series Trust MKAM ETF
+MKOR       AssetExchange.ARCA Matthews Korea Active ETF
+MLDR       AssetExchange.ARCA Global X Intermediate-Term Treasury Ladder ETF
+MLPA       AssetExchange.ARCA Global X MLP ETF
+MLPD       AssetExchange.ARCA Global X MLP & Energy Infrastructure Covered Call ETF
+MLPX       AssetExchange.ARCA Global X MLP & Energy Infrastructure ETF
+MMCA       AssetExchange.ARCA NYLI MacKay California Muni Intermediate ETF
+MMIN       AssetExchange.ARCA NYLI MacKay Muni Insured ETF
+MMIT       AssetExchange.ARCA NYLI MacKay Muni Intermediate ETF
+MMKT       AssetExchange.NYSE Texas Capital Government Money Market ETF
+MMLG       AssetExchange.ARCA First Trust Multi-Manager Large Growth ETF
+MMSC       AssetExchange.ARCA First Trust Multi-Manager Small Cap Opportunities ETF
+MMTM       AssetExchange.ARCA SPDR S&P 1500 Momentum Tilt ETF
+MNA        AssetExchange.ARCA NYLI Merger Arbitrage ETF
+MNBD       AssetExchange.ARCA ALPS Intermediate Municipal Bond ETF
+MNTL       AssetExchange.NASDAQ Tema ETF Trust Tema Neuroscience and Mental Health ETF
+MODL       AssetExchange.NASDAQ Victory Portfolios II VictoryShares WestEnd U.S. Sector ETF
+MOO        AssetExchange.ARCA VanEck Agribusiness ETF
+MOOD       AssetExchange.NASDAQ Alpha Architect ETF Trust Relative Sentiment Tactical Allocation ETF
+MORT       AssetExchange.ARCA VanEck Mortgage REIT Income ETF
+MOTO       AssetExchange.ARCA SmartETFs Smart Transportation & Technology ETF
+MPAY       AssetExchange.ARCA Akros Monthly Payout ETF
+MQQQ       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long Triple Q Monthly ETF
+MRNY       AssetExchange.ARCA YieldMax MRNA Option Income Strategy ETF
+MRSK       AssetExchange.ARCA Toews Agility Shares Managed Risk ETF
+MSFD       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily MSFT Bear 1X Shares
+MSFL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long MSFT Daily ETF
+MSFO       AssetExchange.ARCA YieldMax MSFT Option Income Strategy ETF
+MSFU       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily MSFT Bull 2X Shares
+MSOS       AssetExchange.ARCA AdvisorShares Pure US Cannabis ETF
+MSOX       AssetExchange.ARCA AdvisorShares MSOS Daily Leveraged ETF
+MSTI       AssetExchange.ARCA Madison Short-Term Strategic Income ETF
+MSTX       AssetExchange.NASDAQ Tidal Trust II Defiance Daily Target 2x Long MSTR ETF
+MSTY       AssetExchange.ARCA YieldMax MSTR Option Income Strategy ETF
+MTBA       AssetExchange.ARCA Simplify MBS ETF
+MUB        AssetExchange.ARCA iShares National Muni Bond ETF
+MUD        AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily MU Bear 1X Shares
+MULL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long MU Daily ETF
+MUSE       AssetExchange.NYSE TCW Multisector Credit Income ETF
+MUSI       AssetExchange.ARCA American Century Multisector Income ETF
+MUSQ       AssetExchange.ARCA MUSQ Global Music Industry Index ETF
+MUST       AssetExchange.ARCA Columbia Multi-Sector Municipal Income ETF
+MUU        AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily MU Bull 2X Shares
+MVPA       AssetExchange.ARCA Miller Value Partners Appreciation ETF
+MVPL       AssetExchange.ARCA Miller Value Partners Leverage ETF
+MVPS       AssetExchange.ARCA Amplify Thematic All-Stars ETF
+MXI        AssetExchange.ARCA iShares Global Materials ETF
+MYCF       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2026 Corporate Bond ETF
+MYCG       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2027 Corporate Bond ETF
+MYCH       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2028 Corporate Bond ETF
+MYCI       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2029 Corporate Bond ETF
+MYCJ       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2030 Corporate Bond ETF
+MYCK       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2031 Corporate Bond ETF
+MYCL       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2032 Corporate Bond ETF
+MYCM       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2033 Corporate Bond ETF
+MYCN       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2034 Corporate Bond ETF
+MYMF       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2026 Municipal Bond ETF
+MYMG       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2027 Municipal Bond ETF
+MYMH       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2028 Municipal Bond ETF
+MYMI       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2029 Municipal Bond ETF
+MYMJ       AssetExchange.NASDAQ SSGA Active Trust SPDR SSGA My2030 Municipal Bond ETF
+NACP       AssetExchange.ARCA Impact Shares NAACP Minority Empowerment ETF
+NANR       AssetExchange.ARCA SPDR S&P North American Natural Resources ETF
+NATO       AssetExchange.NASDAQ Themes ETF Trust Themes Transatlantic Defense ETF
+NBCC       AssetExchange.ARCA Neuberger Berman Next Generation Connected Consumer ETF
+NBCE       AssetExchange.ARCA Neuberger Berman China Equity ETF
+NBCM       AssetExchange.ARCA Neuberger Berman Commodity Strategy ETF
+NBCR       AssetExchange.ARCA Neuberger Berman Core Equity ETF
+NBDS       AssetExchange.ARCA Neuberger Berman Disrupters ETF
+NBET       AssetExchange.ARCA Neuberger Berman Energy Transition & Infrastructure ETF
+NBFC       AssetExchange.ARCA Neuberger Berman Flexible Credit Income ETF
+NBGR       AssetExchange.ARCA Neuberger Berman Global Real Estate ETF
+NBJP       AssetExchange.ARCA Neuberger Berman Japan Equity ETF
+NBOS       AssetExchange.ARCA Neuberger Berman Option Strategy ETF
+NBSD       AssetExchange.ARCA Neuberger Berman Short Duration Income ETF
+NBSM       AssetExchange.ARCA Neuberger Berman Small-Mid Cap ETF
+NCPB       AssetExchange.NASDAQ NuShares ETF Trust Nuveen Core Plus Bond ETF
+NDAA       AssetExchange.NASDAQ Tidal Trust III Ned Davis Research 360 Dynamic Allocation ETF
+NDIA       AssetExchange.ARCA Global X India Active ETF
+NDIV       AssetExchange.ARCA Amplify Natural Resources Dividend Income ETF
+NDVG       AssetExchange.ARCA Nuveen Dividend Growth ETF
+NERD       AssetExchange.NASDAQ Roundhill Video Games ETF
+NETL       AssetExchange.ARCA NETLease Corporate Real Estate ETF
+NETZ       AssetExchange.NYSE TCW Transform Systems ETF
+NEWZ       AssetExchange.NASDAQ EA Series Trust StockSnips AI-Powered Sentiment US All Cap ETF
+NFLT       AssetExchange.ARCA Virtus Newfleet Multi-Sector Bond ETF
+NFLX       AssetExchange.NASDAQ Netflix, Inc. Common Stock
+NFLY       AssetExchange.ARCA YieldMax NFLX Option Income Strategy ETF
+NFTY       AssetExchange.NASDAQ First Trust India Nifty 50 Equal Weight ETF
+NFXL       AssetExchange.NASDAQ Direxion Daily NFLX Bull 2X Shares ETF Trust
+NFXS       AssetExchange.NASDAQ Direxion Daily NFLX Bear 1X Shares ETF Trust
+NIKL       AssetExchange.NASDAQ Sprott Funds Trust Sprott Nickel Miners ETF
+NIXT       AssetExchange.NASDAQ EA Series Trust Research Affiliates Deletions ETF
+NJNK       AssetExchange.ARCA Columbia U.S. High Yield ETF
+NLR        AssetExchange.ARCA VanEck Uranium and Nuclear ETF
+NMB        AssetExchange.ARCA Simplify National Muni Bond ETF
+NORW       AssetExchange.ARCA Global X MSCI Norway ETF
+NPFI       AssetExchange.NASDAQ NuShares ETF Trust Nuveen Preferred and Income ETF
+NRES       AssetExchange.NASDAQ DBX ETF Trust Xtrackers RREEF Global Natural Resources ETF
+NRSH       AssetExchange.ARCA Aztlan North America Nearshoring Stock Selection ETF
+NSCR       AssetExchange.NASDAQ NuShares ETF Trust Nuveen Sustainable Core ETF
+NSCS       AssetExchange.ARCA Nuveen Small Cap Select ETF
+NSI        AssetExchange.NASDAQ Northern Lights Fund Trust IV National Security Emerging Markets Index ETF
+NUAG       AssetExchange.ARCA Nuveen Enhanced Yield U.S. Aggregate Bond ETF
+NUBD       AssetExchange.ARCA Nuveen ESG U.S. Aggregate Bond ETF
+NUGO       AssetExchange.ARCA Nuveen Growth Opportunities ETF
+NUHY       AssetExchange.ARCA Nuveen ESG High Yield Corporate Bond ETF
+NUKZ       AssetExchange.ARCA Range Nuclear Renaissance Index ETF
+NUSA       AssetExchange.ARCA Nuveen ESG 1-5 Year U.S. Aggregate Bond ETF
+NUSB       AssetExchange.NASDAQ NuShares ETF Trust Nuveen Ultra Short Income ETF
+NUSI       AssetExchange.ARCA NEOS Nasdaq-100 Hedged Equity Income ETF
+NVBT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Nov ETF
+NVBW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Nov ETF
+NVD        AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Short NVDA Daily ETF
+NVDD       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily NVDA Bear 1X Shares
+NVDL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long NVDA Daily ETF
+NVDS       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 1.5X Short NVDA Daily ETF
+NVDU       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily NVDA Bull 2X Shares
+NVDW       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 1.75X Long NVDA Weekly ETF
+NVDY       AssetExchange.ARCA YieldMax NVDA Option Income Strategy ETF
+NVIR       AssetExchange.ARCA Horizon Kinetics Energy and Remediation ETF
+NWLG       AssetExchange.ARCA Nuveen Winslow Large-Cap Growth ESG ETF
+NXTE       AssetExchange.ARCA AXS Green Alpha ETF
+NXTG       AssetExchange.NASDAQ First Trust Indxx NextG ETF
+NYF        AssetExchange.ARCA iShares New York Muni Bond ETF
+NZAC       AssetExchange.NASDAQ SPDR MSCI ACWI Climate Paris Aligned ETF
+NZUS       AssetExchange.NASDAQ SPDR Series Trust SPDR MSCI USA Climate Paris Aligned ETF
+OACP       AssetExchange.ARCA OneAscent Core Plus Bond ETF
+OAEM       AssetExchange.ARCA OneAscent Emerging Markets ETF
+OAIM       AssetExchange.ARCA OneAscent International Equity ETF
+OALC       AssetExchange.ARCA OneAscent Large Cap Core ETF
+OARK       AssetExchange.ARCA YieldMax Innovation Option Income Strategy ETF
+OASC       AssetExchange.ARCA OneAscent Small Cap Core ETF
+OBIL       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 12 Month Bill ETF
+OBOR       AssetExchange.ARCA Kraneshares MSCI One Belt One Road Index ETF
+OCEN       AssetExchange.ARCA NYLI Clean Oceans ETF
+OCFS       AssetExchange.ARCA Otter Creek Focus Strategy ETF
+OCIO       AssetExchange.ARCA ClearShares OCIO ETF
+OCTA       AssetExchange.NASDAQ Tidal Trust II Octane All-Cap Value Energy ETF
+OCTT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Oct ETF
+OCTW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Oct ETF
+ODDS       AssetExchange.NASDAQ Pacer Funds Pacer BlueStar Digital Entertainment ETF
+OEF        AssetExchange.ARCA iShares S&P 100 ETF
+OFOS       AssetExchange.ARCA Range Global Offshore Oil Services Index ETF
+OGSP       AssetExchange.ARCA Obra High Grade Structured Products ETF
+OIH        AssetExchange.ARCA VanEck Oil Services ETF
+OILT       AssetExchange.ARCA Texas Capital Texas Oil Index ETF
+OND        AssetExchange.ARCA ProShares On-Demand ETF
+ONEO       AssetExchange.ARCA SPDR Russell 1000 Momentum Focus ETF
+ONEQ       AssetExchange.NASDAQ Fidelity Nasdaq Composite Index ETF
+ONEV       AssetExchange.ARCA SPDR Russell 1000 Low Volatility ETF
+ONEY       AssetExchange.ARCA SPDR Russell 1000 Yield Focus ETF
+ONLN       AssetExchange.ARCA ProShares Online Retail ETF
+ONOF       AssetExchange.ARCA Global X Adaptive U.S. Risk Management ETF
+OOSP       AssetExchange.ARCA Obra Opportunistic Structured Products ETF
+OPER       AssetExchange.ARCA ClearShares Ultra-Short Maturity ETF
+OPTZ       AssetExchange.NASDAQ Advisor Managed Portfolios Optimize Strategy Index ETF
+OSEA       AssetExchange.ARCA Harbor International Compounders ETF
+OUNZ       AssetExchange.ARCA VanEck Merk Gold ETF
+OWNS       AssetExchange.ARCA CCM Affordable Housing MBS ETF
+OZEM       AssetExchange.NASDAQ Roundhill ETF Trust Roundhill GLP-1 & Weight Loss ETF
+PAAA       AssetExchange.ARCA PGIM AAA CLO ETF
+PAB        AssetExchange.ARCA PGIM Active Aggregate Bond ETF
+PABD       AssetExchange.NASDAQ iShares Trust iShares Paris-Aligned Climate MSCI World ex USA ETF
+PABU       AssetExchange.NASDAQ iShares Trust iShares Paris-Aligned Climate MSCI USA ETF
+PALC       AssetExchange.ARCA Pacer Lunt Large Cap Multi-Factor Alternator ETF
+PALL       AssetExchange.ARCA abrdn Physical Palladium Shares ETF
+PAMC       AssetExchange.ARCA Pacer Lunt MidCap Multi-Factor Alternator ETF
+PAPI       AssetExchange.ARCA Parametric Equity Premium Income ETF
+PATN       AssetExchange.NASDAQ Pacer Funds Trust Pacer Nasdaq International Patent Leaders ETF
+PBD        AssetExchange.ARCA Invesco Global Clean Energy ETF
+PBDC       AssetExchange.ARCA Putnam BDC Income ETF
+PBE        AssetExchange.ARCA Invesco Biotechnology & Genome ETF
+PBJ        AssetExchange.ARCA Invesco Food & Beverage ETF
+PBW        AssetExchange.ARCA Invesco WilderHill Clean Energy ETF
+PCCE       AssetExchange.ARCA Polen Capital China Growth ETF
+PCEF       AssetExchange.ARCA Invesco CEF Income Composite ETF
+PCEM       AssetExchange.ARCA Polen Capital Emerging Markets ex-China Growth ETF
+PCGG       AssetExchange.ARCA Polen Capital Global Growth ETF
+PCIG       AssetExchange.ARCA Polen Capital International Growth ETF
+PCRB       AssetExchange.ARCA Putnam ESG Core Bond ETF
+PCY        AssetExchange.ARCA Invesco Emerging Markets Sovereign Debt ETF
+PDBA       AssetExchange.NASDAQ Invesco Actively Managed Exchange-Traded Commodity Fund Trust Invesco Agriculture Commodity Strategy No K-1 ETF
+PDBC       AssetExchange.NASDAQ Invesco Actively Managed Exch-Traded Commodity Fd Tr Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF
+PDN        AssetExchange.ARCA Invesco FTSE RAFI Developed Markets ex-U.S. Small-Mid ETF
+PDP        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Momentum ETF
+PEJ        AssetExchange.ARCA Invesco Leisure and Entertainment ETF
+PEMX       AssetExchange.ARCA Putnam Emerging Markets ex-China ETF
+PEPS       AssetExchange.NASDAQ Morgan Stanley ETF Trust Parametric Equity Plus ETF
+PEXL       AssetExchange.ARCA Pacer US Export Leaders ETF
+PEY        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco High Yield Equity Dividend Achievers ETF
+PEZ        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Consumer Cyclicals Momentum ETF
+PFF        AssetExchange.NASDAQ iShares Trust iShares Preferred and Income Securities ETF
+PFFA       AssetExchange.ARCA Virtus InfraCap U.S. Preferred Stock ETF
+PFFD       AssetExchange.ARCA Global X U.S. Preferred ETF
+PFFR       AssetExchange.ARCA InfraCap REIT Preferred ETF
+PFFV       AssetExchange.ARCA Global X Variable Rate Preferred ETF
+PFI        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Financial Momentum ETF
+PFIG       AssetExchange.ARCA Invesco Fundamental Investment Grade Corporate Bond ETF
+PFIX       AssetExchange.ARCA Simplify Interest Rate Hedge ETF
+PFLD       AssetExchange.ARCA AAM Low Duration Preferred and Income Securities ETF
+PFM        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dividend Achievers ETF
+PFRL       AssetExchange.ARCA PGIM Floating Rate Income ETF
+PFUT       AssetExchange.ARCA Putnam Sustainable Future ETF
+PFXF       AssetExchange.ARCA VanEck Preferred Securities ex Financials ETF
+PGF        AssetExchange.ARCA Invesco Financial Preferred ETF
+PGHY       AssetExchange.ARCA Invesco Global ex-US High Yield Corporate Bond ETF
+PGJ        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Golden Dragon China ETF
+PGRO       AssetExchange.ARCA Putnam Focused Large Cap Growth ETF
+PGX        AssetExchange.ARCA Invesco Preferred ETF
+PHB        AssetExchange.ARCA Invesco Fundamental High Yield Corporate Bond ETF
+PHDG       AssetExchange.ARCA Invesco S&P 500 Downside Hedged ETF
+PHEQ       AssetExchange.ARCA Parametric Hedged Equity ETF
+PHO        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Water Resources ETF
+PHYD       AssetExchange.ARCA Putnam ESG High Yield ETF
+PHYL       AssetExchange.ARCA PGIM Active High Yield Bond ETF
+PICB       AssetExchange.ARCA Invesco International Corporate Bond ETF
+PID        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco International Dividend Achievers ETF
+PIE        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Dorsey Wright Emerging Markets Momentum ETF
+PIFI       AssetExchange.ARCA ClearShares Piton Intermediate Fixed Income ETF
+PIN        AssetExchange.ARCA Invesco India ETF
+PINK       AssetExchange.ARCA Simplify Health Care ETF
+PIO        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Global Water ETF
+PIZ        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Dorsey Wright Developed Markets Momentum ETF
+PJFG       AssetExchange.ARCA PGIM Jennison Focused Growth ETF
+PJFV       AssetExchange.ARCA PGIM Jennison Focused Value ETF
+PJIO       AssetExchange.ARCA PGIM Jennison International Opportunities ETF
+PJP        AssetExchange.ARCA Invesco Pharmaceuticals ETF
+PKB        AssetExchange.ARCA Invesco Building & Construction ETF
+PKW        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco BuyBack Achievers ETF
+PLDR       AssetExchange.ARCA Putnam Sustainable Leaders ETF
+PLTY       AssetExchange.ARCA YieldMax PLTR Option Income Strategy ETF
+PMBS       AssetExchange.NASDAQ PIMCO ETF Trust PIMCO Mortgage-Backed Securities Active Exchange-Traded Fund
+PMIO       AssetExchange.ARCA PGIM Municipal Income Opportunities ETF
+PNQI       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Nasdaq Internet ETF
+POWA       AssetExchange.ARCA Invesco Bloomberg Pricing Power ETF
+PP         AssetExchange.ARCA The Meet Kevin Pricing Power ETF
+PPA        AssetExchange.ARCA Invesco Aerospace & Defense ETF
+PPEM       AssetExchange.ARCA Putnam PanAgora ESG Emerging Markets Equity ETF
+PPH        AssetExchange.NASDAQ VanEck Pharmaceutical ETF
+PPI        AssetExchange.NASDAQ Investment Managers Series Trust II AXS Astoria Real Assets ETF
+PPIE       AssetExchange.ARCA Putnam PanAgora ESG International Equity ETF
+PPLT       AssetExchange.ARCA abrdn Physical Platinum Shares ETF
+PPTY       AssetExchange.ARCA U.S. Diversified Real Estate ETF
+PQDI       AssetExchange.ARCA Principal Spectrum Tax-Advantaged Dividend Active ETF
+PRAE       AssetExchange.ARCA PlanRock Alternative Growth ETF
+PREF       AssetExchange.ARCA Principal Spectrum Preferred Securities Active ETF
+PRF        AssetExchange.ARCA Invesco FTSE RAFI US 1000 ETF
+PRFZ       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco FTSE RAFI US 1500 Small-Mid ETF
+PRMN       AssetExchange.ARCA PlanRock Market Neutral Income ETF
+PRN        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Industrials Momentum ETF
+PSC        AssetExchange.NASDAQ Principal Exchange-Traded Funds Principal U.S. Small-Cap ETF
+PSCC       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Consumer Staples ETF
+PSCD       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Consumer Discretionary ETF
+PSCE       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Energy ETF
+PSCF       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Financials ETF
+PSCH       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Health Care ETF
+PSCI       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Industrials ETF
+PSCM       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Materials ETF
+PSCT       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Information Technology ETF
+PSCU       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco S&P SmallCap Utilities & Communication Services ETF
+PSET       AssetExchange.NASDAQ Principal Exchange-Traded Funds Principal Quality ETF
+PSI        AssetExchange.ARCA Invesco Semiconductors ETF
+PSIL       AssetExchange.ARCA AdvisorShares Psychedelics ETF
+PSK        AssetExchange.ARCA SPDR ICE Preferred Securities ETF
+PSL        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Consumer Staples Momentum ETF
+PSP        AssetExchange.ARCA Invesco Global Listed Private Equity ETF
+PSQA       AssetExchange.ARCA Palmer Square CLO Senior Debt ETF
+PSQO       AssetExchange.ARCA Palmer Square Credit Opportunities ETF
+PSTP       AssetExchange.ARCA Innovator Power Buffer Step-Up Strategy ETF
+PSTR       AssetExchange.NASDAQ Northern Lights Fund Trust II PeakShares Sector Rotation ETF
+PSWD       AssetExchange.NASDAQ DBX ETF Trust Xtrackers Cybersecurity Select Equity ETF
+PTBD       AssetExchange.ARCA Pacer Trendpilot US Bond ETF
+PTEC       AssetExchange.NASDAQ Global X Funds Global X PropTech ETF
+PTF        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Technology Momentum ETF
+PTH        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Healthcare Momentum ETF
+PTIN       AssetExchange.ARCA Pacer Trendpilot International ETF
+PTIR       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long PLTR Daily ETF
+PTL        AssetExchange.ARCA Inspire 500 ETF
+PTNQ       AssetExchange.NASDAQ Pacer Funds Trust Pacer Trendpilot 100 ETF
+PTRB       AssetExchange.ARCA PGIM Total Return Bond ETF
+PUI        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Utilities Momentum ETF
+PULS       AssetExchange.ARCA PGIM Ultra Short Bond ETF
+PULT       AssetExchange.ARCA Putnam ESG Ultra Short ETF
+PUSH       AssetExchange.ARCA PGIM Ultra Short Municipal Bond ETF
+PVAL       AssetExchange.ARCA Putnam Focused Large Cap Value ETF
+PVI        AssetExchange.ARCA Invesco Floating Rate Municipal Income ETF
+PWB        AssetExchange.ARCA Invesco Large Cap Growth ETF
+PWER       AssetExchange.ARCA Macquarie Energy Transition ETF
+PWV        AssetExchange.ARCA Invesco Large Cap Value ETF
+PWZ        AssetExchange.ARCA Invesco California AMT-Free Municipal Bond ETF
+PXE        AssetExchange.ARCA Invesco Energy Exploration & Production ETF
+PXF        AssetExchange.ARCA Invesco FTSE RAFI Developed Markets ex-U.S. ETF
+PXH        AssetExchange.ARCA Invesco FTSE RAFI Emerging Markets ETF
+PXI        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Energy Momentum ETF
+PXJ        AssetExchange.ARCA Invesco Oil & Gas Services ETF
+PY         AssetExchange.NASDAQ Principal Exchange-Traded Funds Principal Value ETF
+PYLD       AssetExchange.ARCA PIMCO Multi Sector Bond Active ETF
+PYPY       AssetExchange.ARCA YieldMax PYPL Option Income Strategy ETF
+PYZ        AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust Invesco Dorsey Wright Basic Materials Momentum ETF
+PZA        AssetExchange.ARCA Invesco National AMT-Free Municipal Bond ETF
+PZT        AssetExchange.ARCA Invesco New York AMT-Free Municipal Bond ETF
+QAI        AssetExchange.ARCA NYLI Hedge Multi-Strategy Tracker ETF
+QARP       AssetExchange.ARCA Xtrackers Russell 1000 US Quality at a Reasonable Price ETF
+QAT        AssetExchange.NASDAQ iShares Trust iShares MSCI Qatar ETF
+QBUF       AssetExchange.NASDAQ Innovator ETFs Trust Innovator Nasdaq-100 10 Buffer ETF Quarterly
+QCLR       AssetExchange.NASDAQ Global X Funds Global X NASDAQ 100 Collar 95-110 ETF
+QDCC       AssetExchange.ARCA Global X S&P 500 Quality Dividend Covered Call ETF
+QDIV       AssetExchange.ARCA Global X S&P 500 Quality Dividend ETF
+QDPL       AssetExchange.ARCA Pacer Metaurus US Large Cap Dividend Multiplier 400 ETF
+QDVO       AssetExchange.ARCA Amplify CWP Growth & Income ETF
+QEFA       AssetExchange.ARCA SPDR MSCI EAFE StrategicFactors ETF
+QEMM       AssetExchange.ARCA SPDR MSCI Emerging Markets StrategicFactors ETF
+QFLR       AssetExchange.ARCA Innovator Nasdaq-100 Managed Floor ETF
+QGRO       AssetExchange.ARCA American Century U.S. Quality Growth ETF
+QHDG       AssetExchange.NASDAQ Innovator ETFs Trust Innovator Hedged Nasdaq-100 ETF
+QINT       AssetExchange.ARCA American Century Quality Diversified International ETF
+QIS        AssetExchange.ARCA Simplify Multi-QIS Alternative ETF
+QLTA       AssetExchange.ARCA iShares Aaa - A Rated Corporate Bond ETF
+QLTI       AssetExchange.ARCA GMO International Quality ETF
+QLTY       AssetExchange.ARCA GMO U.S. Quality ETF
+QMOM       AssetExchange.NASDAQ EA Series Trust Alpha Architect U.S. Quantitative Momentum ETF
+QNXT       AssetExchange.NASDAQ iShares Trust iShares Nasdaq-100 ex Top 30 ETF
+QOWZ       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco Nasdaq Free Cash Flow Achievers ETF
+QPX        AssetExchange.ARCA AdvisorShares Q Dynamic Growth ETF
+QQA        AssetExchange.NASDAQ Invesco Actively Managed Exchange-Traded Fund Trus Invesco QQQ Income Advantage ETF
+QQH        AssetExchange.ARCA HCM Defender 100 Index ETF
+QQJG       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco ESG NASDAQ Next Gen 100 ETF
+QQMG       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco ESG NASDAQ 100 ETF
+QQQA       AssetExchange.NASDAQ ProShares Trust ProShares Nasdaq-100 Dorsey Wright Momentum ETF
+QQQG       AssetExchange.NASDAQ Pacer Funds Trust Pacer Nasdaq 100 Top 50 Cash Cows Growth Leaders ETF
+QQQI       AssetExchange.NASDAQ NEOS ETF Trust NEOS Nasdaq 100 High Income ETF
+QQQJ       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco NASDAQ Next Gen 100 ETF
+QQQM       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco NASDAQ 100 ETF
+QQQP       AssetExchange.NASDAQ Tradr 2X Long Triple Q Quarterly Investment Managers Series Trust II ETF
+QQQS       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco NASDAQ Future Gen 200 ETF
+QQQT       AssetExchange.NASDAQ Tidal Trust II Defiance Nasdaq 100 Income Target ETF
+QQQW       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long Triple Q Weekly ETF
+QQQY       AssetExchange.NASDAQ Tidal Trust II Defiance Nasdaq 100 Enhanced Options & 0DTE Income ETF
+QRFT       AssetExchange.ARCA Qraft AI-Enhanced US Large Cap ETF
+QRMI       AssetExchange.NASDAQ Global X Funds Global X NASDAQ 100 Risk Managed Income ETF
+QSIX       AssetExchange.NASDAQ Pacer Funds Trust Pacer Metaurus Nasdaq 100 Dividend Multiplier 600 ETF
+QSWN       AssetExchange.ARCA Amplify BlackSwan Tech & Treasury ETF
+QTOP       AssetExchange.NASDAQ iShares Trust iShares Nasdaq Top 30 Stocks ETF
+QTR        AssetExchange.NASDAQ Global X Funds Global X NASDAQ 100 Tail Risk ETF
+QTUM       AssetExchange.NASDAQ Defiance Quantum ETF
+QUS        AssetExchange.ARCA SPDR MSCI USA StrategicFactors ETF
+QVAL       AssetExchange.NASDAQ EA Series Trust Alpha Architect U.S. Quantitative Value ETF
+QVML       AssetExchange.ARCA Invesco S&P 500 QVM Multi-factor ETF
+QVMM       AssetExchange.ARCA Invesco S&P MidCap 400 QVM Multi-factor ETF
+QVMS       AssetExchange.ARCA Invesco S&P SmallCap 600 QVM Multi-factor ETF
+QWLD       AssetExchange.ARCA SPDR MSCI World StrategicFactors ETF
+QXQ        AssetExchange.NASDAQ The RBB Fund, Inc. SGI Enhanced Nasdaq-100 ETF
+QYLD       AssetExchange.NASDAQ Global X Funds Global X NASDAQ-100 Covered Call ETF
+QYLE       AssetExchange.NASDAQ Global X Funds Global X Nasdaq 100 ESG Covered Call ETF
+QYLG       AssetExchange.NASDAQ Global X Funds Global X Nasdaq 100 Covered Call & Growth ETF
+RAAX       AssetExchange.ARCA VanEck Inflation Allocation ETF
+RAFE       AssetExchange.ARCA PIMCO RAFI ESG U.S. ETF
+RATE       AssetExchange.ARCA Global X Interest Rate Hedge ETF
+RAYC       AssetExchange.ARCA Rayliant Quantamental China Equity ETF
+RAYD       AssetExchange.ARCA Rayliant Quantitative Developed Market Equity ETF
+RAYE       AssetExchange.ARCA Rayliant Quantamental Emerging Market ex-China Equity ETF
+RAYJ       AssetExchange.ARCA Rayliant SMDAM Japan Equity ETF
+RAYS       AssetExchange.NASDAQ Global X Funds Global X Solar ETF
+RBLD       AssetExchange.ARCA First Trust Alerian US NextGen Infrastructure ETF
+RDIV       AssetExchange.ARCA Invesco S&P Ultra Dividend Revenue ETF
+RDOG       AssetExchange.ARCA ALPS REIT Dividend Dogs ETF
+RDVY       AssetExchange.NASDAQ First Trust Rising Dividend Achievers ETF
+REAI       AssetExchange.NASDAQ Tidal ETF Trust Intelligent Real Estate ETF
+RECS       AssetExchange.ARCA Columbia Research Enhanced Core ETF
+REET       AssetExchange.ARCA iShares Global REIT ETF
+REIT       AssetExchange.NASDAQ ALPS ETF Trust ALPS Active REIT ETF
+REMX       AssetExchange.ARCA VanEck Rare Earth and Strategic Metals ETF
+RENW       AssetExchange.ARCA Harbor Energy Transition Strategy ETF
+REVS       AssetExchange.ARCA Columbia Research Enhanced Value ETF
+REZ        AssetExchange.ARCA iShares Residential and Multisector Real Estate ETF
+RFDA       AssetExchange.ARCA RiverFront Dynamic US Dividend Advantage ETF
+RFDI       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust RiverFront Dynamic Developed International ETF
+RFEM       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust RiverFront Dynamic Emerging Markets ETF
+RFEU       AssetExchange.NASDAQ First Trust Exchange-Traded Fund III First Trust RiverFront Dynamic Europe ETF
+RFFC       AssetExchange.ARCA ALPS Active Equity Opportunity ETF
+RFG        AssetExchange.ARCA Invesco S&P MidCap 400 Pure Growth ETF
+RFLR       AssetExchange.ARCA Innovator U.S. Small Cap Managed Floor ETF
+RFV        AssetExchange.ARCA Invesco S&P MidCap 400 Pure Value ETF
+RGEF       AssetExchange.ARCA Rockefeller Global Equity ETF
+RHCB       AssetExchange.ARCA BNY Mellon Responsible Horizons Corporate Bond ETF
+RHRX       AssetExchange.ARCA RH Tactical Rotation ETF
+RHTX       AssetExchange.ARCA RH Tactical Outlook ETF
+RIET       AssetExchange.ARCA Hoya Capital High Dividend Yield ETF
+RINC       AssetExchange.ARCA AXS Real Estate Income ETF
+RINF       AssetExchange.ARCA ProShares Inflation Expectations ETF
+RISN       AssetExchange.ARCA Inspire Tactical Balanced ETF
+RISR       AssetExchange.ARCA FolioBeyond Alternative Income and Interest Rate Hedge ETF
+RITA       AssetExchange.ARCA ETFB Green SRI REITs ETF
+RJMG       AssetExchange.ARCA FT Raymond James Multicap Growth Equity ETF
+RLY        AssetExchange.ARCA SPDR SSgA Multi-Asset Real Return ETF of SSgA Active Trust
+RMCA       AssetExchange.ARCA Rockefeller California Municipal Bond ETF
+RMNY       AssetExchange.ARCA Rockefeller New York Municipal Bond ETF
+RMOP       AssetExchange.ARCA Rockefeller Opportunistic Municipal Bond ETF
+RND        AssetExchange.ARCA First Trust Bloomberg R&D Leaders ETF
+RNEM       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI Emerging Markets Equity Select ETF
+RNEW       AssetExchange.NASDAQ VanEck ETF Trust VanEck Green Infrastructure ETF
+RNRG       AssetExchange.NASDAQ Global X Funds Global X Renewable Energy Producers ETF
+RNSC       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI Small Cap US Equity Select ETF
+RNWZ       AssetExchange.ARCA TrueShares Eagle Global Renewable Energy Income ETF
+ROAM       AssetExchange.ARCA Hartford Multifactor Emerging Markets ETF
+ROBO       AssetExchange.ARCA ROBO Global Robotics & Automation Index ETF
+ROBT       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Nasdaq Artificial Intelligence and Robotics ETF
+RODM       AssetExchange.ARCA Hartford Multifactor Developed Markets (ex-US) ETF
+ROE        AssetExchange.NASDAQ EA Series Trust Astoria US Equal Weight Quality Kings ETF
+ROKT       AssetExchange.ARCA SPDR S&P Kensho Final Frontiers ETF
+RORO       AssetExchange.ARCA ATAC US Rotation ETF
+ROSC       AssetExchange.ARCA Hartford Multifactor Small Cap ETF
+ROUS       AssetExchange.ARCA Hartford Multifactor US Equity ETF
+RPAR       AssetExchange.ARCA RPAR Risk Parity ETF
+RPG        AssetExchange.ARCA Invesco S&P 500 Pure Growth ETF
+RPV        AssetExchange.ARCA Invesco S&P 500 Pure Value ETF
+RSHO       AssetExchange.ARCA Tema American Reshoring ETF
+RSJN       AssetExchange.ARCA FT Vest U.S. Equity Equal Weight Buffer ETF - June
+RSMC       AssetExchange.ARCA Rockefeller U.S. Small-Mid Cap ETF
+RSP        AssetExchange.ARCA Invesco S&P 500 Equal Weight ETF
+RSPA       AssetExchange.ARCA Invesco S&P 500 Equal Weight Income Advantage ETF
+RSPC       AssetExchange.ARCA Invesco Exchange-Traded Fund Trust Invesco S&P 500 Equal Weight Communication Services ETF
+RSPD       AssetExchange.ARCA Invesco S&P 500 Equal Weight Consumer Discretionary ETF
+RSPE       AssetExchange.ARCA Invesco ESG S&P 500 Equal Weight ETF
+RSPF       AssetExchange.ARCA Invesco S&P 500 Equal Weight Financials ETF
+RSPG       AssetExchange.ARCA Invesco S&P 500 Equal Weight Energy ETF
+RSPH       AssetExchange.ARCA Invesco S&P 500 Equal Weight Health Care ETF
+RSPM       AssetExchange.ARCA Invesco S&P 500 Equal Weight Materials ETF
+RSPN       AssetExchange.ARCA Invesco S&P 500 Equal Weight Industrials ETF
+RSPR       AssetExchange.ARCA Invesco S&P 500 Equal Weight Real Estate ETF
+RSPS       AssetExchange.ARCA Invesco S&P 500 Equal Weight Consumer Staples ETF
+RSPT       AssetExchange.ARCA Invesco S&P 500 Equal Weight Technology ETF
+RSPU       AssetExchange.ARCA Invesco S&P 500 Equal Weight Utilities ETF
+RSSE       AssetExchange.ARCA FT Vest U.S. Equity Equal-Weight Buffer ETF September
+RSSL       AssetExchange.ARCA Global X Russell 2000 ETF
+RTH        AssetExchange.NASDAQ VanEck Retail ETF
+RUNN       AssetExchange.NASDAQ Strategic Trust Running Oak Efficient Growth ETF
+RVER       AssetExchange.ARCA Trenchless Fund ETF
+RVNU       AssetExchange.ARCA Xtrackers Municipal Infrastructure Revenue Bond ETF
+RWJ        AssetExchange.ARCA Invesco S&P SmallCap 600 Revenue ETF
+RWK        AssetExchange.ARCA Invesco S&P MidCap 400 Revenue ETF
+RWL        AssetExchange.ARCA Invesco S&P 500 Revenue ETF
+RWO        AssetExchange.ARCA SPDR  Dow Jones  Global Real Estate ETF
+RWR        AssetExchange.ARCA SPDR Dow Jones REIT ETF
+RWX        AssetExchange.ARCA SPDR Dow Jones International Real Estate ETF
+RXI        AssetExchange.ARCA iShares Global Consumer Discretionary ETF
+RYLD       AssetExchange.ARCA Global X Russell 2000 Covered Call ETF
+RYLG       AssetExchange.ARCA Global X Russell 2000 Covered Call & Growth ETF
+RZG        AssetExchange.ARCA Invesco S&P SmallCap 600 Pure Growth ETF
+RZV        AssetExchange.ARCA Invesco S&P SmallCap 600 Pure Value ETF
+SAEF       AssetExchange.ARCA Schwab Ariel ESG ETF
+SAGP       AssetExchange.ARCA Strategas Global Policy Opportunities ETF
+SAMM       AssetExchange.ARCA Strategas Macro Momentum ETF
+SAMT       AssetExchange.ARCA Strategas Macro Thematic Opportunities ETF
+SARK       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Short Innovation Daily ETF
+SAWG       AssetExchange.ARCA AAM Sawgrass US Large Cap Quality Growth ETF
+SAWS       AssetExchange.ARCA AAM Sawgrass US Small Cap Quality Growth ETF
+SBIO       AssetExchange.ARCA ALPS Medical Breakthroughs ETF
+SBIT       AssetExchange.ARCA ProShares UltraShort Bitcoin ETF
+SBND       AssetExchange.ARCA Columbia Short Duration Bond ETF
+SCAP       AssetExchange.ARCA InfraCap Small Cap Income ETF
+SCDS       AssetExchange.NASDAQ J.P. Morgan Exchange-Traded Fund Trust JPMorgan Fundamental Data Science Small Core ETF
+SCHA       AssetExchange.ARCA Schwab U.S Small- Cap ETF
+SCHB       AssetExchange.ARCA Schwab U.S. Broad Market ETF
+SCHC       AssetExchange.ARCA Schwab International Small-Cap Equity ETF
+SCHD       AssetExchange.ARCA Schwab US Dividend Equity ETF
+SCHE       AssetExchange.ARCA Schwab Emerging Markets Equity ETF
+SCHF       AssetExchange.ARCA Schwab International Equity ETF
+SCHG       AssetExchange.ARCA Schwab U.S. Large-Cap Growth ETF
+SCHH       AssetExchange.ARCA Schwab U.S. REIT ETF
+SCHI       AssetExchange.ARCA Schwab 5-10 Year Corporate Bond ETF
+SCHJ       AssetExchange.ARCA Schwab 1-5 Year Corporate Bond ETF
+SCHK       AssetExchange.ARCA Schwab 1000 Index ETF
+SCHM       AssetExchange.ARCA Schwab U.S. Mid-Cap ETF
+SCHO       AssetExchange.ARCA Schwab Short-Term U.S. Treasury ETF
+SCHP       AssetExchange.ARCA Schwab U.S. TIPS ETF
+SCHQ       AssetExchange.ARCA Schwab Long-Term U.S. Treasury ETF
+SCHR       AssetExchange.ARCA Schwab Intermediately-Term U.S. Treasury ETF
+SCHV       AssetExchange.ARCA Schwab U.S. Large-Cap Value ETF
+SCHX       AssetExchange.ARCA Schwab U.S. Large- Cap ETF
+SCHY       AssetExchange.ARCA Schwab International Dividend Equity ETF
+SCHZ       AssetExchange.ARCA Schwab US Aggregate Bond ETF
+SCIO       AssetExchange.ARCA First Trust Structured Credit Income Opportunities ETF
+SCJ        AssetExchange.ARCA iShares MSCI Japan Small-Cap ETF
+SCMB       AssetExchange.ARCA Schwab Municipal Bond ETF
+SCUS       AssetExchange.ARCA Schwab Ultra-Short Income ETF
+SCYB       AssetExchange.ARCA Schwab High Yield Bond ETF
+SCZ        AssetExchange.NASDAQ iShares MSCI EAFE Small-Cap ETF
+SDCP       AssetExchange.ARCA Virtus Newfleet Short Duration Core Plus Bond ETF
+SDEM       AssetExchange.ARCA Global X MSCI SuperDividend Emerging Markets ETF
+SDFI       AssetExchange.ARCA AB Short Duration Income ETF
+SDG        AssetExchange.NASDAQ iShares Trust iShares MSCI Global Sustainable Development Goals ETF
+SDIV       AssetExchange.ARCA Global X SuperDividend ETF
+SDOG       AssetExchange.ARCA ALPS Sector Dividend Dogs ETF
+SDSI       AssetExchange.NASDAQ American Century ETF Trust American Century Short Duration Strategic Income ETF
+SDVY       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust SMID Cap Rising Dividend Achievers ETF
+SDY        AssetExchange.ARCA SPDR S&P Dividend ETF
+SEA        AssetExchange.ARCA U.S. Global Sea to Sky Cargo ETF
+SECR       AssetExchange.ARCA NYLI MacKay Securitized Income ETF
+SEEM       AssetExchange.NASDAQ SEI Exchange Traded Funds SEI Select Emerging Markets Equity ETF
+SEIE       AssetExchange.NASDAQ SEI Exchange Traded Funds SEI Select International Equity ETF
+SEIS       AssetExchange.NASDAQ SEI Exchange Traded Funds SEI Select Small Cap ETF
+SEIX       AssetExchange.ARCA Virtus SEIX Senior Loan ETF
+SEMI       AssetExchange.ARCA Columbia Semiconductor and Technology ETF
+SEPT       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer10 Sep ETF
+SEPW       AssetExchange.ARCA AllianzIM U.S. Large Cap Buffer20 Sep ETF
+SETH       AssetExchange.ARCA ProShares Short Ether ETF
+SETM       AssetExchange.NASDAQ Sprott Funds Trust Sprott Critical Materials ETF
+SFLO       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Small Cap Free Cash Flow ETF
+SFLR       AssetExchange.ARCA Innovator Equity Managed Floor ETF
+SFY        AssetExchange.ARCA SoFi Select 500 ETF
+SFYF       AssetExchange.ARCA SoFi Social 50 ETF
+SFYX       AssetExchange.ARCA SoFi Next 500 ETF
+SGDJ       AssetExchange.ARCA Sprott Junior Gold Miners ETF
+SGDM       AssetExchange.ARCA Sprott Gold Miners ETF
+SGLC       AssetExchange.ARCA SGI U.S. Large Cap Core ETF
+SGOL       AssetExchange.ARCA abrdn Physical Gold Shares ETF
+SGOV       AssetExchange.ARCA iShares 0-3 Month Treasury Bond ETF
+SHE        AssetExchange.ARCA SPDR MSCI USA Gender Diversity ETF
+SHLD       AssetExchange.ARCA Global X Defense Tech ETF
+SHM        AssetExchange.ARCA SPDR Nuveen Bloomberg Short Term Municipal Bond ETF
+SHOC       AssetExchange.NYSE Strive U.S. Semiconductor ETF
+SHPP       AssetExchange.ARCA Pacer Industrials and Logistics ETF
+SHRT       AssetExchange.ARCA Gotham Short Strategies ETF
+SHRY       AssetExchange.NASDAQ First Trust Exchange-Traded Fund VI First Trust Bloomberg Shareholder Yield ETF
+SHUS       AssetExchange.ARCA Stratified LargeCap Hedged ETF
+SHV        AssetExchange.NASDAQ iShares Short Treasury Bond ETF
+SHY        AssetExchange.NASDAQ iShares 1-3 Year Treasury Bond ETF
+SHYG       AssetExchange.ARCA iShares 0-5 Year High Yield Corporate Bond ETF
+SHYL       AssetExchange.ARCA Xtrackers Short Duration High Yield Bond ETF
+SIFI       AssetExchange.ARCA Harbor Scientific Alpha Income ETF
+SIHY       AssetExchange.ARCA Harbor Scientific Alpha High-Yield ETF
+SIL        AssetExchange.ARCA Global X Silver Miners ETF (NEW)
+SILJ       AssetExchange.ARCA Amplify Junior Silver Miners ETF
+SIMS       AssetExchange.ARCA SPDR S&P Kensho Intelligent Structures ETF
+SIO        AssetExchange.ARCA Touchstone Strategic Income ETF
+SIVR       AssetExchange.ARCA abrdn Physical Silver Shares ETF
+SIXA       AssetExchange.ARCA ETC 6 Meridian Mega Cap Equity ETF
+SIXD       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 Jun/Dec ETF
+SIXF       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 Feb/Aug ETF
+SIXG       AssetExchange.NASDAQ Defiance Connective Technologies ETF
+SIXH       AssetExchange.ARCA ETC 6 Meridian Hedged Equity Index Option ETF
+SIXJ       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 Jan/Jul ETF
+SIXL       AssetExchange.ARCA ETC 6 Meridian Low Beta Equity ETF
+SIXO       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 Apr/Oct ETF
+SIXP       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 Mar/Sep ETF
+SIXS       AssetExchange.ARCA ETC 6 Meridian Small Cap Equity ETF
+SIXZ       AssetExchange.ARCA AllianzIM U.S. Large Cap 6 Month Buffer10 May/Nov ETF
+SIZE       AssetExchange.ARCA iShares MSCI USA Size Factor ETF
+SJCP       AssetExchange.NASDAQ Manager Directed Portfolios SanJac Alpha Core Plus Bond ETF
+SJLD       AssetExchange.NASDAQ SanJac Alpha Low Duration ETF
+SJNK       AssetExchange.ARCA SPDR Bloomberg Short Term High Yield Bond ETF
+SKRE       AssetExchange.NASDAQ ETF Opportunities Trust Tuttle Capital Daily 2X Inverse Regional Banks ETF
+SKYU       AssetExchange.NASDAQ ProShares Trust ProShares Ultra Nasdaq Cloud Computing ETF
+SKYY       AssetExchange.NASDAQ First Trust Cloud Computing ETF
+SLDR       AssetExchange.ARCA Global X Short-Term Treasury Ladder ETF
+SLNZ       AssetExchange.NYSE TCW Senior Loan ETF
+SLQD       AssetExchange.NASDAQ iShares 0-5 Year Investment Grade Corporate Bond ETF
+SLX        AssetExchange.ARCA VanEck Steel ETF
+SLYG       AssetExchange.ARCA SPDR S&P 600 Small Cap Growth ETF (based on S&P SmallCap 600 Growth Index--symbol: CKG)
+SLYV       AssetExchange.ARCA SPDR S&P 600 Small Cap Value ETF (based on S&P SmallCap 600 Value Index symbol--CVK)
+SMAP       AssetExchange.ARCA Amplify Small-Mid Cap Equity ETF
+SMBS       AssetExchange.ARCA Schwab Mortgage-Backed Securities ETF
+SMCF       AssetExchange.NASDAQ Themes ETF Trust Themes US Small Cap Cash Flow Champions ETF
+SMCO       AssetExchange.NASDAQ Tidal Trust II Hilton Small-MidCap Opportunity ETF
+SMCP       AssetExchange.NASDAQ ETF Series Solutions Trust AlphaMark Actively Managed Small Cap ETF
+SMCX       AssetExchange.NASDAQ Tidal Trust II Defiance Daily Target 2X Long SMCI ETF
+SMCY       AssetExchange.ARCA YieldMax SMCI Option Income Strategy ETF
+SMH        AssetExchange.NASDAQ VanEck Semiconductor ETF
+SMHX       AssetExchange.NASDAQ VanEck ETF Trust VanEck Fabless Semiconductor ETF
+SMIG       AssetExchange.ARCA Bahl & Gaynor Small/Mid Cap Income Growth ETF
+SMIZ       AssetExchange.ARCA Zacks Small/Mid Cap ETF
+SMLF       AssetExchange.ARCA iShares U.S. Small Cap Equity Factor ETF
+SMLL       AssetExchange.ARCA Harbor Active Small Cap ETF
+SMLV       AssetExchange.ARCA SPDR SSGA US Small Cap Low Volatility Index ETF
+SMOG       AssetExchange.ARCA VanEck Low Carbon Energy ETF
+SMRI       AssetExchange.NASDAQ EA Series Trust Bushido Capital US Equity ETF
+SMST       AssetExchange.NASDAQ Tidal Trust II Defiance Daily Target 2x Short MSTR ETF
+SMTH       AssetExchange.ARCA ALPS Smith Core Plus Bond ETF
+SNOY       AssetExchange.ARCA YieldMax SNOW Option Income Strategy ETF
+SNPE       AssetExchange.ARCA Xtrackers S&P 500 ESG ETF
+SNSR       AssetExchange.NASDAQ Global X Funds Global X Internet of Things ETF
+SOCL       AssetExchange.NASDAQ Global X Funds Global X Social Media ETF
+SOFR       AssetExchange.ARCA Amplify Samsung SOFR ETF
+SOLR       AssetExchange.ARCA SmartETFs Sustainable Energy II ETF
+SOXM       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long SOXX Monthly ETF
+SOXQ       AssetExchange.NASDAQ Invesco Exchange-Traded Fund Trust II Invesco PHLX Semiconductor ETF
+SOXW       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long SOXX Weekly ETF
+SOXX       AssetExchange.NASDAQ iShares Semiconductor ETF
+SPAB       AssetExchange.ARCA SPDR Portfolio Aggregate Bond ETF
+SPAM       AssetExchange.NASDAQ Themes ETF Trust Themes Cybersecurity ETF
+SPAQ       AssetExchange.NASDAQ Listed Funds Trust Horizon Kinetics SPAC Active ETF
+SPAX       AssetExchange.ARCA Robinson Alternative Yield Pre-merger SPAC ETF
+SPBC       AssetExchange.NASDAQ Simplify Exchange Traded Funds Simplify U.S. Equity PLUS GBTC ETF
+SPBO       AssetExchange.ARCA SPDR Portfolio Corporate Bond ETF
+SPC        AssetExchange.NASDAQ Trust for Professional Managers CrossingBridge Pre-Merger SPAC ETF
+SPCX       AssetExchange.NASDAQ The SPAC and New Issue ETF
+SPD        AssetExchange.ARCA Simplify US Equity PLUS Downside Convexity ETF
+SPDG       AssetExchange.ARCA SPDR Portfolio S&P Sector Neutral Dividend ETF
+SPDV       AssetExchange.ARCA AAM S&P 500 High Dividend Value ETF
+SPDW       AssetExchange.ARCA SPDR Portfolio Developed World ex-US ETF
+SPEM       AssetExchange.ARCA SPDR Portfolio Emerging Markets ETF
+SPEU       AssetExchange.ARCA SPDR Portfolio Europe ETF
+SPFF       AssetExchange.ARCA Global X SuperIncome Preferred ETF
+SPGM       AssetExchange.ARCA SPDR Portfolio MSCI Global Stock Market ETF
+SPGP       AssetExchange.ARCA Invesco S&P 500 GARP ETF
+SPHB       AssetExchange.ARCA Invesco S&P 500 High Beta ETF
+SPHD       AssetExchange.ARCA Invesco S&P 500 High Dividend Low Volatility ETF
+SPHQ       AssetExchange.ARCA Invesco S&P 500 Quality ETF
+SPHY       AssetExchange.ARCA SPDR Portfolio High Yield Bond ETF
+SPIB       AssetExchange.ARCA SPDR Portfolio Intermediate Term Corporate Bond ETF
+SPIP       AssetExchange.ARCA SPDR Portfolio TIPS ETF
+SPLB       AssetExchange.ARCA SPDR Portfolio Long Term Corporate Bond ETF
+SPLG       AssetExchange.ARCA SPDR Portfolio S&P 500 ETF
+SPLV       AssetExchange.ARCA Invesco S&P 500 Low Volatility ETF
+SPMB       AssetExchange.ARCA SPDR Portfolio Mortgage Backed Bond ETF
+SPMD       AssetExchange.ARCA SPDR Portfolio S&P 400 Mid Cap ETF
+SPMO       AssetExchange.ARCA Invesco S&P 500 Momentum ETF
+SPQ        AssetExchange.ARCA Simplify US Equity PLUS QIS ETF
+SPRE       AssetExchange.ARCA SP Funds S&P Global REIT Sharia ETF
+SPRX       AssetExchange.NASDAQ Listed Funds Trust Spear Alpha ETF
+SPSB       AssetExchange.ARCA SPDR Portfolio Short Term Corporate Bond ETF
+SPSK       AssetExchange.ARCA SP Funds Dow Jones Global Sukuk ETF
+SPSM       AssetExchange.ARCA SPDR Portfolio S&P 600 Small Cap ETF
+SPTB       AssetExchange.ARCA SPDR Portfolio Treasury ETF
+SPTE       AssetExchange.ARCA SP Funds S&P Global Technology ETF
+SPTI       AssetExchange.ARCA SPDR Portfolio Intermediate Term Treasury ETF
+SPTL       AssetExchange.ARCA SPDR Portfolio Long Term Treasury ETF
+SPTM       AssetExchange.ARCA SPDR Portfolio S&P 1500 Composite Stock Market ETF
+SPTS       AssetExchange.ARCA SPDR Portfolio Short Term Treasury ETF
+SPUC       AssetExchange.ARCA Simplify US Equity PLUS Upside Convexity ETF
+SPUS       AssetExchange.ARCA SP Funds S&P 500 Sharia ETF
+SPVM       AssetExchange.ARCA Invesco S&P 500 Value with Momentum ETF
+SPVU       AssetExchange.ARCA Invesco S&P 500 Enhanced Value ETF
+SPWO       AssetExchange.ARCA SP Funds S&P World (ex-US) ETF
+SPXE       AssetExchange.ARCA ProShares S&P 500 Ex-Energy ETF
+SPXN       AssetExchange.ARCA ProShares S&P 500 Ex-Financials ETF
+SPXT       AssetExchange.ARCA ProShares S&P 500 Ex-Technology ETF
+SPXV       AssetExchange.ARCA ProShares S&P 500 Ex-Health Care ETF
+SPY        AssetExchange.ARCA SPDR S&P 500 ETF Trust
+SPYB       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long SPY Weekly ETF
+SPYC       AssetExchange.ARCA Simplify US Equity PLUS Convexity ETF
+SPYD       AssetExchange.ARCA SPDR Portfolio S&P 500 High Dividend ETF
+SPYG       AssetExchange.ARCA SPDR Portfolio S&P 500 Growth ETF
+SPYM       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long SPY Monthly ETF
+SPYQ       AssetExchange.NASDAQ Tradr 2X Long SPY Quarterly Investment Managers Series Trust II ETF
+SPYT       AssetExchange.ARCA Defiance S&P 500 Income Target ETF
+SPYV       AssetExchange.ARCA SPDR Portfolio S&P 500 Value ETF
+SPYX       AssetExchange.ARCA SPDR S&P 500 Fossil Fuel Free ETF
+SQEW       AssetExchange.ARCA LeaderShares Equity Skew ETF
+SQLV       AssetExchange.NASDAQ Royce Quant Small-Cap Quality Value ETF
+SQY        AssetExchange.ARCA YieldMax SQ Option Income Strategy ETF
+SRET       AssetExchange.NASDAQ Global X Funds Global X SuperDividend REIT ETF
+SRHQ       AssetExchange.ARCA SRH U.S. Quality ETF
+SRHR       AssetExchange.ARCA SRH REIT Covered Call ETF
+SRLN       AssetExchange.ARCA SPDR Blackstone Senior Loan ETF
+SROI       AssetExchange.ARCA Calamos Antetokounmpo Global Sustainable Equities ETF
+SRVR       AssetExchange.ARCA Pacer Data & Infrastructure Real Estate ETF
+SSFI       AssetExchange.ARCA Day Hagan/Ned Davis Research Smart Sector Fixed Income ETF
+SSPX       AssetExchange.ARCA Janus Henderson US Sustainable EquityETF
+SSPY       AssetExchange.ARCA Stratified LargeCap Index ETF
+SSUS       AssetExchange.ARCA Day Hagan Ned Davis Research Smart Sector ETF
+SSXU       AssetExchange.ARCA Day Hagan/Ned Davis Research Smart Sector International ETF
+STAX       AssetExchange.ARCA Macquarie Tax-Free USA Short Term ETF
+STCE       AssetExchange.ARCA Schwab Crypto Thematic ETF
+STIP       AssetExchange.ARCA iShares 0-5 Year TIPS Bond ETF
+STNC       AssetExchange.ARCA Hennessy Stance ESG ETF
+STRV       AssetExchange.NYSE Strive 500 ETF
+STSB       AssetExchange.NASDAQ EA Series Trust Stance Sustainable Beta ETF
+STXD       AssetExchange.NYSE Strive 1000 Dividend Growth ETF
+STXE       AssetExchange.NYSE Strive Emerging Markets Ex-China ETF
+STXG       AssetExchange.NYSE Strive 1000 Growth ETF
+STXI       AssetExchange.NYSE Strive International Developed Markets ETF
+STXK       AssetExchange.NYSE EA Series Trust Strive Small-Cap ETF
+STXM       AssetExchange.NYSE Strive MidCap ETF
+STXT       AssetExchange.NYSE Strive Total Return Bond ETF
+STXV       AssetExchange.NYSE Strive 1000 Value ETF
+SUB        AssetExchange.ARCA iShares Short-Term National Muni Bond ETF
+SUPL       AssetExchange.ARCA ProShares Supply Chain Logistics ETF
+SUPP       AssetExchange.NYSE TCW Transform Supply Chain ETF
+SURE       AssetExchange.ARCA AdvisorShares Insider Advantage ETF
+SURI       AssetExchange.ARCA Simplify Propel Opportunities ETF
+SUSA       AssetExchange.ARCA iShares MSCI USA ESG Select ETF
+SUSB       AssetExchange.NASDAQ iShares Trust iShares ESG Aware 1-5 Year USD Corporate Bond ETF
+SUSC       AssetExchange.NASDAQ iShares Trust iShares ESG Aware USD Corporate Bond ETF
+SUSL       AssetExchange.NASDAQ iShares Trust iShares ESG MSCI USA Leaders ETF
+SVOL       AssetExchange.ARCA Simplify Volatility Premium ETF
+SWAN       AssetExchange.ARCA Amplify BlackSwan Growth & Treasure Core ETF
+SWP        AssetExchange.NASDAQ Manager Directed Portfolios SWP Growth & Income ETF
+SXQG       AssetExchange.ARCA ETC 6 Meridian Quality Growth ETF
+SYFI       AssetExchange.ARCA AB Short Duration High Yield ETF
+SYNB       AssetExchange.ARCA Putnam BioRevolution ETF
+SZNE       AssetExchange.ARCA Pacer CFRA- Stoval Equal Weight Seasonal Rotation ETF
+TACK       AssetExchange.ARCA Fairlead Tactical Sector ETF
+TAFI       AssetExchange.ARCA AB Tax-Aware Short Duration Municipal ETF
+TAFL       AssetExchange.ARCA AB Tax-Aware Long Municipal ETF
+TAFM       AssetExchange.ARCA AB Tax-Aware Intermediate Municipal ETF
+TAGG       AssetExchange.ARCA T. Rowe Price QM U.S. Bond ETF
+TAN        AssetExchange.ARCA Invesco Solar ETF
+TARK       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long Innovation ETF
+TAXE       AssetExchange.NASDAQ T. Rowe Price Exchange-Traded Funds, Inc. Intermediate Municipal Income ETF
+TAXF       AssetExchange.ARCA American Century Diversified Municipal Bond ETF
+TAXX       AssetExchange.ARCA BondBloxx IR+M Tax Aware Short Duration ETF
+TBF        AssetExchange.ARCA ProShares Short 20+ Year Treasury ETF
+TBFC       AssetExchange.ARCA The Brinsmere Fund - Conservative ETF
+TBFG       AssetExchange.ARCA The Brinsmere Fund - Growth ETF
+TBG        AssetExchange.ARCA TBG Dividend Focus ETF
+TBIL       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 3 Month Bill ETF
+TBLL       AssetExchange.ARCA Invesco Short Term Treasury ETF
+TBUX       AssetExchange.ARCA T. Rowe Price Ultra Short-Term Bond ETF
+TCAF       AssetExchange.ARCA T. Rowe Price Capital Appreciation Equity ETF
+TCHI       AssetExchange.NASDAQ iShares Trust iShares MSCI China Multisector Tech ETF
+TCHP       AssetExchange.ARCA T. Rowe Price Blue Chip Growth ETF
+TDI        AssetExchange.NASDAQ Touchstone ETF Trust Touchstone Dynamic International ETF
+TDSB       AssetExchange.NASDAQ Exchange Listed Funds Trust Cabana Target Beta ETF
+TDSC       AssetExchange.NASDAQ Cabana Target Drawdown 10 ETF
+TDVG       AssetExchange.ARCA T. Rowe Price Dividend Growth ETF
+TECB       AssetExchange.ARCA iShares U.S. Tech Breakthrough Multisector ETF
+TEK        AssetExchange.ARCA iShares Technology Opportunities Active ETF
+TEKX       AssetExchange.NASDAQ SSGA Active Trust SPDR Galaxy Transformative Tech Accelerators ETF
+TEMP       AssetExchange.ARCA JPMorgan Climate Change Solutions ETF
+TEQI       AssetExchange.ARCA T. Rowe Price Equity Income ETF
+TFI        AssetExchange.ARCA SPDR Nuveen Bloomberg Municipal Bond ETF
+TFLO       AssetExchange.ARCA iShares Treasury Floating Rate Bond ETF
+TFLR       AssetExchange.ARCA T. Rowe Price Floating Rate ETF
+TFPN       AssetExchange.ARCA Blueprint Chesapeake Multi-Asset Trend ETF
+TGRT       AssetExchange.ARCA T. Rowe Price Growth ETF
+TGRW       AssetExchange.ARCA T. Rowe Price Growth Stock ETF
+THD        AssetExchange.ARCA iShares MSCI Thailand ETF
+THIR       AssetExchange.NYSE THOR Index Rotation ETF
+THLV       AssetExchange.NYSE THOR Equal Weight Low Volatility ETF
+THNQ       AssetExchange.ARCA ROBO Global Artificial Intelligence ETF
+THNR       AssetExchange.ARCA Amplify Weight Loss Drug & Treatment ETF
+THRO       AssetExchange.ARCA iShares U.S. Thematic Rotation Active ETF
+THTA       AssetExchange.ARCA SoFi Enhanced Yield ETF
+THY        AssetExchange.ARCA Toews Agility Shares Dynamic Tactical Income ETF
+THYF       AssetExchange.ARCA T. Rowe Price U.S. High Yield ETF
+TILL       AssetExchange.ARCA Teucrium Agricultural Strategy No K-1 ETF
+TIME       AssetExchange.ARCA Clockwise Core Equity & Innovation ETF
+TINT       AssetExchange.ARCA ProShares Smart Materials ETF
+TINY       AssetExchange.ARCA ProShares Nanotechnology ETF
+TIP        AssetExchange.ARCA iShares TIPS Bond ETF
+TIPX       AssetExchange.ARCA SPDR Bloomberg 1-10 Year TIPS ETF
+TLH        AssetExchange.ARCA iShares 10-20 Year Treasury Bond ETF
+TLT        AssetExchange.NASDAQ iShares 20 Year Treasury Bond ETF
+TLTM       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Long TLT Monthly ETF
+TLTQ       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 1.75X Long TLT Quarterly ETF
+TMET       AssetExchange.NASDAQ iShares U.S. ETF Trust iShares Transition-Enabling Metals ETF
+TMFE       AssetExchange.ARCA Motley Fool Capital Efficiency 100 Index ETF
+TMFX       AssetExchange.ARCA Motley Fool Next Index ETF
+TMSL       AssetExchange.ARCA T. Rowe Price Small-Mid Cap ETF
+TOAK       AssetExchange.ARCA Twin Oak Short Horizon Absolute Return ETF
+TOGA       AssetExchange.ARCA Tremblant Global ETF
+TOLZ       AssetExchange.ARCA ProShares DJ Brookfield Global Infrastructure ETF
+TOPT       AssetExchange.ARCA iShares Top 20 U.S. Stocks ETF
+TOTL       AssetExchange.ARCA SSgA Active ETF Trust SPDR DoubleLine Total Return Tactical ETF
+TOTR       AssetExchange.ARCA T. Rowe Price Total Return ETF
+TOUS       AssetExchange.ARCA T. Rowe Price International Equity ETF
+TPHD       AssetExchange.ARCA Timothy Plan High Dividend Stock ETF
+TPHE       AssetExchange.ARCA TIMOTHY PLAN HIGH DIVIDEND STOCK ENHANCED ETF
+TPIF       AssetExchange.ARCA Timothy Plan International ETF
+TPLC       AssetExchange.ARCA Timothy Plan US Large/Mid Cap Core ETF
+TPLE       AssetExchange.ARCA TIMOTHY PLAN US LARGE/MID CAP CORE ENHANCED ETF
+TPMN       AssetExchange.ARCA Timothy Plan Market Neutral ETF
+TPSC       AssetExchange.ARCA Timothy Plan US Small Cap Core ETF
+TPYP       AssetExchange.ARCA Tortoise North American Pipeline ETF
+TRFK       AssetExchange.ARCA Pacer Data and Digital Revolution ETF
+TRFM       AssetExchange.ARCA AAM Transformers ETF
+TRND       AssetExchange.ARCA Pacer Trendpilot Fund of Funds ETF
+TSDD       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Short TSLA Daily ETF
+TSEC       AssetExchange.ARCA Touchstone Securitized Income ETF
+TSL        AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 1.25x Long TSLA Daily ETF
+TSLL       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily TSLA Bull 2X Shares
+TSLQ       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 2X Short TSLA Daily ETF
+TSLR       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long TSLA Daily ETF
+TSLS       AssetExchange.NASDAQ Direxion Shares ETF Trust Direxion Daily TSLA Bear 1X Shares
+TSLT       AssetExchange.NASDAQ ETF Opportunities Trust T-REX 2X Long Tesla Daily Target ETF
+TSLW       AssetExchange.NASDAQ Investment Managers Series Trust II Tradr 1.5X Long TSLA Weekly ETF
+TSLY       AssetExchange.ARCA YieldMax TSLA Option Income Strategy ETF
+TSLZ       AssetExchange.NASDAQ ETF Opportunities Trust T-Rex 2X Inverse Tesla Daily Target ETF
+TSME       AssetExchange.ARCA Thrivent Small-Mid Cap ESG ETF
+TSMU       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long TSM Daily ETF
+TSMX       AssetExchange.NASDAQ Direxion Daily TSM Bull 2X Shares ETF Trust
+TSMY       AssetExchange.ARCA YieldMax TSM Option Income Strategy ETF
+TSMZ       AssetExchange.NASDAQ Direxion Daily TSM Bear 1X Shares ETF Trust
+TSPA       AssetExchange.ARCA T. Rowe Price U.S. Equity Research ETF
+TSPY       AssetExchange.NASDAQ ETF Opportunities Trust TappAlpha SPY Growth & Daily Income ETF
+TTEQ       AssetExchange.NASDAQ T. Rowe Price Exchange-Traded Funds, Inc. T. Rowe Price Technology ETF
+TUA        AssetExchange.ARCA Simplify Short Term Treasury Futures Strategy ETF
+TUG        AssetExchange.NASDAQ Listed Funds Trust STF Tactical Growth ETF
+TUGN       AssetExchange.NASDAQ Listed Funds Trust STF Tactical Growth & Income ETF
+TVAL       AssetExchange.ARCA T. Rowe Price Value ETF
+TWIO       AssetExchange.ARCA Trajan Wealth Income Opportunities ETF
+TXS        AssetExchange.ARCA Texas Capital Texas Equity Index ETF
+TXSS       AssetExchange.NASDAQ Texas Capital Funds Trust Texas Capital Texas Small Cap Equity Index ETF
+TYLG       AssetExchange.ARCA Global X Information Technology Covered Call & Growth ETF
+UAE        AssetExchange.NASDAQ iShares Trust iShares MSCI UAE ETF
+UBND       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Core Plus Intermediate Bond ETF
+UBRL       AssetExchange.NASDAQ GraniteShares ETF Trust GraniteShares 2x Long UBER Daily ETF
+UCON       AssetExchange.ARCA First Trust TCW Unconstrained Plus Bond ETF
+UCRD       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Corporate Bond ETF
+UCYB       AssetExchange.NASDAQ ProShares Trust ProShares Ultra Nasdaq Cybersecurity ETF
+UDIV       AssetExchange.ARCA Franklin U.S. Core Dividend Tilt Index ETF
+UEVM       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Emerging Markets Value Momentum ETF
+UFIV       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 5 Year Note ETF
+UFO        AssetExchange.NASDAQ Procure ETF Trust II Procure Space ETF
+UITB       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Core Intermediate Bond ETF
+UIVM       AssetExchange.NASDAQ Victory Portfolios II VictoryShares International Value Momentum ETF
+ULST       AssetExchange.ARCA SPDR SSgA Ultra Short Term Bond ETF of SSgA Active Trust
+ULTY       AssetExchange.ARCA YieldMax Ultra Option Income Strategy ETF
+ULVM       AssetExchange.NASDAQ VictoryShares Portfolios II VictoryShares US Value Momentum ETF
+UMMA       AssetExchange.NASDAQ Listed Funds Trust Wahed Dow Jones Islamic World ETF
+UPAR       AssetExchange.ARCA UPAR Ultra Risk Parity ETF
+UPGD       AssetExchange.ARCA Invesco Bloomberg Analyst Rating Improvers ETF
+UPGR       AssetExchange.NASDAQ DBX ETF Trust Xtrackers US Green Infrastructure Select Equity ETF
+URA        AssetExchange.ARCA Global X Uranium ETF
+URAX       AssetExchange.ARCA Defiance Daily Target 2x Long Uranium ETF
+URNJ       AssetExchange.NASDAQ Sprott Funds Trust Sprott Junior Uranium Miners ETF
+URNM       AssetExchange.ARCA Sprott Uranium Miners ETF
+URTH       AssetExchange.ARCA iShares MSCI World ETF
+USAF       AssetExchange.NASDAQ The 2023 ETF Series Trust Atlas America Fund
+USAI       AssetExchange.ARCA Pacer American Energy Independence ETF
+USCA       AssetExchange.ARCA Xtrackers MSCI USA Climate Action Equity ETF
+USCF       AssetExchange.NASDAQ Themes ETF Trust Themes US Cash Flow Champions ETF
+USCL       AssetExchange.NASDAQ iShares Trust iShares Climate Conscious & Transition MSCI USA ETF
+USDX       AssetExchange.NASDAQ The RBB Fund, Inc. SGI Enhanced Core ETF
+USFI       AssetExchange.NASDAQ Franklin Templeton ETF Trust BrandywineGLOBAL - U.S. Fixed Income ETF
+USIG       AssetExchange.NASDAQ iShares Broad USD Investment Grade Corporate Bond ETF
+USMC       AssetExchange.NASDAQ Principal Exchange-Traded Funds Principal U.S. Mega-Cap ETF
+USNZ       AssetExchange.ARCA Xtrackers Net Zero Pathway Paris Aligned US Equity ETF
+USOY       AssetExchange.NASDAQ Tidal Trust II Defiance Oil Enhanced Options Income ETF
+USPX       AssetExchange.ARCA Franklin U.S. Equity Index ETF
+USRD       AssetExchange.NASDAQ Themes ETF Trust Themes US R&D Champions ETF
+USRT       AssetExchange.ARCA iShares Core U.S. REIT ETF
+USSE       AssetExchange.ARCA Segall Bryant & Hamill Select Equity ETF
+USSG       AssetExchange.ARCA Xtrackers MSCI USA ESG Leaders Equity ETF
+USTB       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Short-Term Bond ETF
+USVM       AssetExchange.NASDAQ Victory Portfolios II VictoryShares US Small Mid Cap Value Momentum ETF
+USVN       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 7 Year Note ETF
+USXF       AssetExchange.NASDAQ iShares Trust iShares ESG Advanced MSCI USA ETF
+UTEN       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 10 Year Note ETF
+UTES       AssetExchange.ARCA Virtus Reaves Utilities ETF
+UTHY       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 30 Year Bond ETF
+UTRE       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 3 Year Note ETF
+UTRN       AssetExchange.ARCA Vesper US Large Cap Short-Term Reversal Strategy ETF
+UTWO       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 2 Year Note ETF
+UTWY       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 20 Year Bond ETF
+UYLD       AssetExchange.ARCA Angel Oak UltraShort Income ETF
+VABS       AssetExchange.ARCA Virtus Newfleet ABS/MBS ETF
+VALQ       AssetExchange.ARCA American Century U.S. Quality Value ETF
+VAW        AssetExchange.ARCA Vanguard Materials ETF
+VB         AssetExchange.ARCA Vanguard Small-Cap ETF
+VBK        AssetExchange.ARCA Vanguard Small-Cap Growth ETF
+VBND       AssetExchange.ARCA Vident U.S. Bond Strategy ETF
+VBR        AssetExchange.ARCA Vanguard Small-Cap Value ETF
+VCAR       AssetExchange.ARCA Simplify Volt RoboCar Disruption and Tech ETF
+VCIT       AssetExchange.NASDAQ Vanguard Intermediate-Term Corporate Bond ETF
+VCLN       AssetExchange.ARCA Virtus Duff & Phelps Clean Energy ETF
+VCLT       AssetExchange.NASDAQ Vanguard Long-Term Corporate Bond ETF
+VCR        AssetExchange.ARCA Vanguard Consumer Discretionary ETF
+VCRB       AssetExchange.NASDAQ Vanguard Malvern Funds Vanguard Core Bond ETF
+VCSH       AssetExchange.NASDAQ Vanguard Short-Term Corporate Bond ETF
+VDC        AssetExchange.ARCA Vanguard Consumer Staples ETF
+VDE        AssetExchange.ARCA Vanguard Energy ETF
+VEA        AssetExchange.ARCA Vanguard FTSE Developed Markets ETF
+VEGA       AssetExchange.ARCA AdvisorShares STAR Global Buy-Write ETF
+VEGI       AssetExchange.ARCA iShares MSCI Agriculture Producers ETF
+VEMY       AssetExchange.ARCA Virtus Stone Harbor Emerging Markets High Yield Bond ETF
+VERS       AssetExchange.ARCA ProShares Metaverse ETF
+VETZ       AssetExchange.ARCA Academy Veteran Impact ETF
+VEU        AssetExchange.ARCA Vanguard FTSE All-World Ex-US ETF
+VFH        AssetExchange.ARCA Vanguard Financials ETF
+VFLO       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Free Cash Flow ETF
+VGIT       AssetExchange.NASDAQ Vanguard Intermediate-Term Treasury ETF
+VGK        AssetExchange.ARCA Vanguard FTSE Europe ETF
+VGLT       AssetExchange.NASDAQ Vanguard Long-Term Treasury ETF
+VGSH       AssetExchange.NASDAQ Vanguard Short-Term Treasury ETF
+VGSR       AssetExchange.NASDAQ Manager Directed Portfolios Vert Global Sustainable Real Estate ETF
+VGT        AssetExchange.ARCA Vanguard Information Technology ETF
+VHT        AssetExchange.ARCA Vanguard Health Care ETF
+VICE       AssetExchange.ARCA AdvisorShares Vice ETF
+VIG        AssetExchange.ARCA Vanguard Dividend Appreciation ETF
+VIGI       AssetExchange.NASDAQ Vanguard Whitehall Funds Vanguard International Dividend Appreciation ETF
+VIOG       AssetExchange.ARCA Vanguard S&P Small-Cap 600 Growth ETF
+VIOO       AssetExchange.ARCA Vanguard S&P Small-Cap 600 ETF
+VIOV       AssetExchange.ARCA Vanguard S&P Small-Cap 600 Value ETF
+VIS        AssetExchange.ARCA Vanguard Industrials ETF
+VLLU       AssetExchange.ARCA Harbor AlphaEdge Large Cap Value ETF
+VLU        AssetExchange.ARCA SPDR S&P 1500 Value Tilt ETF
+VMBS       AssetExchange.NASDAQ Vanguard Mortgage-Backed Securities ETF
+VMOT       AssetExchange.NASDAQ EA Series Trust Alpha Architect Value Momentum Trend ETF
+VNAM       AssetExchange.ARCA Global X MSCI Vietnam ETF
+VNLA       AssetExchange.ARCA Janus Henderson Short Duration Income ETF
+VNQ        AssetExchange.ARCA Vanguard Real Estate ETF
+VNQI       AssetExchange.NASDAQ Vanguard International Equity Index Funds Vanguard Global ex-U.S. Real Estate ETF
+VNSE       AssetExchange.ARCA Natixis Vaughan Nelson Select ETF
+VO         AssetExchange.ARCA Vanguard Mid-Cap ETF
+VOE        AssetExchange.ARCA Vanguard Mid-Cap Value ETF
+VONE       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 1000 ETF
+VONG       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 1000 Growth ETF
+VONV       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 1000 Value ETF
+VOO        AssetExchange.ARCA Vanguard S&P 500 ETF
+VOOG       AssetExchange.ARCA Vanguard S&P 500 Growth ETF
+VOOV       AssetExchange.ARCA Vanguard S&P 500 Value ETF
+VOT        AssetExchange.ARCA Vanguard Mid-Cap Growth ETF
+VOTE       AssetExchange.NYSE TCW Transform 500 ETF
+VOX        AssetExchange.ARCA Vanguard Communication Services ETF
+VPC        AssetExchange.ARCA Virtus Private Credit Strategy ETF
+VPL        AssetExchange.ARCA Vanguard FTSE Pacific ETF
+VPLS       AssetExchange.NASDAQ Vanguard Malvern Funds Vanguard Core Plus Bond ETF
+VPU        AssetExchange.ARCA Vanguard Utilities ETF
+VRAI       AssetExchange.ARCA Virtus Real Asset Income ETF
+VRIG       AssetExchange.NASDAQ Invesco Actively Managed Exchange-Traded Fund Trust Invesco Variable Rate Investment Grade ETF
+VRP        AssetExchange.ARCA Invesco Variable Rate Preferred ETF
+VSDA       AssetExchange.NASDAQ Victory Portfolios II VictoryShares Dividend Accelerator ETF
+VSHY       AssetExchange.ARCA Virtus Newfleet Short Duration High Yield Bond ETF
+VSLU       AssetExchange.ARCA Applied Finance Valuation Large Cap ETF
+VSMV       AssetExchange.NASDAQ Victory Portfolios II VictoryShares US Multi-Factor Minimum Volatility ETF
+VT         AssetExchange.ARCA Vanguard Total World Stock ETF
+VTC        AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Total Corporate Bond ETF
+VTES       AssetExchange.ARCA Vanguard Short-Term Tax-Exempt Bond ETF
+VTHR       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 3000 ETF
+VTI        AssetExchange.ARCA Vanguard Total Stock Market ETF
+VTIP       AssetExchange.NASDAQ Vanguard Malvern Funds Vanguard Short-Term Inflation-Protected Securities Index Fund ETF Shares
+VTV        AssetExchange.ARCA Vanguard Value ETF
+VTWG       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 2000 Growth ETF
+VTWO       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 2000 ETF
+VTWV       AssetExchange.NASDAQ Vanguard Scottsdale Funds Vanguard Russell 2000 Value ETF
+VUG        AssetExchange.ARCA Vanguard Growth ETF
+VUSE       AssetExchange.ARCA Vident U.S. Equity Strategy ETF
+VV         AssetExchange.ARCA Vanguard Large-Cap ETF
+VWO        AssetExchange.ARCA Vanguard FTSE Emerging Markets ETF
+VWOB       AssetExchange.NASDAQ Vanguard Whitehall Funds Vanguard Emerging Markets Government Bond ETF
+VXF        AssetExchange.ARCA Vanguard Extended Market ETF
+VXUS       AssetExchange.NASDAQ Vanguard STAR Funds Vanguard Total International Stock ETF
+VYM        AssetExchange.ARCA Vanguard High Dividend Yield ETF
+VYMI       AssetExchange.NASDAQ Vanguard Whitehall Funds Vanguard International High Dividend Yield ETF
+WABF       AssetExchange.NASDAQ Franklin Templeton ETF Trust Western Asset Bond ETF
+WBIF       AssetExchange.ARCA WBI BullBear Value 3000 ETF
+WBIG       AssetExchange.ARCA WBI BullBear Yield 3000 ETF
+WBIL       AssetExchange.ARCA WBI BullBear Quality 3000 ETF
+WBIY       AssetExchange.ARCA WBI Power FactorTM High Dividend ETF
+WBND       AssetExchange.NASDAQ Legg Mason ETF Investment Trust Western Asset Total Return ETF
+WCEO       AssetExchange.ARCA Hypatia Women CEO ETF
+WCME       AssetExchange.ARCA First Trust WCM Developing World Equity ETF
+WCMI       AssetExchange.ARCA First Trust WCM International Equity ETF
+WDIV       AssetExchange.ARCA SPDR S&P Global Dividend ETF
+WDTE       AssetExchange.ARCA Defiance S&P 500 Enhanced Options & 0DTE Income ETF
+WEEI       AssetExchange.NASDAQ Ultimus Managers Trust Westwood Salient Enhanced Energy Income ETF
+WEEL       AssetExchange.ARCA Peerless Option Income Wheel ETF
+WFH        AssetExchange.ARCA Direxion Work From Home ETF
+WGMI       AssetExchange.NASDAQ Valkyrie ETF Trust II CoinShares Valkyrie Bitcoin Miners ETF
+WINC       AssetExchange.NASDAQ Legg Mason ETF Investment Trust Western Asset Short Duration Income ETF
+WINN       AssetExchange.NYSE Harbor Long-Term Growers ETF
+WIP        AssetExchange.ARCA SPDR FTSE International Government Inflation-Protected Bond ETF
+WISE       AssetExchange.NASDAQ Themes ETF Trust Themes Generative Artificial Intelligence ETF
+WLTG       AssetExchange.NYSE WealthTrust DBS Long Term Growth ETF
+WNDY       AssetExchange.NASDAQ Global X Funds Global X Wind Energy ETF
+WOMN       AssetExchange.ARCA Impact Shares YWCA Women's Empowerment ETF
+WOOD       AssetExchange.NASDAQ iShares Global Timber & Forestry ETF
+WRND       AssetExchange.NASDAQ New York Life Investments ETF Trust NYLI Global Equity R&D Leaders ETF
+WUSA       AssetExchange.ARCA Simplify Wolfe US Equity 150/50 ETF
+WWJD       AssetExchange.ARCA Inspire International ETF
+XAIX       AssetExchange.NASDAQ DBX ETF Trust Xtrackers Artificial Intelligence and Big Data ETF
+XAR        AssetExchange.ARCA SPDR S&P Aerospace & Defense ETF
+XB         AssetExchange.ARCA BondBloxx B-Rated USD High Yield Corporate Bond ETF
+XBB        AssetExchange.ARCA BondBloxx BB-Rated USD High Yield Corporate Bond ETF
+XBI        AssetExchange.ARCA SPDR S&P Biotech ETF
+XBIL       AssetExchange.NASDAQ The RBB Fund, Inc. US Treasury 6 Month Bill ETF
+XCCC       AssetExchange.ARCA BondBloxx CCC-Rated USD High Yield Corporate Bond ETF
+XCEM       AssetExchange.ARCA Columbia EM Core ex-China ETF
+XCLR       AssetExchange.ARCA Global X S&P 500 Collar 95-110 ETF
+XCNY       AssetExchange.NASDAQ SPDR Index Shares Fund SPDR S&P Emerging Markets ex-China ETF
+XCOR       AssetExchange.ARCA FundX ETF
+XES        AssetExchange.ARCA SPDR S&P Oil & Gas  Equipment & Services ETF
+XFIV       AssetExchange.ARCA BondBloxx Bloomberg Five Year Target Duration US Treasury ETF
+XFIX       AssetExchange.NASDAQ The RBB Fund, Inc. F/m Opportunistic Income ETF
+XFLX       AssetExchange.ARCA FundX Flexible ETF
+XHB        AssetExchange.ARCA SPDR S&P Homebuilders ETF
+XHE        AssetExchange.ARCA SPDR S&P Health Care Equipment ETF
+XHLF       AssetExchange.ARCA BondBloxx Bloomberg Six Month Target Duration US Treasury ETF
+XHS        AssetExchange.ARCA SPDR S&P Health Care Services ETF
+XHYC       AssetExchange.ARCA BondBloxx USD High Yield Bond Consumer Cyclicals Sector ETF
+XHYD       AssetExchange.ARCA BondBloxx USD High Yield Bond Consumer Non-Cyclicals Sector ETF
+XHYE       AssetExchange.ARCA BondBloxx USD High Yield Bond Energy Sector ETF
+XHYF       AssetExchange.ARCA BondBloxx USD High Yield Bond Financial & REIT Sector ETF
+XHYH       AssetExchange.ARCA BondBloxx USD High Yield Bond Healthcare Sector ETF
+XHYI       AssetExchange.ARCA BondBloxx USD High Yield Bond Industrial Sector ETF
+XHYT       AssetExchange.ARCA BondBloxx USD High Yield Bond Telecom, Media & Technology Sector ETF
+XITK       AssetExchange.ARCA SPDR FactSet Innovative Technology ETF
+XLG        AssetExchange.ARCA Invesco S&P 500 Top 50 ETF
+XLSR       AssetExchange.ARCA SPDR SSGA US Sector Rotation ETF
+XMAG       AssetExchange.NASDAQ Tidal Trust II Defiance Large Cap ex-Mag 7 ETF
+XME        AssetExchange.ARCA SPDR S&P Metals & Mining ETF
+XMHQ       AssetExchange.ARCA Invesco S&P MidCap Quality ETF
+XMLV       AssetExchange.ARCA Invesco S&P MidCap Low Volatility ETF
+XMMO       AssetExchange.ARCA Invesco S&P MidCap Momentum ETF
+XMVM       AssetExchange.ARCA Invesco S&P MidCap Value with Momentum ETF
+XNAV       AssetExchange.ARCA FundX Aggressive ETF
+XNTK       AssetExchange.ARCA SPDR NYSE Technology ETF
+XOMO       AssetExchange.ARCA YieldMax XOM Option Income Strategy ETF
+XONE       AssetExchange.ARCA BondBloxx Bloomberg One Year Target Duration US Treasury ETF
+XOP        AssetExchange.ARCA SPDR S&P Oil & Gas Exploration & Production ETF
+XOVR       AssetExchange.NASDAQ EntrepreneurShares Series Trust ERShares Private-Public Crossover ETF
+XPAY       AssetExchange.ARCA Roundhill S&P 500 Target 20 Managed Distribution ETF
+XPH        AssetExchange.ARCA SPDR S&P Pharmaceuticals ETF
+XPND       AssetExchange.ARCA First Trust Expanded Technology ETF
+XRLV       AssetExchange.ARCA Invesco S&P 500 ex-Rate Sensitive Low Volatility ETF
+XRLX       AssetExchange.ARCA FundX Conservative ETF
+XRMI       AssetExchange.ARCA Global X S&P 500 Risk Managed Income ETF
+XRT        AssetExchange.ARCA SPDR S&P Retail ETF
+XSD        AssetExchange.ARCA SPDR S&P Semiconductor ETF
+XSLV       AssetExchange.ARCA Invesco S&P SmallCap Low Volatility ETF
+XSMO       AssetExchange.ARCA Invesco S&P SmallCap Momentum ETF
+XSVM       AssetExchange.ARCA Invesco S&P SmallCap Value with Momentum ETF
+XSVN       AssetExchange.ARCA BondBloxx Bloomberg Seven Year Target Duration US Treasury ETF
+XSW        AssetExchange.ARCA SPDR S&P Software & Services ETF
+XT         AssetExchange.NASDAQ iShares Exponential Technologies ETF
+XTEN       AssetExchange.ARCA BondBloxx Bloomberg Ten Year Target Duration US Treasury ETF
+XTL        AssetExchange.ARCA SPDR S&P Telecom ETF
+XTN        AssetExchange.ARCA SPDR S&P Transportation ETF
+XTR        AssetExchange.ARCA Global X S&P 500 Tail Risk ETF
+XTRE       AssetExchange.ARCA BondBloxx Bloomberg Three Year Target Duration US Treasury ETF
+XTWO       AssetExchange.ARCA BondBloxx Bloomberg Two Year Target Duration US Treasury ETF
+XTWY       AssetExchange.ARCA BondBloxx Bloomberg Twenty Year Target Duration US Treasury ETF
+XYLD       AssetExchange.ARCA Global X S&P 500 Covered Call ETF
+XYLE       AssetExchange.ARCA Global X S&P 500 ESG Covered Call ETF
+XYLG       AssetExchange.ARCA Global X S&P 500 Covered Call & Growth ETF
+YALL       AssetExchange.ARCA God Bless America ETF
+YBIT       AssetExchange.ARCA YieldMax Bitcoin Option Income Strategy ETF
+YEAR       AssetExchange.ARCA AB Ultra Short Income ETF
+YLD        AssetExchange.ARCA Principal Active High Yield ETF
+YLDE       AssetExchange.NASDAQ Legg Mason ETF Investment Trust ClearBridge Dividend Strategy ESG ETF
+YMAG       AssetExchange.ARCA YieldMax Magnificent 7 Fund of Option Income ETFs
+YMAX       AssetExchange.ARCA YieldMax Universe Fund of Option Income ETFs
+YOLO       AssetExchange.ARCA AdvisorShares Pure Cannabis ETF
+YQQQ       AssetExchange.NASDAQ Tidal Trust II YieldMax Short N100 Option Income Strategy ETF
+YYY        AssetExchange.ARCA Amplify High Income ETF
+ZHDG       AssetExchange.ARCA Zega Buy & Hedge ETF
+ZTAX       AssetExchange.ARCA X-Square Municipal Income ETF
+ZTEN       AssetExchange.ARCA F/m 10-Year Investment Grade Corporate Bond ETF
+ZTRE       AssetExchange.ARCA F/m 3-Year Investment Grade Corporate Bond ETF
+ZTWO       AssetExchange.ARCA F/m 2-Year Investment Grade Corporate Bond ETF
+ZZZ        AssetExchange.NASDAQ ONEFUND LLC Cyber Hornet S&P 500 and Bitcoin 75/25 Strategy ETF

@@ -1,7 +1,5 @@
 # config.py
 
-ALPACA_API_KEY = 'PKA8KACYKMLGOT5X9QEL'
-ALPACA_SECRET_KEY = 'MYwOauUZgNgvPqDle9H9oqdTWmvnFgHx0GD3yhBg'
 ALPACA_PAPER = True
 
 # Trading symbols configuration
