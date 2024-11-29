@@ -96,7 +96,12 @@ class TradingBot:
             # Split message into chunks of 4096 characters (Telegram's limit)
             chunks = [message[i:i+4096] for i in range(0, len(message), 4096)]
             for chunk in chunks:
-                await self.bot.send_message(chat_id=self.chat_id, text=chunk)
+                await self.bot.send_message(
+                    chat_id=self.chat_id,
+                    text=chunk,
+                    parse_mode='HTML',  # Enable HTML formatting
+                    disable_web_page_preview=True  # Disable link previews
+                )
         except Exception as e:
             logger.error(f"Failed to send Telegram message: {e}")
 

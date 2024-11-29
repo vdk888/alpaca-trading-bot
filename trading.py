@@ -135,6 +135,15 @@ class TradingExecutor:
                         await notify_callback(message)
                     return False
                 
+                # Notify that order is being sent
+                sending_message = f"""🔄 Sending BUY Order for {self.symbol}:
+• Quantity: {new_qty}
+• Target Price: ${analysis['current_price']:.2f}
+• Estimated Value: ${(new_qty * analysis['current_price']):.2f}"""
+                logger.info(sending_message)
+                if notify_callback:
+                    await notify_callback(sending_message)
+                
                 # Submit buy order
                 order = MarketOrderRequest(
                     symbol=self.symbol,
@@ -143,9 +152,17 @@ class TradingExecutor:
                     time_in_force=TimeInForce.DAY
                 )
                 
-                self.trading_client.submit_order(order)
+                submitted_order = self.trading_client.submit_order(order)
                 
-                message = f"BUY {new_qty} {self.symbol} at ${analysis['current_price']:.2f}"
+                # Create detailed order confirmation message
+                message = f"""✅ BUY Order Executed for {self.symbol}:
+• Quantity: {new_qty}
+• Price: ${analysis['current_price']:.2f}
+• Total Value: ${(new_qty * analysis['current_price']):.2f}
+• Daily Signal: {analysis['daily_composite']:.4f}
+• Weekly Signal: {analysis['weekly_composite']:.4f}
+• Order ID: {submitted_order.id}"""
+                
                 logger.info(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -158,6 +175,15 @@ class TradingExecutor:
                     position = self.trading_client.get_open_position(self.symbol)
                     qty = abs(float(position.qty))
                     
+                    # Notify that order is being sent
+                    sending_message = f"""🔄 Sending SELL Order for {self.symbol}:
+• Quantity: {qty}
+• Target Price: ${analysis['current_price']:.2f}
+• Estimated Value: ${(qty * analysis['current_price']):.2f}"""
+                    logger.info(sending_message)
+                    if notify_callback:
+                        await notify_callback(sending_message)
+                    
                     # Submit sell order
                     order = MarketOrderRequest(
                         symbol=self.symbol,
@@ -166,9 +192,17 @@ class TradingExecutor:
                         time_in_force=TimeInForce.DAY
                     )
                     
-                    self.trading_client.submit_order(order)
+                    submitted_order = self.trading_client.submit_order(order)
                     
-                    message = f"SELL {qty} {self.symbol} at ${analysis['current_price']:.2f}"
+                    # Create detailed order confirmation message
+                    message = f"""✅ SELL Order Executed for {self.symbol}:
+• Quantity: {qty}
+• Price: ${analysis['current_price']:.2f}
+• Total Value: ${(qty * analysis['current_price']):.2f}
+• Daily Signal: {analysis['daily_composite']:.4f}
+• Weekly Signal: {analysis['weekly_composite']:.4f}
+• Order ID: {submitted_order.id}"""
+                    
                     logger.info(message)
                     if notify_callback:
                         await notify_callback(message)

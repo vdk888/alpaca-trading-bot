@@ -92,6 +92,15 @@ Daily Score: {analysis['daily_composite']:.4f}
 Weekly Score: {analysis['weekly_composite']:.4f}
                             """
                             await trading_bot.send_message(message)
+                            
+                            # Execute trade with notifications through telegram bot
+                            action = "BUY" if analysis['signal'] == 1 else "SELL"
+                            await trading_executors[symbol].execute_trade(
+                                action=action,
+                                analysis=analysis,
+                                notify_callback=trading_bot.send_message
+                            )
+                            
                     except Exception as e:
                         logger.error(f"Error analyzing {symbol}: {str(e)}")
                         continue

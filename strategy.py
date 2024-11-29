@@ -78,6 +78,12 @@ class TradingStrategy:
             # Update last signal time if we have a new signal
             if latest_signal['signal'] != 0:
                 self.last_signal_time = self.data.index[-1]
+                # Log the signal details
+                signal_type = "BUY" if latest_signal['signal'] == 1 else "SELL"
+                logger.info(f" New {signal_type} Signal for {self.symbol}:")
+                logger.info(f"• Daily Composite: {latest_signal['daily_composite']:.4f}")
+                logger.info(f"• Weekly Composite: {latest_signal['weekly_composite']:.4f}")
+                logger.info(f"• Current Price: ${self.data['close'].iloc[-1]:.2f}")
             
             # Calculate price changes
             price_change_5m = self.data['close'].pct_change().iloc[-1]
