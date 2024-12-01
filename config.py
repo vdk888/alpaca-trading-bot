@@ -23,6 +23,26 @@ TRADING_SYMBOLS = {
             'end': '16:00',
             'timezone': 'US/Eastern'
         }
+    },
+    'BTC/USD': {
+        'market': 'CRYPTO',
+        'yfinance': 'BTC-USD',  # Yahoo Finance symbol for Bitcoin
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'ETH/USD': {
+        'market': 'CRYPTO',
+        'yfinance': 'ETH-USD',  # Yahoo Finance symbol for Ethereum
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
     }
 }
 

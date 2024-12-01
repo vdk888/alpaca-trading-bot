@@ -28,15 +28,22 @@ def get_tradable_tickers():
         logger.info("Fetching assets...")
         assets = trading_client.get_all_assets()
         
-        # Filter for tradable US equities
+        # Filter for tradable assets (both US equities and crypto)
         tradable_tickers = []
+        crypto_tickers = []
         for asset in assets:
             if (hasattr(asset, 'tradable') and asset.tradable and 
-                hasattr(asset, 'status') and asset.status == 'active' and
-                hasattr(asset, 'asset_class') and asset.asset_class == 'us_equity'):
-                tradable_tickers.append(asset.symbol)
+                hasattr(asset, 'status') and asset.status == 'active'):
+                if hasattr(asset, 'asset_class'):
+                    if asset.asset_class == 'us_equity':
+                        tradable_tickers.append(asset.symbol)
+                    elif asset.asset_class == 'crypto':
+                        crypto_tickers.append(asset.symbol)
         
-        return sorted(tradable_tickers)  # Sort alphabetically
+        return {
+            'equities': sorted(tradable_tickers),
+            'crypto': sorted(crypto_tickers)
+        }
         
     except Exception as e:
         logger.error(f"Error fetching tickers: {str(e)}")
@@ -49,15 +56,21 @@ if __name__ == "__main__":
     try:
         logger.info("Starting ticker retrieval...")
         tickers = get_tradable_tickers()
-        print(f"\nFound {len(tickers)} tradable tickers")
-        print("\nFirst 10 tickers as sample:")
-        print(tickers[:10])
+        print(f"\nFound {len(tickers['equities'])} tradable equities and {len(tickers['crypto'])} tradable crypto assets")
+        print("\nFirst 10 equities as sample:")
+        print(tickers['equities'][:10])
+        print("\nFirst 10 crypto assets as sample:")
+        print(tickers['crypto'][:10])
         
         # Save to file
-        output_file = "tradable_tickers.txt"
-        with open(output_file, "w") as f:
-            f.write("\n".join(tickers))
-        print(f"\nComplete list saved to {output_file}")
+        output_file_equities = "tradable_equities.txt"
+        output_file_crypto = "tradable_crypto.txt"
+        with open(output_file_equities, "w") as f:
+            f.write("\n".join(tickers['equities']))
+        with open(output_file_crypto, "w") as f:
+            f.write("\n".join(tickers['crypto']))
+        print(f"\nComplete list of equities saved to {output_file_equities}")
+        print(f"\nComplete list of crypto assets saved to {output_file_crypto}")
         
     except Exception as e:
         print(f"Error: {str(e)}")

@@ -46,7 +46,7 @@ class TradingExecutor:
                 return None
             raise
 
-    def calculate_position_size(self, current_price: float, risk_percent: float = 0.02) -> int:
+    def calculate_position_size(self, current_price: float, risk_percent: float = 0.02) -> float:
         """
         Calculate position size based on account equity and risk management
         
@@ -76,12 +76,14 @@ class TradingExecutor:
             # Calculate quantity based on available capital and risk
             qty = min(available_capital, equity * risk_percent) / current_price
             
-            # Round down to nearest whole number for stocks
-            if self.config['market'] != 'FX':
-                qty = int(qty)
+            # Round down to nearest whole number for stocks, keep decimals for crypto
+            if self.config['market'] == 'CRYPTO':
+                qty = round(qty, 8)  # Round to 8 decimal places for crypto
+            else:
+                qty = int(qty)  # Round down to whole number for stocks
             
             # Ensure minimum position size
-            min_qty = 1 if self.config['market'] != 'FX' else 0.01
+            min_qty = 1 if self.config['market'] != 'CRYPTO' else 0.0001
             if qty < min_qty:
                 qty = min_qty
                 
@@ -94,7 +96,9 @@ class TradingExecutor:
     def calculate_shares_from_amount(self, amount: float, current_price: float) -> float:
         """Calculate number of shares based on dollar amount"""
         shares = amount / current_price
-        if self.config['market'] != 'FX':
+        if self.config['market'] == 'CRYPTO':
+            shares = round(shares, 8)  # Round to 8 decimal places for crypto
+        else:
             shares = int(shares)  # Round down to nearest whole share for stocks
         return shares
 
@@ -147,9 +151,10 @@ class TradingExecutor:
                 # Submit buy order
                 order = MarketOrderRequest(
                     symbol=self.symbol,
-                    qty=new_qty,
+                    notional=analysis['current_price'] * new_qty if self.config['market'] == 'CRYPTO' else None,
+                    qty=None if self.config['market'] == 'CRYPTO' else new_qty,
                     side=OrderSide.BUY,
-                    time_in_force=TimeInForce.DAY
+                    time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
                 )
                 
                 submitted_order = self.trading_client.submit_order(order)
@@ -189,7 +194,7 @@ class TradingExecutor:
                         symbol=self.symbol,
                         qty=qty,
                         side=OrderSide.SELL,
-                        time_in_force=TimeInForce.DAY
+                        time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
                     )
                     
                     submitted_order = self.trading_client.submit_order(order)
@@ -257,15 +262,46 @@ class TradingExecutor:
                 symbol=self.symbol,
                 qty=shares,
                 side=OrderSide.BUY,
-                time_in_force=TimeInForce.DAY
+                time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
             )
             
-            self.trading_client.submit_order(order)
+            # Submit the order and get confirmation
+            submitted_order = self.trading_client.submit_order(order)
             
-            message = f"Opening position: BUY {shares} {self.symbol} (${amount:.2f}) at ${current_price:.2f}"
+            # Initial order message
+            message = f"""🔄 Opening position: BUY {shares} {self.symbol} (${amount:.2f}) at ${current_price:.2f}
+Order ID: {submitted_order.id}"""
             logger.info(message)
             if notify_callback:
                 await notify_callback(message)
+            
+            # Wait briefly for order to be processed
+            import asyncio
+            await asyncio.sleep(2)
+            
+            # Get order status
+            order_status = self.trading_client.get_order_by_id(submitted_order.id)
+            
+            # Create confirmation message
+            if order_status.status == 'filled':
+                filled_price = float(order_status.filled_avg_price)
+                filled_qty = float(order_status.filled_qty)
+                total_value = filled_price * filled_qty
+                
+                confirmation = f"""✅ Order Executed Successfully:
+• Symbol: {self.symbol}
+• Quantity: {filled_qty}
+• Price: ${filled_price:.2f}
+• Total Value: ${total_value:.2f}
+• Order ID: {order_status.id}"""
+                logger.info(confirmation)
+                if notify_callback:
+                    await notify_callback(confirmation)
+            else:
+                status_msg = f"Order Status: {order_status.status}"
+                logger.info(status_msg)
+                if notify_callback:
+                    await notify_callback(status_msg)
             
             return True
             
@@ -298,7 +334,7 @@ class TradingExecutor:
                     symbol=self.symbol,
                     qty=shares,
                     side=OrderSide.SELL,
-                    time_in_force=TimeInForce.DAY
+                    time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
                 )
                 
                 self.trading_client.submit_order(order)

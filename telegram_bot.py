@@ -560,37 +560,53 @@ Price: ${analysis['current_price']:.2f}
             # Parse arguments
             args = context.args if context.args else []
             
-            # Handle specific symbol request
-            if len(args) >= 2:
-                symbol = args[0].upper()
-                days = int(args[1])
-                if symbol not in self.symbols:
-                    await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
-                    return
-                symbols_to_test = [symbol]
-            else:
-                # Default: all symbols
-                symbols_to_test = self.symbols
-                days = int(args[0]) if args else 5
+            # Default values
+            symbol = None
+            days = 5
             
+            # Handle specific symbol request
+            if len(args) >= 1:
+                # Check if the first argument is a number (days) or symbol
+                try:
+                    days = int(args[0])
+                    symbol = None  # No specific symbol, just days specified
+                except ValueError:
+                    # First argument is a symbol
+                    symbol = args[0].upper()
+                    # If there's a second argument, it's the number of days
+                    if len(args) >= 2:
+                        try:
+                            days = int(args[1])
+                        except ValueError:
+                            await update.message.reply_text("❌ Days must be a number")
+                            return
+            
+            # Validate symbol if provided
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
+                return
+            
+            # Validate days
             if days <= 0 or days > 30:
                 await update.message.reply_text("❌ Days must be between 1 and 30")
                 return
             
+            symbols_to_test = [symbol] if symbol else self.symbols
+            
             await update.message.reply_text(f"🔄 Running backtest for the last {days} days...")
             
             # Run backtest for each symbol
-            for symbol in symbols_to_test:
+            for sym in symbols_to_test:
                 try:
                     # Run backtest simulation
-                    result = run_backtest(symbol, days)
+                    result = run_backtest(sym, days)
                     
                     # Generate plot
                     buf, stats = create_backtest_plot(result)
                     
                     # Create performance message
                     message = f"""
-📊 {symbol} Backtest Results ({days} days):
+📊 {sym} Backtest Results ({days} days):
 • Total Return: {stats['total_return']:.2f}%
 • Total Trades: {stats['total_trades']}
 • Win Rate: {stats['win_rate']:.1f}%
@@ -601,13 +617,13 @@ Price: ${analysis['current_price']:.2f}
                     # Send plot and statistics
                     await update.message.reply_document(
                         document=buf,
-                        filename=f"{symbol}_backtest_{days}d.png",
+                        filename=f"{sym}_backtest_{days}d.png",
                         caption=message
                     )
                 
                 except Exception as e:
-                    logger.error(f"Error backtesting {symbol}: {str(e)}")
-                    await update.message.reply_text(f"❌ Could not run backtest for {symbol}: {str(e)}")
+                    logger.error(f"Error backtesting {sym}: {str(e)}")
+                    await update.message.reply_text(f"❌ Could not run backtest for {sym}: {str(e)}")
                     continue
                 
         except ValueError as e:
