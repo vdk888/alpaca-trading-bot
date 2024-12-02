@@ -1,0 +1,50 @@
+Trade Details for QQQ - 5 days backtest
+================================================================================
+
+Performance Summary:
+• Strategy Return: 0.03%
+• Buy & Hold Return: 0.02%
+• Alpha: 0.01%
+• Win Rate: 50.0%
+• Max Drawdown: 0.01%
+• Sharpe Ratio: -117.40
+• Number of Trades: 5
+• Average Exposure: 1.2%
+
+Detailed Trades:
+----------------------------------------
+Time: 2024-11-25 12:30:00-05:00
+Type: BUY
+Price: $505.75
+Shares: 3.00000000
+Value: $1517.25
+Portfolio Value: $100000.00
+----------------------------------------
+Time: 2024-11-26 13:55:00-05:00
+Type: SELL
+Price: $508.80
+Shares: 3.00000000
+Value: $1526.40
+Portfolio Value: $100009.15
+----------------------------------------
+Time: 2024-11-26 14:25:00-05:00
+Type: BUY
+Price: $507.67
+Shares: 3.00000000
+Value: $1523.01
+Portfolio Value: $100009.15
+----------------------------------------
+Time: 2024-11-27 09:30:00-05:00
+Type: SELL
+Price: $506.99
+Shares: 3.00000000
+Value: $1520.97
+Portfolio Value: $100007.11
+----------------------------------------
+Time: 2024-11-27 11:20:00-05:00
+Type: BUY
+Price: $502.91
+Shares: 3.00000000
+Value: $1508.73
+Portfolio Value: $100007.11
+----------------------------------------

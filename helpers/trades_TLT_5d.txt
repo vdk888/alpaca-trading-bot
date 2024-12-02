@@ -1,0 +1,36 @@
+Trade Details for TLT - 5 days backtest
+================================================================================
+
+Performance Summary:
+• Strategy Return: 0.04%
+• Buy & Hold Return: 2.02%
+• Alpha: -1.98%
+• Win Rate: 100.0%
+• Max Drawdown: 0.01%
+• Sharpe Ratio: -78.41
+• Number of Trades: 3
+• Average Exposure: 1.3%
+
+Detailed Trades:
+----------------------------------------
+Time: 2024-11-26 10:15:00-05:00
+Type: BUY
+Price: $92.10
+Shares: 21.00000000
+Value: $1934.00
+Portfolio Value: $100000.00
+----------------------------------------
+Time: 2024-11-27 15:00:00-05:00
+Type: SELL
+Price: $92.96
+Shares: 21.00000000
+Value: $1952.16
+Portfolio Value: $100018.16
+----------------------------------------
+Time: 2024-11-27 15:55:00-05:00
+Type: BUY
+Price: $93.06
+Shares: 21.00000000
+Value: $1954.26
+Portfolio Value: $100018.16
+----------------------------------------

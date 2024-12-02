@@ -40,7 +40,9 @@ class TradingExecutor:
     def get_position(self):
         """Get current position details"""
         try:
-            return self.trading_client.get_open_position(self.symbol)
+            # Convert symbol format for crypto (e.g., BTC/USD to BTCUSD)
+            symbol = self.symbol.replace('/', '') if self.config['market'] == 'CRYPTO' else self.symbol
+            return self.trading_client.get_open_position(symbol)
         except Exception as e:
             if "no position" in str(e).lower():
                 return None
@@ -327,12 +329,14 @@ Order ID: {submitted_order.id}"""
             
             # Get current position
             try:
-                position = self.trading_client.get_open_position(self.symbol)
+                # Convert symbol format for crypto (e.g., BTC/USD to BTCUSD)
+                symbol = self.symbol.replace('/', '') if self.config['market'] == 'CRYPTO' else self.symbol
+                position = self.trading_client.get_open_position(symbol)
                 shares = abs(float(position.qty))
                 
                 # Submit sell order
                 order = MarketOrderRequest(
-                    symbol=self.symbol,
+                    symbol=symbol,  # Use the converted symbol
                     qty=shares,
                     side=OrderSide.SELL,
                     time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
@@ -348,8 +352,8 @@ Order ID: {submitted_order.id}"""
                 return True
                 
             except Exception as e:
-                if "no position" in str(e).lower():
-                    message = f"No position to close for {self.symbol}"
+                if "position does not exist" in str(e).lower() or "no position" in str(e).lower():
+                    message = f"No open position for {self.symbol}"
                     logger.info(message)
                     if notify_callback:
                         await notify_callback(message)

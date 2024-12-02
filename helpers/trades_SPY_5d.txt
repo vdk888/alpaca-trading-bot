@@ -1,0 +1,36 @@
+Trade Details for SPY - 5 days backtest
+================================================================================
+
+Performance Summary:
+• Strategy Return: 0.02%
+• Buy & Hold Return: 0.52%
+• Alpha: -0.50%
+• Win Rate: 100.0%
+• Max Drawdown: 0.01%
+• Sharpe Ratio: -150.74
+• Number of Trades: 3
+• Average Exposure: 1.6%
+
+Detailed Trades:
+----------------------------------------
+Time: 2024-11-25 10:20:00-05:00
+Type: BUY
+Price: $598.54
+Shares: 3.00000000
+Value: $1795.62
+Portfolio Value: $100000.00
+----------------------------------------
+Time: 2024-11-27 10:20:00-05:00
+Type: SELL
+Price: $599.70
+Shares: 3.00000000
+Value: $1799.10
+Portfolio Value: $100003.48
+----------------------------------------
+Time: 2024-11-27 11:30:00-05:00
+Type: BUY
+Price: $598.65
+Shares: 3.00000000
+Value: $1795.94
+Portfolio Value: $100003.48
+----------------------------------------
