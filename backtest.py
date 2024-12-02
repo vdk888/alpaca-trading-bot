@@ -70,34 +70,63 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
     portfolio_value = [initial_capital]  # Start with initial capital
     shares_owned = [0]  # Start with no shares
     trades = []  # Track individual trades
-    
-    # Get position size from config or use default
-    position_size = symbol_config.get('position_size', 100)  # Default to 100 shares
+    total_position_value = 0  # Track total position value for position sizing
     
     # Simulate trading
     for i in range(len(data)):
         current_price = data['close'].iloc[i]
         current_time = data.index[i]
         
+        # Update total position value
+        total_position_value = position * current_price
+        
         if i > 0:  # Skip first bar for signal processing
             signal = signals['signal'].iloc[i]
             
             # Process signals
-            if signal == 1 and position == 0:  # Buy signal
-                # Calculate number of shares to buy
-                shares_to_buy = position_size
-                cost = shares_to_buy * current_price
+            if signal == 1:  # Buy signal
+                # Calculate maximum position value (100% of initial capital)
+                max_position_value = initial_capital
                 
-                if cost <= cash:  # Check if we have enough cash
-                    position = shares_to_buy
-                    cash -= cost
-                    trades.append({
-                        'time': current_time,
-                        'type': 'buy',
-                        'price': current_price,
-                        'shares': shares_to_buy,
-                        'value': cost
-                    })
+                # If total position is less than max, allow adding 20% more
+                if total_position_value < max_position_value:
+                    # Calculate position size as 20% of initial capital
+                    capital_to_use = initial_capital * 0.20
+                    shares_to_buy = capital_to_use / current_price
+                    
+                    # Round based on market type
+                    if symbol_config['market'] == 'CRYPTO':
+                        shares_to_buy = round(shares_to_buy, 8)  # Round to 8 decimal places for crypto
+                    else:
+                        shares_to_buy = int(shares_to_buy)  # Round down to whole shares for stocks
+                    
+                    # Ensure minimum position size
+                    min_qty = 1 if symbol_config['market'] != 'CRYPTO' else 0.0001
+                    if shares_to_buy < min_qty:
+                        shares_to_buy = min_qty
+                    
+                    # Check if adding this position would exceed max position value
+                    new_total_value = total_position_value + (shares_to_buy * current_price)
+                    if new_total_value > max_position_value:
+                        # Adjust shares to not exceed max position
+                        shares_to_buy = (max_position_value - total_position_value) / current_price
+                        if symbol_config['market'] == 'CRYPTO':
+                            shares_to_buy = round(shares_to_buy, 8)
+                        else:
+                            shares_to_buy = int(shares_to_buy)
+                    
+                    cost = shares_to_buy * current_price
+                    if cost <= cash and shares_to_buy > 0:  # Check if we have enough cash and shares to buy
+                        position += shares_to_buy  # Add to existing position
+                        cash -= cost
+                        trades.append({
+                            'time': current_time,
+                            'type': 'buy',
+                            'price': current_price,
+                            'shares': shares_to_buy,
+                            'value': cost,
+                            'total_position': position
+                        })
             
             elif signal == -1 and position > 0:  # Sell signal
                 # Sell entire position
