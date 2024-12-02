@@ -321,18 +321,29 @@ Last Update: {analysis['timestamp']}
             # Parse arguments
             args = context.args if context.args else []
             
-            # Handle specific symbol request
-            if len(args) >= 2:
-                symbol = args[0].upper()
-                days = int(args[1])
-                if symbol not in self.symbols:
-                    await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
-                    return
-                symbols_to_plot = [symbol]
-            else:
-                # Default: all symbols
-                symbols_to_plot = self.symbols
-                days = int(args[0]) if args else 5
+            # Default values
+            days = 5
+            symbols_to_plot = self.symbols
+            
+            if len(args) >= 1:
+                # First argument could be either symbol or days
+                if args[0].upper() in self.symbols:
+                    # First arg is a symbol
+                    symbols_to_plot = [args[0].upper()]
+                    # Check if second arg is days
+                    if len(args) >= 2:
+                        try:
+                            days = int(args[1])
+                        except ValueError:
+                            await update.message.reply_text("❌ Days must be a number")
+                            return
+                else:
+                    # First arg should be days
+                    try:
+                        days = int(args[0])
+                    except ValueError:
+                        await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
+                        return
             
             if days <= 0 or days > 30:
                 await update.message.reply_text("❌ Days must be between 1 and 30")
