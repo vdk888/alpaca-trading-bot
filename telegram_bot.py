@@ -9,7 +9,7 @@ from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot
-from backtest_individual import run_individual_backtest, create_backtest_plot
+from backtest_individual import run_backtest, create_backtest_plot
 import pandas as pd
 import pytz
 
@@ -233,8 +233,7 @@ Quantity: {position.qty}
 Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
 Market Value: ${float(position.market_value):.2f}
-Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)
-                        """
+Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)"""
                     except:
                         message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
                     chunk_messages.append(message)
@@ -690,7 +689,7 @@ Price Changes:
             for sym in symbols_to_test:
                 try:
                     # Run backtest simulation
-                    result = run_individual_backtest(sym, days)
+                    result = run_backtest(sym, days)
                     
                     # Generate plot
                     buf, stats = create_backtest_plot(result)
