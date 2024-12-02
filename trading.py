@@ -153,7 +153,7 @@ class TradingExecutor:
                 
                 # Submit buy order
                 order = MarketOrderRequest(
-                    symbol=self.symbol,
+                    symbol=self.symbol.replace('/', '') if self.config['market'] == 'CRYPTO' else self.symbol,
                     notional=round(analysis['current_price'] * new_qty, 2) if self.config['market'] == 'CRYPTO' else None,
                     qty=None if self.config['market'] == 'CRYPTO' else new_qty,
                     side=OrderSide.BUY,
@@ -194,7 +194,7 @@ class TradingExecutor:
                     
                     # Submit sell order
                     order = MarketOrderRequest(
-                        symbol=self.symbol,
+                        symbol=self.symbol.replace('/', '') if self.config['market'] == 'CRYPTO' else self.symbol,
                         qty=qty,
                         side=OrderSide.SELL,
                         time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
@@ -262,7 +262,7 @@ class TradingExecutor:
             
             # Submit buy order
             order = MarketOrderRequest(
-                symbol=self.symbol,
+                symbol=self.symbol.replace('/', '') if self.config['market'] == 'CRYPTO' else self.symbol,
                 qty=shares,
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
