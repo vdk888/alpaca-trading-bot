@@ -227,6 +227,94 @@ TRADING_SYMBOLS = {
             'end': '23:59',
             'timezone': 'UTC'
         }
+    },
+    'DOT/USD': {
+        'name': 'Polkadot',
+        'market': 'CRYPTO',
+        'yfinance': 'DOT-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'LINK/USD': {
+        'name': 'Chainlink',
+        'market': 'CRYPTO',
+        'yfinance': 'LINK-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'DOGE/USD': {
+        'name': 'Dogecoin',
+        'market': 'CRYPTO',
+        'yfinance': 'DOGE-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'AAVE/USD': {
+        'name': 'Aave',
+        'market': 'CRYPTO',
+        'yfinance': 'AAVE-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'UNI/USD': {
+        'name': 'Uniswap',
+        'market': 'CRYPTO',
+        'yfinance': 'UNI-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'LTC/USD': {
+        'name': 'Litecoin',
+        'market': 'CRYPTO',
+        'yfinance': 'LTC-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'BCH/USD': {
+        'name': 'Bitcoin Cash',
+        'market': 'CRYPTO',
+        'yfinance': 'BCH-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'SHIB/USD': {
+        'name': 'Shiba Inu',
+        'market': 'CRYPTO',
+        'yfinance': 'SHIB-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
     }
 }
 
