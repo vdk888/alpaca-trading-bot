@@ -149,27 +149,31 @@ class TradingBot:
                 return
                 
             symbols_to_check = [symbol] if symbol else self.symbols
-            status_messages = []
             has_data = False
             
-            for sym in symbols_to_check:
-                try:
-                    analysis = self.strategies[sym].analyze()
-                    if not analysis:
-                        status_messages.append(f"No data available for {sym}")
-                        continue
-                        
-                    has_data = True
-                    position = "LONG" if self.strategies[sym].current_position == 1 else "SHORT" if self.strategies[sym].current_position == -1 else "NEUTRAL"
-                    
-                    # Get position details if any
+            # Process symbols in chunks of 3
+            for i in range(0, len(symbols_to_check), 3):
+                chunk_messages = []
+                chunk_symbols = symbols_to_check[i:i+3]
+                
+                for sym in chunk_symbols:
                     try:
-                        pos = self.trading_client.get_open_position(sym)
-                        pos_pnl = f"P&L: ${float(pos.unrealized_pl):.2f} ({float(pos.unrealized_plpc)*100:.2f}%)"
-                    except:
-                        pos_pnl = "No open position"
-                    
-                    status_messages.append(f"""
+                        analysis = self.strategies[sym].analyze()
+                        if not analysis:
+                            chunk_messages.append(f"No data available for {sym}")
+                            continue
+                            
+                        has_data = True
+                        position = "LONG" if self.strategies[sym].current_position == 1 else "SHORT" if self.strategies[sym].current_position == -1 else "NEUTRAL"
+                        
+                        # Get position details if any
+                        try:
+                            pos = self.trading_client.get_open_position(sym)
+                            pos_pnl = f"P&L: ${float(pos.unrealized_pl):.2f} ({float(pos.unrealized_plpc)*100:.2f}%)"
+                        except:
+                            pos_pnl = "No open position"
+                        
+                        chunk_messages.append(f"""
 📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Status:
 Position: {position}
 Current Price: ${analysis['current_price']:.2f}
@@ -188,15 +192,17 @@ Price Changes:
 • 1hr: {analysis['price_change_1h']*100:.2f}%
 
 Last Update: {analysis['timestamp']}
-                    """)
-                except Exception as e:
-                    status_messages.append(f"Error analyzing {sym}: {str(e)}")
+                        """)
+                    except Exception as e:
+                        chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
+                
+                # Send this chunk of messages
+                if chunk_messages:
+                    await update.message.reply_text("\n---\n".join(chunk_messages))
             
             if not has_data:
                 await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
-                return
                 
-            await update.message.reply_text("\n---\n".join(status_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting status: {str(e)}")
 
@@ -211,12 +217,16 @@ Last Update: {analysis['timestamp']}
                 return
                 
             symbols_to_check = [symbol] if symbol else self.symbols
-            position_messages = []
             
-            for sym in symbols_to_check:
-                try:
-                    position = self.trading_client.get_open_position(sym)
-                    message = f"""
+            # Process symbols in chunks of 3
+            for i in range(0, len(symbols_to_check), 3):
+                chunk_messages = []
+                chunk_symbols = symbols_to_check[i:i+3]
+                
+                for sym in chunk_symbols:
+                    try:
+                        position = self.trading_client.get_open_position(sym)
+                        message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Position Details:
 Side: {position.side.upper()}
 Quantity: {position.qty}
@@ -224,12 +234,15 @@ Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
 Market Value: ${float(position.market_value):.2f}
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)
-                    """
-                except:
-                    message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
-                position_messages.append(message)
-            
-            await update.message.reply_text("\n---\n".join(position_messages))
+                        """
+                    except:
+                        message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
+                    chunk_messages.append(message)
+                
+                # Send this chunk of messages
+                if chunk_messages:
+                    await update.message.reply_text("\n---\n".join(chunk_messages))
+                
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting position: {str(e)}")
 
@@ -276,18 +289,22 @@ Current Equity: ${float(account.equity):.2f}
                 return
                 
             symbols_to_check = [symbol] if symbol else self.symbols
-            indicator_messages = []
             has_data = False
             
-            for sym in symbols_to_check:
-                try:
-                    analysis = self.strategies[sym].analyze()
-                    if not analysis:
-                        indicator_messages.append(f"No data available for {sym}")
-                        continue
-                        
-                    has_data = True
-                    message = f"""
+            # Process symbols in chunks of 3
+            for i in range(0, len(symbols_to_check), 3):
+                chunk_messages = []
+                chunk_symbols = symbols_to_check[i:i+3]
+                
+                for sym in chunk_symbols:
+                    try:
+                        analysis = self.strategies[sym].analyze()
+                        if not analysis:
+                            chunk_messages.append(f"No data available for {sym}")
+                            continue
+                            
+                        has_data = True
+                        message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Indicators:
 
 Daily Composite: {analysis['daily_composite']:.4f}
@@ -301,15 +318,17 @@ Weekly Composite: {analysis['weekly_composite']:.4f}
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
 • 1hr: {analysis['price_change_1h']*100:.2f}%"""
-                    indicator_messages.append(message)
-                except Exception as e:
-                    indicator_messages.append(f"Error analyzing {sym}: {str(e)}")
+                        chunk_messages.append(message)
+                    except Exception as e:
+                        chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
+                
+                # Send this chunk of messages
+                if chunk_messages:
+                    await update.message.reply_text("\n---\n".join(chunk_messages))
             
             if not has_data:
                 await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
-                return
                 
-            await update.message.reply_text("\n---\n".join(indicator_messages))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting indicators: {str(e)}")
 

@@ -523,24 +523,27 @@ def create_portfolio_backtest_plot(backtest_result: dict) -> io.BytesIO:
     # Asset Allocation Plot (bottom)
     ax2 = fig.add_subplot(gs[1])
     
-    # Calculate percentage allocation for each symbol
+    # Calculate percentage allocation for each symbol and cash
     # Filter out columns that end with '_value' but exclude 'total_value'
     symbol_values = [col for col in data.columns if col.endswith('_value') 
                     and not col.startswith('total')]
     symbols = [col.replace('_value', '') for col in symbol_values]
     
-    # Calculate allocations based on position values only
-    total_invested = data[symbol_values].sum(axis=1)
+    # Include both position values and cash in total
+    total_portfolio = data[symbol_values].sum(axis=1) + data['total_cash']
     allocations = []
     
+    # Add cash allocation first
+    cash_allocation = (data['total_cash'] / total_portfolio * 100).fillna(0)
+    allocations.append(cash_allocation)
+    
+    # Add symbol allocations
     for symbol in symbols:
-        # Avoid division by zero
-        safe_total = total_invested.replace(0, np.nan)
-        allocation = (data[f'{symbol}_value'] / safe_total * 100).fillna(0)
+        allocation = (data[f'{symbol}_value'] / total_portfolio * 100).fillna(0)
         allocations.append(allocation)
     
-    # Plot stacked area chart for allocations
-    ax2.stackplot(data.index, allocations, labels=symbols, alpha=0.8)
+    # Plot stacked area chart for allocations with cash
+    ax2.stackplot(data.index, allocations, labels=['Cash'] + symbols, alpha=0.8)
     
     ax2.set_title('Asset Allocation')
     ax2.set_ylabel('Allocation (%)')
