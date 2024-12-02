@@ -72,7 +72,7 @@ class TradingExecutor:
             available_capital = max_total_position - current_position_value
             
             if available_capital <= 0:
-                logger.info(f"Maximum position size reached for {self.symbol} (10% of capital)")
+                logger.info(f"Maximum position size reached for {self.symbol} ({self.config['name']}) (10% of capital)")
                 return 0
             
             # Calculate quantity based on available capital and risk
@@ -124,7 +124,7 @@ class TradingExecutor:
         try:
             # Check market hours
             if not self._check_market_hours():
-                message = f"Market is closed for {self.symbol}"
+                message = f"Market is closed for {self.symbol} ({self.config['name']})"
                 logger.warning(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -135,7 +135,7 @@ class TradingExecutor:
                 new_qty = self.calculate_position_size(analysis['current_price'])
                 
                 if new_qty <= 0:
-                    message = f"Maximum position size reached or invalid size calculated for {self.symbol}"
+                    message = f"Maximum position size reached or invalid size calculated for {self.symbol} ({self.config['name']})"
                     logger.info(message)
                     if notify_callback:
                         await notify_callback(message)
@@ -143,7 +143,7 @@ class TradingExecutor:
                 
                 # Notify that order is being sent
                 notional_value = round(new_qty * analysis['current_price'], 2) if self.config['market'] == 'CRYPTO' else new_qty * analysis['current_price']
-                sending_message = f"""🔄 Sending BUY Order for {self.symbol}:
+                sending_message = f"""🔄 Sending BUY Order for {self.symbol} ({self.config['name']}):
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
 • Estimated Value: ${notional_value:.2f}"""
@@ -163,7 +163,7 @@ class TradingExecutor:
                 submitted_order = self.trading_client.submit_order(order)
                 
                 # Create detailed order confirmation message
-                message = f"""✅ BUY Order Executed for {self.symbol}:
+                message = f"""✅ BUY Order Executed for {self.symbol} ({self.config['name']}):
 • Quantity: {new_qty}
 • Price: ${analysis['current_price']:.2f}
 • Total Value: ${(new_qty * analysis['current_price']):.2f}
@@ -184,7 +184,7 @@ class TradingExecutor:
                     qty = abs(float(position.qty))
                     
                     # Notify that order is being sent
-                    sending_message = f"""🔄 Sending SELL Order for {self.symbol}:
+                    sending_message = f"""🔄 Sending SELL Order for {self.symbol} ({self.config['name']}):
 • Quantity: {qty}
 • Target Price: ${analysis['current_price']:.2f}
 • Estimated Value: ${(qty * analysis['current_price']):.2f}"""
@@ -203,7 +203,7 @@ class TradingExecutor:
                     submitted_order = self.trading_client.submit_order(order)
                     
                     # Create detailed order confirmation message
-                    message = f"""✅ SELL Order Executed for {self.symbol}:
+                    message = f"""✅ SELL Order Executed for {self.symbol} ({self.config['name']}):
 • Quantity: {qty}
 • Price: ${analysis['current_price']:.2f}
 • Total Value: ${(qty * analysis['current_price']):.2f}
@@ -219,7 +219,7 @@ class TradingExecutor:
                     
                 except Exception as e:
                     if "no position" in str(e).lower():
-                        message = f"No position to sell for {self.symbol}"
+                        message = f"No position to sell for {self.symbol} ({self.config['name']})"
                         logger.info(message)
                         if notify_callback:
                             await notify_callback(message)
@@ -227,7 +227,7 @@ class TradingExecutor:
                     raise
 
         except Exception as e:
-            error_msg = f"Error executing trade for {self.symbol}: {str(e)}"
+            error_msg = f"Error executing trade for {self.symbol} ({self.config['name']}): {str(e)}"
             logger.error(error_msg)
             if notify_callback:
                 await notify_callback(f"❌ {error_msg}")
@@ -244,7 +244,7 @@ class TradingExecutor:
         """
         try:
             if not self._check_market_hours():
-                message = f"Market is closed for {self.symbol}"
+                message = f"Market is closed for {self.symbol} ({self.config['name']})"
                 logger.warning(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -254,7 +254,7 @@ class TradingExecutor:
             shares = self.calculate_shares_from_amount(amount, current_price)
             
             if shares <= 0:
-                message = f"Invalid position size calculated for {self.symbol}"
+                message = f"Invalid position size calculated for {self.symbol} ({self.config['name']})"
                 logger.error(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -292,7 +292,7 @@ Order ID: {submitted_order.id}"""
                 total_value = filled_price * filled_qty
                 
                 confirmation = f"""✅ Order Executed Successfully:
-• Symbol: {self.symbol}
+• Symbol: {self.symbol} ({self.config['name']})
 • Quantity: {filled_qty}
 • Price: ${filled_price:.2f}
 • Total Value: ${total_value:.2f}
@@ -309,7 +309,7 @@ Order ID: {submitted_order.id}"""
             return True
             
         except Exception as e:
-            error_msg = f"Error opening position for {self.symbol}: {str(e)}"
+            error_msg = f"Error opening position for {self.symbol} ({self.config['name']}): {str(e)}"
             logger.error(error_msg)
             if notify_callback:
                 await notify_callback(f"❌ {error_msg}")
@@ -321,7 +321,7 @@ Order ID: {submitted_order.id}"""
         """
         try:
             if not self._check_market_hours():
-                message = f"Market is closed for {self.symbol}"
+                message = f"Market is closed for {self.symbol} ({self.config['name']})"
                 logger.warning(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -344,7 +344,7 @@ Order ID: {submitted_order.id}"""
                 
                 self.trading_client.submit_order(order)
                 
-                message = f"Closing position: SELL {shares} {self.symbol} at market price"
+                message = f"Closing position: SELL {shares} {self.symbol} ({self.config['name']}) at market price"
                 logger.info(message)
                 if notify_callback:
                     await notify_callback(message)
@@ -353,7 +353,7 @@ Order ID: {submitted_order.id}"""
                 
             except Exception as e:
                 if "position does not exist" in str(e).lower() or "no position" in str(e).lower():
-                    message = f"No open position for {self.symbol}"
+                    message = f"No open position for {self.symbol} ({self.config['name']})"
                     logger.info(message)
                     if notify_callback:
                         await notify_callback(message)
@@ -361,7 +361,7 @@ Order ID: {submitted_order.id}"""
                 raise
                 
         except Exception as e:
-            error_msg = f"Error closing position for {self.symbol}: {str(e)}"
+            error_msg = f"Error closing position for {self.symbol} ({self.config['name']}): {str(e)}"
             logger.error(error_msg)
             if notify_callback:
                 await notify_callback(f"❌ {error_msg}")

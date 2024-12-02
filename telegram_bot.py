@@ -168,7 +168,7 @@ class TradingBot:
                         pos_pnl = "No open position"
                     
                     status_messages.append(f"""
-📊 {sym} Status:
+📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Status:
 Position: {position}
 Current Price: ${analysis['current_price']:.2f}
 {pos_pnl}
@@ -215,7 +215,7 @@ Last Update: {analysis['timestamp']}
                 try:
                     position = self.trading_client.get_open_position(sym)
                     message = f"""
-📈 {sym} Position Details:
+📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Position Details:
 Side: {position.side.upper()}
 Quantity: {position.qty}
 Entry Price: ${float(position.avg_entry_price):.2f}
@@ -224,7 +224,7 @@ Market Value: ${float(position.market_value):.2f}
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)
                     """
                 except:
-                    message = f"No open position for {sym}"
+                    message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
                 position_messages.append(message)
             
             await update.message.reply_text("\n---\n".join(position_messages))
@@ -286,7 +286,7 @@ Current Equity: ${float(account.equity):.2f}
                         
                     has_data = True
                     message = f"""
-📈 {sym} Indicators:
+📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Indicators:
 
 Daily Composite: {analysis['daily_composite']:.4f}
 • Upper Limit: {analysis['daily_upper_limit']:.4f}
@@ -357,7 +357,7 @@ Last Update: {analysis['timestamp']}
                     buf, stats = create_strategy_plot(symbol, days)
                     
                     stats_message = f"""
-📈 {symbol} Statistics ({days} days):
+📈 {symbol} ({TRADING_SYMBOLS[symbol]['name']}) Statistics ({days} days):
 • Trading Days: {stats['trading_days']}
 • Price Change: {stats['price_change']:.2f}%
 • Buy Signals: {stats['buy_signals']}
@@ -436,7 +436,7 @@ Last Update: {analysis['timestamp']}
                         )
                         
                         message = f"""
-📊 {sym} Signals:
+📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Signals:
 Daily Signal: {daily_signal}
 • Composite: {analysis['daily_composite']:.4f}
 • Strength: {signal_strength:.2f}
@@ -465,7 +465,7 @@ Price: ${analysis['current_price']:.2f}
             for symbol in self.symbols:
                 config = TRADING_SYMBOLS[symbol]
                 market_info.append(f"""
-{symbol} ({config['market']}):
+{symbol} ({config['name']}) ({config['market']}):
 • Trading Hours: {config['market_hours']['start']} - {config['market_hours']['end']}
 • Timezone: {config['market_hours']['timezone']}
                 """)
@@ -482,7 +482,7 @@ Price: ${analysis['current_price']:.2f}
             for symbol in self.symbols:
                 config = TRADING_SYMBOLS[symbol]
                 symbols_info.append(f"""
-{symbol}:
+{symbol} ({config['name']}):
 • Market: {config['market']}
 • Interval: {config['interval']}
                 """)
@@ -617,7 +617,7 @@ Price: ${analysis['current_price']:.2f}
                     
                     # Create performance message
                     message = f"""
-📊 {sym} Backtest Results ({days} days):
+📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Backtest Results ({days} days):
 • Total Return: {stats['total_return']:.2f}%
 • Total Trades: {stats['total_trades']}
 • Win Rate: {stats['win_rate']:.1f}%

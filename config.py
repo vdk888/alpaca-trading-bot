@@ -6,6 +6,7 @@ ALPACA_PAPER = True
 TRADING_SYMBOLS = {
     # Major Index ETFs
     'SPY': {  # S&P 500
+        'name': 'S&P 500',
         'market': 'US',
         'yfinance': 'SPY',
         'interval': '5m',
@@ -16,6 +17,7 @@ TRADING_SYMBOLS = {
         }
     },
     'QQQ': {  # Nasdaq 100
+        'name': 'Nasdaq 100',
         'market': 'US',
         'yfinance': 'QQQ',
         'interval': '5m',
@@ -26,6 +28,7 @@ TRADING_SYMBOLS = {
         }
     },
     'IWM': {  # Russell 2000
+        'name': 'Russell 2000',
         'market': 'US',
         'yfinance': 'IWM',
         'interval': '5m',
@@ -36,6 +39,7 @@ TRADING_SYMBOLS = {
         }
     },
     'DIA': {  # Dow Jones
+        'name': 'Dow Jones',
         'market': 'US',
         'yfinance': 'DIA',
         'interval': '5m',
@@ -48,6 +52,7 @@ TRADING_SYMBOLS = {
     
     # Sector ETFs
     'XLK': {  # Technology
+        'name': 'Technology Sector',
         'market': 'US',
         'yfinance': 'XLK',
         'interval': '5m',
@@ -58,6 +63,7 @@ TRADING_SYMBOLS = {
         }
     },
     'XLF': {  # Financials
+        'name': 'Financial Sector',
         'market': 'US',
         'yfinance': 'XLF',
         'interval': '5m',
@@ -68,6 +74,7 @@ TRADING_SYMBOLS = {
         }
     },
     'XLE': {  # Energy
+        'name': 'Energy Sector',
         'market': 'US',
         'yfinance': 'XLE',
         'interval': '5m',
@@ -79,7 +86,8 @@ TRADING_SYMBOLS = {
     },
     
     # Volatility ETFs
-    'UVXY': {  # ProShares Ultra VIX Short-Term Futures
+    'UVXY': {
+        'name': 'ProShares Ultra VIX',
         'market': 'US',
         'yfinance': 'UVXY',
         'interval': '5m',
@@ -89,7 +97,10 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'TQQQ': {  # 3x Nasdaq
+    
+    # Leveraged ETFs
+    'TQQQ': {
+        'name': '3x Nasdaq 100',
         'market': 'US',
         'yfinance': 'TQQQ',
         'interval': '5m',
@@ -99,7 +110,8 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'SQQQ': {  # -3x Nasdaq
+    'SQQQ': {
+        'name': '-3x Nasdaq 100',
         'market': 'US',
         'yfinance': 'SQQQ',
         'interval': '5m',
@@ -111,7 +123,8 @@ TRADING_SYMBOLS = {
     },
     
     # International ETFs
-    'EEM': {  # Emerging Markets
+    'EEM': {
+        'name': 'Emerging Markets',
         'market': 'US',
         'yfinance': 'EEM',
         'interval': '5m',
@@ -121,7 +134,8 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'EFA': {  # Developed Markets
+    'EFA': {
+        'name': 'Developed Markets',
         'market': 'US',
         'yfinance': 'EFA',
         'interval': '5m',
@@ -133,7 +147,8 @@ TRADING_SYMBOLS = {
     },
     
     # Fixed Income ETFs
-    'TLT': {  # 20+ Year Treasury
+    'TLT': {
+        'name': '20+ Year Treasury',
         'market': 'US',
         'yfinance': 'TLT',
         'interval': '5m',
@@ -143,7 +158,8 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'HYG': {  # High Yield Corporate Bonds
+    'HYG': {
+        'name': 'High Yield Bonds',
         'market': 'US',
         'yfinance': 'HYG',
         'interval': '5m',
@@ -154,8 +170,9 @@ TRADING_SYMBOLS = {
         }
     },
     
-    # Commodity ETFs
-    'GLD': {  # Gold
+    # Commodities
+    'GLD': {
+        'name': 'Gold',
         'market': 'US',
         'yfinance': 'GLD',
         'interval': '5m',
@@ -168,6 +185,7 @@ TRADING_SYMBOLS = {
     
     # Cryptocurrencies
     'BTC/USD': {
+        'name': 'Bitcoin',
         'market': 'CRYPTO',
         'yfinance': 'BTC-USD',
         'interval': '5m',
@@ -178,6 +196,7 @@ TRADING_SYMBOLS = {
         }
     },
     'ETH/USD': {
+        'name': 'Ethereum',
         'market': 'CRYPTO',
         'yfinance': 'ETH-USD',
         'interval': '5m',
@@ -187,7 +206,8 @@ TRADING_SYMBOLS = {
             'timezone': 'UTC'
         }
     },
-    'SOL/USD': {  # Solana
+    'SOL/USD': {
+        'name': 'Solana',
         'market': 'CRYPTO',
         'yfinance': 'SOL-USD',
         'interval': '5m',
@@ -197,7 +217,8 @@ TRADING_SYMBOLS = {
             'timezone': 'UTC'
         }
     },
-    'AVAX/USD': {  # Avalanche
+    'AVAX/USD': {
+        'name': 'Avalanche',
         'market': 'CRYPTO',
         'yfinance': 'AVAX-USD',
         'interval': '5m',
