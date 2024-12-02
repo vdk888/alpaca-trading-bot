@@ -10,6 +10,7 @@ from config import TRADING_SYMBOLS
 from trading import TradingExecutor
 from backtest import run_backtest, create_backtest_plot
 import pandas as pd
+import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -298,11 +299,7 @@ Weekly Composite: {analysis['weekly_composite']:.4f}
 
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
-• 1hr: {analysis['price_change_1h']*100:.2f}%
-
-Current Price: ${analysis['current_price']:.2f}
-Last Update: {analysis['timestamp']}
-                    """
+• 1hr: {analysis['price_change_1h']*100:.2f}%"""
                     indicator_messages.append(message)
                 except Exception as e:
                     indicator_messages.append(f"Error analyzing {sym}: {str(e)}")
@@ -411,15 +408,23 @@ Last Update: {analysis['timestamp']}
                         signal_strength = abs(analysis['daily_composite'])
                         signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                         
-                        # Format last signal time
-                        last_signal_str = "No signals generated yet"
+                        # Format time since last signal with signal type
+                        last_signal_info = "No signals generated yet"
                         if analysis.get('last_signal_time'):
-                            last_signal_time = analysis['last_signal_time']
-                            if isinstance(last_signal_time, str):
-                                last_signal_time = pd.to_datetime(last_signal_time)
-                            last_signal_str = f"Last Signal: {last_signal_time.strftime('%H:%M')} ({signal_direction})"
+                            now = pd.Timestamp.now(tz=pytz.UTC)
+                            last_time = analysis['last_signal_time']
+                            time_diff = now - last_time
+                            hours = int(time_diff.total_seconds() / 3600)
+                            minutes = int((time_diff.total_seconds() % 3600) / 60)
+                            # Get the signal type from the strategy
+                            last_signal_type = "BUY" if analysis['daily_composite'] > 0 else "SELL"
+                            last_signal_info = f"Last {last_signal_type} signal: {last_time.strftime('%Y-%m-%d %H:%M')} UTC ({hours}h {minutes}m ago)"
                         
-                        # Check if signal crosses thresholds
+                        # Format signal strength indicator
+                        strength_indicator = "🔥" if signal_strength > 0.8 else "💪" if signal_strength > 0.5 else "👍"
+                        
+                        # Classify signals
+                        signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                         daily_signal = (
                             "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
                             else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
@@ -437,13 +442,22 @@ Last Update: {analysis['timestamp']}
                         
                         message = f"""
 📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Signals:
+⏱ {last_signal_info}
+
 Daily Signal: {daily_signal}
 • Composite: {analysis['daily_composite']:.4f}
-• Strength: {signal_strength:.2f}
+• Strength: {signal_strength:.2f} {strength_indicator}
+• Upper Limit: {analysis['daily_upper_limit']:.4f}
+• Lower Limit: {analysis['daily_lower_limit']:.4f}
+
 Weekly Signal: {weekly_signal}
 • Composite: {analysis['weekly_composite']:.4f}
-Price: ${analysis['current_price']:.2f}
-{last_signal_str}"""
+• Upper Limit: {analysis['weekly_upper_limit']:.4f}
+• Lower Limit: {analysis['weekly_lower_limit']:.4f}
+
+Price Changes:
+• 5min: {analysis['price_change_5m']*100:.2f}%
+• 1hr: {analysis['price_change_1h']*100:.2f}%"""
                         chunk_messages.append(message)
                     except Exception as e:
                         chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
