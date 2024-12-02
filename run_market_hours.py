@@ -9,7 +9,7 @@ from alpaca.trading.client import TradingClient
 import os
 from dotenv import load_dotenv
 import logging
-from telegram import Update
+from telegram import Update, Bot
 from config import TRADING_SYMBOLS
 
 # Set up logging
@@ -130,10 +130,29 @@ Weekly Score: {analysis['weekly_composite']:.4f}
                 pass
         await trading_bot.stop()
 
+async def send_stop_notification(reason: str):
+    """Send a Telegram notification about program stopping"""
+    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('CHAT_ID')
+    if bot_token and chat_id:
+        bot = Bot(token=bot_token)
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=f"🔴 Trading program stopped: {reason}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send Telegram notification: {e}")
+
 if __name__ == "__main__":
     try:
         asyncio.run(run_bot())
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
+        asyncio.run(send_stop_notification("Stopped by user"))
     except Exception as e:
-        logger.error(f"Bot stopped due to error: {str(e)}")
+        error_msg = f"Bot stopped due to error: {str(e)}"
+        logger.error(error_msg)
+        asyncio.run(send_stop_notification(error_msg))
+    else:
+        asyncio.run(send_stop_notification("Normal termination"))

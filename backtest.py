@@ -25,7 +25,7 @@ def is_market_hours(timestamp, market_hours):
     
     return market_start <= local_time <= market_end
 
-def run_backtest(symbol: str, days: int = 5) -> dict:
+def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) -> dict:
     """Run backtest simulation for a symbol over specified number of days"""
     # Get symbol configuration
     symbol_config = TRADING_SYMBOLS[symbol]
@@ -64,7 +64,6 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
     signals, daily_data, weekly_data = generate_signals(data, params)
     
     # Initialize portfolio tracking
-    initial_capital = 100000  # $100k initial capital
     position = 0  # Current position in shares
     cash = initial_capital
     portfolio_value = [initial_capital]  # Start with initial capital
@@ -425,3 +424,138 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     buf.seek(0)
     
     return buf, backtest_result['stats']
+
+def run_portfolio_backtest(symbols: list, days: int = 5) -> dict:
+    """Run backtest simulation for multiple symbols as a portfolio"""
+    # Calculate per-symbol capital
+    initial_capital = 100000  # Total portfolio capital
+    per_symbol_capital = initial_capital / len(symbols)
+    
+    # Run individual backtests
+    individual_results = {}
+    all_dates = set()
+    for symbol in symbols:
+        result = run_backtest(symbol, days, initial_capital=per_symbol_capital)
+        individual_results[symbol] = result
+        all_dates.update(result['data'].index)
+    
+    # Create unified timeline
+    timeline = sorted(all_dates)
+    portfolio_data = pd.DataFrame(index=timeline)
+    
+    # Initialize portfolio tracking
+    portfolio_data['total_value'] = 0
+    portfolio_data['total_cash'] = 0
+    
+    # Aggregate data from all symbols
+    for symbol in symbols:
+        result = individual_results[symbol]
+        symbol_data = result['data']
+        
+        # Forward fill symbol data to match portfolio timeline
+        symbol_data = symbol_data.reindex(timeline).ffill()
+        
+        # Add symbol-specific columns
+        portfolio_data[f'{symbol}_price'] = symbol_data['close']
+        portfolio_data[f'{symbol}_shares'] = symbol_data['shares']
+        portfolio_data[f'{symbol}_value'] = symbol_data['position_value']
+        portfolio_data[f'{symbol}_cash'] = symbol_data['cash']
+        portfolio_data[f'{symbol}_signal'] = symbol_data['signal']
+        
+        # Add to portfolio totals
+        portfolio_data['total_value'] += symbol_data['position_value']
+        portfolio_data['total_cash'] += symbol_data['cash']
+    
+    # Calculate portfolio metrics
+    portfolio_data['portfolio_total'] = portfolio_data['total_value'] + portfolio_data['total_cash']
+    
+    # Calculate returns and drawdown
+    portfolio_data['portfolio_return'] = (portfolio_data['portfolio_total'] / initial_capital - 1) * 100
+    portfolio_data['high_watermark'] = portfolio_data['portfolio_total'].cummax()
+    portfolio_data['drawdown'] = (portfolio_data['portfolio_total'] - portfolio_data['high_watermark']) / portfolio_data['high_watermark'] * 100
+    
+    # Save complete dataset
+    portfolio_data.to_csv('portfolio backtest.csv')
+    
+    # Prepare result dictionary
+    result = {
+        'data': portfolio_data,
+        'individual_results': individual_results,
+        'metrics': {
+            'initial_capital': initial_capital,
+            'final_value': portfolio_data['portfolio_total'].iloc[-1],
+            'total_return': portfolio_data['portfolio_return'].iloc[-1],
+            'max_drawdown': portfolio_data['drawdown'].min(),
+            'symbol_returns': {
+                symbol: (individual_results[symbol]['data']['position_value'].iloc[-1] +
+                        individual_results[symbol]['data']['cash'].iloc[-1] -
+                        per_symbol_capital) / per_symbol_capital * 100
+                for symbol in symbols
+            }
+        }
+    }
+    
+    return result
+
+def create_portfolio_backtest_plot(backtest_result: dict) -> io.BytesIO:
+    """Create visualization of portfolio backtest results"""
+    # Create figure with subplots
+    fig = plt.figure(figsize=(15, 10))
+    gs = fig.add_gridspec(2, 1, height_ratios=[2, 1])
+    
+    # Portfolio value plot
+    ax1 = fig.add_subplot(gs[0])
+    data = backtest_result['data']
+    
+    # Plot total portfolio value
+    ax1.plot(data.index, data['portfolio_total'], 
+             label='Portfolio Total', linewidth=2, color='blue')
+    
+    # Plot individual symbol values stacked
+    symbol_values = [col for col in data.columns if col.endswith('_value')]
+    if symbol_values:
+        ax1.stackplot(data.index, 
+                     [data[col] for col in symbol_values],
+                     labels=[col.replace('_value', '') for col in symbol_values],
+                     alpha=0.3)
+    
+    ax1.set_title('Portfolio Performance')
+    ax1.set_ylabel('Value ($)')
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
+    
+    # Asset allocation plot
+    ax2 = fig.add_subplot(gs[1])
+    
+    # Calculate percentage allocation for each symbol
+    allocations = []
+    symbols = [col.replace('_value', '') for col in symbol_values]
+    for symbol in symbols:
+        allocation = data[f'{symbol}_value'] / data['portfolio_total'] * 100
+        allocations.append(allocation)
+    
+    # Plot allocations
+    ax2.stackplot(data.index, allocations,
+                 labels=symbols)
+    
+    ax2.set_title('Asset Allocation')
+    ax2.set_ylabel('Allocation (%)')
+    ax2.set_ylim(0, 100)
+    ax2.legend(loc='upper left')
+    ax2.grid(True)
+    
+    # Format x-axis
+    for ax in [ax1, ax2]:
+        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+    
+    plt.tight_layout()
+    
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close()
+    
+    return buf

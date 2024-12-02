@@ -8,7 +8,7 @@ from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
 from trading import TradingExecutor
-from backtest import run_backtest, create_backtest_plot
+from backtest import run_backtest, create_backtest_plot, run_portfolio_backtest, create_portfolio_backtest_plot
 import pandas as pd
 import pytz
 
@@ -584,25 +584,73 @@ Price Changes:
             args = context.args if context.args else []
             
             # Default values
-            symbol = None
             days = 5
             
-            # Handle specific symbol request
-            if len(args) >= 1:
-                # Check if the first argument is a number (days) or symbol
-                try:
-                    days = int(args[0])
-                    symbol = None  # No specific symbol, just days specified
-                except ValueError:
-                    # First argument is a symbol
-                    symbol = args[0].upper()
-                    # If there's a second argument, it's the number of days
-                    if len(args) >= 2:
-                        try:
-                            days = int(args[1])
-                        except ValueError:
-                            await update.message.reply_text("❌ Days must be a number")
-                            return
+            if not args:
+                await update.message.reply_text(
+                    "Usage:\n"
+                    "/backtest [days] - Run backtest on all symbols\n"
+                    "/backtest <symbol> [days] - Run backtest on specific symbol\n"
+                    "/backtest portfolio [days] - Run portfolio backtest"
+                )
+                return
+            
+            # Handle portfolio backtest
+            if args[0].lower() == 'portfolio':
+                if len(args) >= 2:
+                    try:
+                        days = int(args[1])
+                    except ValueError:
+                        await update.message.reply_text("❌ Days must be a number")
+                        return
+                
+                # Validate days
+                if days <= 0 or days > 30:
+                    await update.message.reply_text("❌ Days must be between 1 and 30")
+                    return
+                
+                await update.message.reply_text(f"🔄 Running portfolio backtest for the last {days} days...")
+                
+                # Run portfolio backtest
+                result = run_portfolio_backtest(self.symbols, days)
+                
+                # Create performance summary
+                metrics = result['metrics']
+                summary = (
+                    f"📊 Portfolio Backtest Results ({days} days)\n\n"
+                    f"Initial Capital: ${metrics['initial_capital']:,.2f}\n"
+                    f"Final Value: ${metrics['final_value']:,.2f}\n"
+                    f"Total Return: {metrics['total_return']:.2f}%\n"
+                    f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n\n"
+                    "Individual Asset Returns:\n"
+                )
+                
+                for symbol, ret in metrics['symbol_returns'].items():
+                    summary += f"{symbol}: {ret:.2f}%\n"
+                
+                # Send summary message
+                await update.message.reply_text(summary)
+                
+                # Generate and send plot
+                plot_buffer = create_portfolio_backtest_plot(result)
+                await update.message.reply_photo(plot_buffer)
+                
+                # Notify about CSV file
+                await update.message.reply_text("💾 Complete backtest data saved to 'portfolio backtest.csv'")
+                return
+            
+            # Handle regular backtest (existing code)
+            try:
+                days = int(args[0])
+                symbol = None
+            except ValueError:
+                symbol = args[0].upper()
+                if len(args) >= 2:
+                    try:
+                        days = int(args[1])
+                    except ValueError:
+                        await update.message.reply_text("❌ Days must be a number")
+                        return
             
             # Validate symbol if provided
             if symbol and symbol not in self.symbols:
