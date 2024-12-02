@@ -79,6 +79,37 @@ def split_into_sessions(data):
     
     return sessions
 
+def plot_symbol_data(df, symbol, days=None):
+    """Create a plot of symbol price data with indicators."""
+    plt.figure(figsize=(12, 8))
+    
+    # Plot price data
+    plt.plot(df.index, df['close'], label='Price')
+    
+    # Plot indicators if they exist
+    if 'SMA_20' in df.columns:
+        plt.plot(df.index, df['SMA_20'], label='SMA 20', alpha=0.7)
+    if 'SMA_50' in df.columns:
+        plt.plot(df.index, df['SMA_50'], label='SMA 50', alpha=0.7)
+    
+    period_text = f"{days} days" if days else "Period"
+    plt.title(f'{symbol} Price Chart - {period_text}')
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.grid(True)
+    plt.legend()
+    
+    # Format dates on x-axis
+    plt.gcf().autofmt_xdate()
+    
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    plt.close()
+    
+    return buf
+
 def create_strategy_plot(symbol='SPY', days=5, return_data=False):
     """Create a strategy visualization plot for a single symbol and return it as bytes"""
     # Get the correct Yahoo Finance symbol and market configuration
@@ -110,7 +141,8 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
             data.index = data.index.tz_localize('UTC')
         
         # Filter for market hours only if not a 24/7 market
-        data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
+        if symbol_config['market_hours']['start'] != '00:00' and symbol_config['market_hours']['end'] != '23:59':
+            data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
         
         # Ensure we have enough data after filtering
         if len(data) == 0:

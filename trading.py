@@ -140,10 +140,11 @@ class TradingExecutor:
                     return False
                 
                 # Notify that order is being sent
+                notional_value = round(new_qty * analysis['current_price'], 2) if self.config['market'] == 'CRYPTO' else new_qty * analysis['current_price']
                 sending_message = f"""🔄 Sending BUY Order for {self.symbol}:
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
-• Estimated Value: ${(new_qty * analysis['current_price']):.2f}"""
+• Estimated Value: ${notional_value:.2f}"""
                 logger.info(sending_message)
                 if notify_callback:
                     await notify_callback(sending_message)
@@ -151,7 +152,7 @@ class TradingExecutor:
                 # Submit buy order
                 order = MarketOrderRequest(
                     symbol=self.symbol,
-                    notional=analysis['current_price'] * new_qty if self.config['market'] == 'CRYPTO' else None,
+                    notional=round(analysis['current_price'] * new_qty, 2) if self.config['market'] == 'CRYPTO' else None,
                     qty=None if self.config['market'] == 'CRYPTO' else new_qty,
                     side=OrderSide.BUY,
                     time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY

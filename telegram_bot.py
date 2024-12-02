@@ -628,7 +628,7 @@ Price: ${analysis['current_price']:.2f}
                     # Send plot and statistics
                     await update.message.reply_document(
                         document=buf,
-                        filename=f"{sym}_backtest_{days}d.png",
+                        filename=f"{sym.replace('/', '_')}_backtest_{days}d.png",
                         caption=message
                     )
                 

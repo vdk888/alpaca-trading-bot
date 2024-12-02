@@ -31,6 +31,10 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
     symbol_config = TRADING_SYMBOLS[symbol]
     yf_symbol = symbol_config['yfinance']
     
+    # Handle crypto symbols with forward slashes
+    if '/' in yf_symbol:
+        yf_symbol = yf_symbol.replace('/', '-')
+
     # Calculate date range
     end_date = datetime.now(pytz.UTC)
     start_date = end_date - timedelta(days=days + 2)  # Add buffer days
