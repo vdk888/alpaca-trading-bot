@@ -406,22 +406,20 @@ Price Changes:
                         has_data = True
                         # Get signal strength and direction
                         signal_strength = abs(analysis['daily_composite'])
+                        strength_emoji = "🔥" if signal_strength > 0.8 else "💪" if signal_strength > 0.5 else "👍"
                         signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                         
                         # Format time since last signal with signal type
                         last_signal_info = "No signals generated yet"
-                        if analysis.get('last_signal_time'):
+                        if analysis.get('last_signal_time') is not None:
                             now = pd.Timestamp.now(tz=pytz.UTC)
                             last_time = analysis['last_signal_time']
                             time_diff = now - last_time
                             hours = int(time_diff.total_seconds() / 3600)
                             minutes = int((time_diff.total_seconds() % 3600) / 60)
-                            # Get the signal type from the strategy
-                            last_signal_type = "BUY" if analysis['daily_composite'] > 0 else "SELL"
-                            last_signal_info = f"Last {last_signal_type} signal: {last_time.strftime('%Y-%m-%d %H:%M')} UTC ({hours}h {minutes}m ago)"
-                        
-                        # Format signal strength indicator
-                        strength_indicator = "🔥" if signal_strength > 0.8 else "💪" if signal_strength > 0.5 else "👍"
+                            # Get the signal type from the stored composite value
+                            signal_type = "BUY" if analysis['daily_composite'] > 0 else "SELL"
+                            last_signal_info = f"Last {signal_type} signal {strength_emoji}: {last_time.strftime('%Y-%m-%d %H:%M')} UTC ({hours}h {minutes}m ago)"
                         
                         # Classify signals
                         signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
@@ -446,7 +444,7 @@ Price Changes:
 
 Daily Signal: {daily_signal}
 • Composite: {analysis['daily_composite']:.4f}
-• Strength: {signal_strength:.2f} {strength_indicator}
+• Strength: {signal_strength:.2f} {strength_emoji}
 • Upper Limit: {analysis['daily_upper_limit']:.4f}
 • Lower Limit: {analysis['daily_lower_limit']:.4f}
 
