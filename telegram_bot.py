@@ -8,7 +8,8 @@ from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
 from trading import TradingExecutor
-from backtest import run_backtest, create_backtest_plot, run_portfolio_backtest, create_portfolio_backtest_plot
+from backtest import run_portfolio_backtest, create_portfolio_backtest_plot
+from backtest_individual import run_individual_backtest, create_backtest_plot
 import pandas as pd
 import pytz
 
@@ -670,7 +671,7 @@ Price Changes:
             for sym in symbols_to_test:
                 try:
                     # Run backtest simulation
-                    result = run_backtest(sym, days)
+                    result = run_individual_backtest(sym, days)
                     
                     # Generate plot
                     buf, stats = create_backtest_plot(result)
@@ -685,17 +686,18 @@ Price Changes:
 • Sharpe Ratio: {stats['sharpe_ratio']:.2f}
                     """
                     
-                    # Send plot and statistics
-                    await update.message.reply_document(
-                        document=buf,
-                        filename=f"{sym.replace('/', '_')}_backtest_{days}d.png",
-                        caption=message
+                    # Send plot and stats
+                    await context.bot.send_photo(
+                        chat_id=update.effective_chat.id,
+                        photo=buf,
+                        caption=message,
+                        parse_mode='HTML'
                     )
-                
                 except Exception as e:
-                    logger.error(f"Error backtesting {sym}: {str(e)}")
-                    await update.message.reply_text(f"❌ Could not run backtest for {sym}: {str(e)}")
-                    continue
+                    error_msg = str(e)
+                    if "Error running backtest for" in error_msg:
+                        error_msg = error_msg.split(": ", 1)[1]  # Get the actual error message
+                    await update.message.reply_text(f"❌ Could not run backtest for {sym}: {error_msg}")
                 
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
