@@ -12,6 +12,7 @@ from backtest import run_portfolio_backtest, create_portfolio_backtest_plot
 from backtest_individual import run_backtest, create_backtest_plot
 import pandas as pd
 import pytz
+from utils import get_api_symbol, get_display_symbol
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +169,7 @@ class TradingBot:
                         
                         # Get position details if any
                         try:
-                            pos = self.trading_client.get_open_position(sym)
+                            pos = self.trading_client.get_open_position(get_api_symbol(sym))
                             pos_pnl = f"P&L: ${float(pos.unrealized_pl):.2f} ({float(pos.unrealized_plpc)*100:.2f}%)"
                         except:
                             pos_pnl = "No open position"
@@ -189,10 +190,7 @@ Indicators:
 
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
-• 1hr: {analysis['price_change_1h']*100:.2f}%
-
-Last Update: {analysis['timestamp']}
-                        """)
+• 1hr: {analysis['price_change_1h']*100:.2f}%""")
                     except Exception as e:
                         chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
                 
@@ -225,7 +223,7 @@ Last Update: {analysis['timestamp']}
                 
                 for sym in chunk_symbols:
                     try:
-                        position = self.trading_client.get_open_position(sym)
+                        position = self.trading_client.get_open_position(get_api_symbol(sym))
                         message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Position Details:
 Side: {position.side.upper()}
@@ -234,7 +232,8 @@ Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
 Market Value: ${float(position.market_value):.2f}
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)"""
-                    except:
+                    except Exception as e:
+                        logger.error(f"Error getting position for {sym} (API symbol: {get_api_symbol(sym)}): {str(e)}")
                         message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
                     chunk_messages.append(message)
                 
