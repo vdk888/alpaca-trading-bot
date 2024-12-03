@@ -13,6 +13,7 @@ from backtest_individual import run_backtest, create_backtest_plot
 import pandas as pd
 import pytz
 from utils import get_api_symbol, get_display_symbol
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -627,37 +628,88 @@ Price Changes:
                     await update.message.reply_text("❌ Days must be between 1 and 30")
                     return
                 
-                await update.message.reply_text(f"🔄 Running portfolio backtest for the last {days} days...")
+                status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")
                 
-                # Run portfolio backtest
-                result = run_portfolio_backtest(self.symbols, days)
+                try:
+                    # Create async task for the backtest
+                    async def run_backtest_task():
+                        try:
+                            # Create a closure to track progress
+                            symbols_processed = 0
+                            total_symbols = len(self.symbols)
+                            loop = asyncio.get_running_loop()
+                            
+                            def progress_callback(symbol):
+                                nonlocal symbols_processed
+                                symbols_processed += 1
+                                # Schedule the coroutine on the event loop
+                                loop.call_soon_threadsafe(
+                                    lambda: asyncio.create_task(
+                                        self._update_backtest_progress(
+                                            status_message,
+                                            symbols_processed,
+                                            total_symbols,
+                                            symbol
+                                        )
+                                    )
+                                )
+                            
+                            # Run portfolio backtest with progress updates
+                            result = await loop.run_in_executor(
+                                None,
+                                lambda: run_portfolio_backtest(
+                                    self.symbols, 
+                                    days, 
+                                    progress_callback=progress_callback
+                                )
+                            )
+                            
+                            # Create performance summary
+                            metrics = result['metrics']
+                            summary = (
+                                f"📊 Portfolio Backtest Results ({days} days)\n\n"
+                                f"Initial Capital: ${metrics['initial_capital']:,.2f}\n"
+                                f"Final Value: ${metrics['final_value']:,.2f}\n"
+                                f"Total Return: {metrics['total_return']:.2f}%\n"
+                                f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n\n"
+                                "Individual Asset Returns:\n"
+                            )
+                            
+                            for symbol, ret in metrics['symbol_returns'].items():
+                                summary += f"{symbol}: {ret:.2f}%\n"
+                            
+                            # Edit status message with completion
+                            await status_message.edit_text("✅ Portfolio backtest completed!")
+                            
+                            # Send summary message
+                            await update.message.reply_text(summary)
+                            
+                            # Generate and send plot in the main thread
+                            plot_buffer = await loop.run_in_executor(
+                                None,
+                                lambda: create_portfolio_backtest_plot(result)
+                            )
+                            
+                            # Send plot
+                            await update.message.reply_photo(plot_buffer)
+                            
+                            # Notify about CSV file
+                            await update.message.reply_text("💾 Complete backtest data saved to 'portfolio backtest.csv'")
+                            
+                        except Exception as e:
+                            await status_message.edit_text(f"❌ Error during backtest: {str(e)}")
+                            logger.error(f"Portfolio backtest error: {e}", exc_info=True)
+                    
+                    # Start the backtest task
+                    asyncio.create_task(run_backtest_task())
+                    
+                except Exception as e:
+                    await status_message.edit_text(f"❌ Error starting backtest: {str(e)}")
+                    logger.error(f"Error starting portfolio backtest: {e}", exc_info=True)
                 
-                # Create performance summary
-                metrics = result['metrics']
-                summary = (
-                    f"📊 Portfolio Backtest Results ({days} days)\n\n"
-                    f"Initial Capital: ${metrics['initial_capital']:,.2f}\n"
-                    f"Final Value: ${metrics['final_value']:,.2f}\n"
-                    f"Total Return: {metrics['total_return']:.2f}%\n"
-                    f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n\n"
-                    "Individual Asset Returns:\n"
-                )
-                
-                for symbol, ret in metrics['symbol_returns'].items():
-                    summary += f"{symbol}: {ret:.2f}%\n"
-                
-                # Send summary message
-                await update.message.reply_text(summary)
-                
-                # Generate and send plot
-                plot_buffer = create_portfolio_backtest_plot(result)
-                await update.message.reply_photo(plot_buffer)
-                
-                # Notify about CSV file
-                await update.message.reply_text("💾 Complete backtest data saved to 'portfolio backtest.csv'")
                 return
             
-            # Handle regular backtest (existing code)
+            # Handle regular backtest
             try:
                 days = int(args[0])
                 symbol = None
@@ -682,16 +734,22 @@ Price Changes:
             
             symbols_to_test = [symbol] if symbol else self.symbols
             
-            await update.message.reply_text(f"🔄 Running backtest for the last {days} days...")
+            status_message = await update.message.reply_text(f"🔄 Starting backtest for the last {days} days...")
             
             # Run backtest for each symbol
             for sym in symbols_to_test:
                 try:
-                    # Run backtest simulation
-                    result = run_backtest(sym, days)
+                    # Run backtest simulation asynchronously
+                    result = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: run_backtest(sym, days)
+                    )
                     
-                    # Generate plot
-                    buf, stats = create_backtest_plot(result)
+                    # Generate plot in executor
+                    buf, stats = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: create_backtest_plot(result)
+                    )
                     
                     # Create performance message
                     message = f"""
@@ -710,14 +768,37 @@ Price Changes:
                         caption=message,
                         parse_mode='HTML'
                     )
+                    
+                    # Update status for multiple symbols
+                    if len(symbols_to_test) > 1:
+                        await status_message.edit_text(f"✅ Completed {sym}, processing next symbol...")
+                        
                 except Exception as e:
                     error_msg = str(e)
                     if "Error running backtest for" in error_msg:
                         error_msg = error_msg.split(": ", 1)[1]  # Get the actual error message
                     await update.message.reply_text(f"❌ Could not run backtest for {sym}: {error_msg}")
+            
+            # Final status update
+            if len(symbols_to_test) > 1:
+                await status_message.edit_text("✅ All backtests completed!")
+            else:
+                await status_message.edit_text("✅ Backtest completed!")
                 
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
             logger.error(f"Backtest command error: {str(e)}")
             await update.message.reply_text(f"❌ Error: {str(e)}")
+
+    async def _update_backtest_progress(self, message, processed, total, current_symbol):
+        """Update the backtest progress message"""
+        try:
+            progress = (processed / total) * 100
+            await message.edit_text(
+                f"🔄 Running portfolio backtest...\n"
+                f"Progress: {progress:.1f}%\n"
+                f"Currently processing: {current_symbol}"
+            )
+        except Exception as e:
+            logger.error(f"Error updating backtest progress: {e}")

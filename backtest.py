@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
 from config import TRADING_SYMBOLS
+import matplotlib
+matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -67,12 +69,12 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
     data['signal'] = signals['signal']
     
     # Initialize portfolio tracking
-    data['shares'] = 0  # Current position in shares
+    data['shares'] = 0.0  # Current position in shares
     data['cash'] = initial_capital  # Available cash
-    data['position_value'] = 0  # Value of current position
+    data['position_value'] = 0.0  # Value of current position
     data['portfolio_value'] = initial_capital  # Total portfolio value
     
-    position = 0  # Current position in shares
+    position = 0.0  # Current position in shares
     cash = initial_capital
     trades = []  # Track individual trades
     
@@ -147,10 +149,10 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
                 position = 0
         
         # Update data for this timestamp
-        data.loc[current_time, 'shares'] = position
-        data.loc[current_time, 'cash'] = cash
-        data.loc[current_time, 'position_value'] = position * current_price
-        data.loc[current_time, 'portfolio_value'] = cash + (position * current_price)
+        data.loc[current_time, 'shares'] = float(position)
+        data.loc[current_time, 'cash'] = float(cash)
+        data.loc[current_time, 'position_value'] = float(position * current_price)
+        data.loc[current_time, 'portfolio_value'] = float(cash + (position * current_price))
     
     # Calculate performance metrics
     final_value = cash + (position * data['close'].iloc[-1])
@@ -202,7 +204,7 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
         }
     }
 
-def run_portfolio_backtest(symbols: list, days: int = 5) -> dict:
+def run_portfolio_backtest(symbols: list, days: int = 5, progress_callback=None) -> dict:
     """Run backtest simulation for multiple symbols as a portfolio"""
     # Calculate per-symbol capital
     initial_capital = 100000  # Total portfolio capital
@@ -212,6 +214,10 @@ def run_portfolio_backtest(symbols: list, days: int = 5) -> dict:
     individual_results = {}
     all_dates = set()
     for symbol in symbols:
+        # Call progress callback if provided
+        if progress_callback:
+            progress_callback(symbol)
+            
         result = run_backtest(symbol, days, initial_capital=per_symbol_capital)
         individual_results[symbol] = result
         all_dates.update(result['data'].index)
