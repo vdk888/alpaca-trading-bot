@@ -1,6 +1,13 @@
 # config.py
 
+import os
+
 ALPACA_PAPER = True
+ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
+ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
+
+if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
+    raise ValueError("Alpaca API credentials not found in environment variables")
 
 # Trading symbols configuration
 TRADING_SYMBOLS = {
@@ -110,18 +117,7 @@ TRADING_SYMBOLS = {
             'timezone': 'US/Eastern'
         }
     },
-    'SQQQ': {
-        'name': '-3x Nasdaq 100',
-        'market': 'US',
-        'yfinance': 'SQQQ',
-        'interval': '5m',
-        'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
-            'timezone': 'US/Eastern'
-        }
-    },
-    
+
     # International ETFs
     'EEM': {
         'name': 'Emerging Markets',

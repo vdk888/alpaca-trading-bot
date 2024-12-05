@@ -573,3 +573,75 @@ def create_portfolio_backtest_plot(backtest_result: dict) -> io.BytesIO:
     plt.close()
     
     return buf
+
+def create_portfolio_with_prices_plot(backtest_result: dict) -> io.BytesIO:
+    """Create visualization of portfolio value with individual asset prices, all normalized to base 100"""
+    # Create figure
+    fig = plt.figure(figsize=(15, 8))
+    ax = fig.add_subplot(111)
+    
+    data = backtest_result['data']
+    
+    # Get symbol columns (those ending with '_price')
+    symbol_prices = [col for col in data.columns if col.endswith('_price')]
+    
+    # Plot individual assets first (behind portfolio line)
+    for price_col in symbol_prices:
+        symbol = price_col.replace('_price', '')
+        # Get first non-NaN value for normalization
+        initial_price = data[price_col].dropna().iloc[0]
+        normalized_prices = data[price_col] / initial_price * 100
+        
+        # Check if symbol is crypto or ETF
+        is_crypto = TRADING_SYMBOLS[symbol]['market'] == 'CRYPTO'
+        
+        ax.plot(data.index, normalized_prices, 
+                label=f'{symbol} Price', 
+                alpha=0.3,
+                linestyle='' if is_crypto else '--',  # Solid for crypto, dashed for ETF
+                marker='.' if is_crypto else None,    # Dots for crypto
+                markersize=1 if is_crypto else None,  # Small dots
+                zorder=1)  # Put asset lines behind portfolio line
+    
+    # Normalize portfolio value to base 100 using first non-NaN value
+    initial_portfolio = data['portfolio_total'].dropna().iloc[0]
+    normalized_portfolio = data['portfolio_total'] / initial_portfolio * 100
+    
+    # Plot portfolio value last (on top) with increased visibility
+    ax.plot(data.index, normalized_portfolio, 
+            label='Portfolio Value', 
+            linewidth=4.0,
+            color='navy',
+            alpha=1.0,
+            zorder=10)
+    
+    # Format y-axis to show percentage values
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.0f}'))
+    
+    ax.set_title('Portfolio and Asset Performance (Base 100)')
+    ax.set_ylabel('Value (Base 100)')
+    ax.grid(True, alpha=0.2)
+    
+    # Format x-axis
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+    
+    # Add legend with portfolio first
+    handles, labels = ax.get_legend_handles_labels()
+    if 'Portfolio Value' in labels:
+        portfolio_idx = labels.index('Portfolio Value')
+        handles = [handles[portfolio_idx]] + handles[:portfolio_idx] + handles[portfolio_idx+1:]
+        labels = [labels[portfolio_idx]] + labels[:portfolio_idx] + labels[portfolio_idx+1:]
+    ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5), ncol=1)
+    
+    # Adjust layout to prevent overlapping
+    plt.tight_layout()
+    
+    # Save to buffer with high DPI for better quality
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+    buf.seek(0)
+    plt.close()
+    
+    return buf

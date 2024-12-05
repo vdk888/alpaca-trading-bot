@@ -8,7 +8,7 @@ from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
 from config import TRADING_SYMBOLS
 from trading import TradingExecutor
-from backtest import run_portfolio_backtest, create_portfolio_backtest_plot
+from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
 import pandas as pd
 import pytz
@@ -744,14 +744,23 @@ Price Changes:
                             # Send summary message
                             await update.message.reply_text(summary)
                             
-                            # Generate and send plot in the main thread
+                            # Generate and send first plot (portfolio allocation)
                             plot_buffer = await loop.run_in_executor(
                                 None,
                                 lambda: create_portfolio_backtest_plot(result)
                             )
                             
-                            # Send plot
+                            # Send first plot
                             await update.message.reply_photo(plot_buffer)
+                            
+                            # Generate and send second plot (portfolio value with asset prices)
+                            prices_plot_buffer = await loop.run_in_executor(
+                                None,
+                                lambda: create_portfolio_with_prices_plot(result)
+                            )
+                            
+                            # Send second plot
+                            await update.message.reply_photo(prices_plot_buffer)
                             
                             # Notify about CSV file
                             await update.message.reply_text("💾 Complete backtest data saved to 'portfolio backtest.csv'")
