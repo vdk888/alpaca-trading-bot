@@ -248,7 +248,35 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                 # Send this chunk of messages
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
+        
+        # Add summary of all positions if not looking at a specific symbol
+        if not symbol:
+            try:
+                account = self.trading_client.get_account()
+                equity = float(account.equity)
+                total_market_value = 0
+                total_pnl = 0
                 
+                # Calculate totals
+                for sym in self.symbols:
+                    try:
+                        position = self.trading_client.get_open_position(get_api_symbol(sym))
+                        total_market_value += float(position.market_value)
+                        total_pnl += float(position.unrealized_pl)
+                    except Exception:
+                        continue
+                
+                if total_market_value > 0:
+                    total_exposure = (total_market_value / equity) * 100
+                    summary = f"""
+💼 Portfolio Summary:
+Total Position Value: ${total_market_value:.2f}
+Total Account Exposure: {total_exposure:.2f}%
+Total Unrealized P&L: ${total_pnl:.2f}"""
+                    await update.message.reply_text(summary)
+            except Exception as e:
+                logger.error(f"Error generating position summary: {str(e)}")
+            
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting position: {str(e)}")
 
