@@ -225,13 +225,20 @@ Price Changes:
                 for sym in chunk_symbols:
                     try:
                         position = self.trading_client.get_open_position(get_api_symbol(sym))
+                        # Get account equity for exposure calculation
+                        account = self.trading_client.get_account()
+                        equity = float(account.equity)
+                        market_value = float(position.market_value)
+                        exposure_percentage = (market_value / equity) * 100
+                        
                         message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Position Details:
 Side: {position.side.upper()}
 Quantity: {position.qty}
 Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
-Market Value: ${float(position.market_value):.2f}
+Market Value: ${market_value:.2f}
+Account Exposure: {exposure_percentage:.2f}%
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)"""
                     except Exception as e:
                         logger.error(f"Error getting position for {sym} (API symbol: {get_api_symbol(sym)}): {str(e)}")
