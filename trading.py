@@ -140,12 +140,19 @@ class TradingExecutor:
                         await notify_callback(message)
                     return False
                 
+                # Calculate exposure
+                account = self.trading_client.get_account()
+                equity = float(account.equity)
+                new_position_value = new_qty * analysis['current_price']
+                exposure_percentage = (new_position_value / equity) * 100
+                
                 # Notify that order is being sent
                 notional_value = round(new_qty * analysis['current_price'], 2) if self.config['market'] == 'CRYPTO' else new_qty * analysis['current_price']
                 sending_message = f"""🔄 Sending BUY Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
-• Estimated Value: ${notional_value:.2f}"""
+• Estimated Value: ${notional_value:.2f}
+• Account Exposure: {exposure_percentage:.2f}%"""
                 logger.info(sending_message)
                 if notify_callback:
                     await notify_callback(sending_message)
@@ -166,6 +173,7 @@ class TradingExecutor:
 • Quantity: {new_qty}
 • Price: ${analysis['current_price']:.2f}
 • Total Value: ${(new_qty * analysis['current_price']):.2f}
+• Account Exposure: {exposure_percentage:.2f}%
 • Daily Signal: {analysis['daily_composite']:.4f}
 • Weekly Signal: {analysis['weekly_composite']:.4f}
 • Order ID: {submitted_order.id}"""
