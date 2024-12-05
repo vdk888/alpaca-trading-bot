@@ -181,6 +181,11 @@ class TradingExecutor:
                 try:
                     position = self.trading_client.get_open_position(get_api_symbol(self.symbol))
                     qty = abs(float(position.qty))
+                    avg_entry_price = float(position.avg_entry_price)
+                    
+                    # Calculate performance
+                    profit_loss = (analysis['current_price'] - avg_entry_price) * qty
+                    profit_loss_percentage = ((analysis['current_price'] / avg_entry_price) - 1) * 100
                     
                     # Notify that order is being sent
                     sending_message = f"""🔄 Sending SELL Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
@@ -206,6 +211,7 @@ class TradingExecutor:
 • Quantity: {qty}
 • Price: ${analysis['current_price']:.2f}
 • Total Value: ${(qty * analysis['current_price']):.2f}
+• P&L: ${profit_loss:.2f} ({profit_loss_percentage:+.2f}%)
 • Daily Signal: {analysis['daily_composite']:.4f}
 • Weekly Signal: {analysis['weekly_composite']:.4f}
 • Order ID: {submitted_order.id}"""
