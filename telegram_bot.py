@@ -249,34 +249,59 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
         
-        # Add summary of all positions if not looking at a specific symbol
-        if not symbol:
-            try:
-                account = self.trading_client.get_account()
-                equity = float(account.equity)
-                total_market_value = 0
-                total_pnl = 0
-                
-                # Calculate totals
-                for sym in self.symbols:
-                    try:
-                        position = self.trading_client.get_open_position(get_api_symbol(sym))
-                        total_market_value += float(position.market_value)
-                        total_pnl += float(position.unrealized_pl)
-                    except Exception:
-                        continue
-                
-                if total_market_value > 0:
-                    total_exposure = (total_market_value / equity) * 100
-                    summary = f"""
+            # Add summary of all positions if not looking at a specific symbol
+            if not symbol:
+                try:
+                    account = self.trading_client.get_account()
+                    equity = float(account.equity)
+                    total_market_value = 0
+                    total_pnl = 0
+                    positions_summary = []
+                    
+                    # Calculate totals and collect position details
+                    for sym in self.symbols:
+                        try:
+                            position = self.trading_client.get_open_position(get_api_symbol(sym))
+                            market_value = float(position.market_value)
+                            total_market_value += market_value
+                            total_pnl += float(position.unrealized_pl)
+                            positions_summary.append({
+                                'symbol': sym,
+                                'market_value': market_value,
+                                'side': position.side.upper(),
+                                'qty': position.qty,
+                                'pnl': float(position.unrealized_pl)
+                            })
+                        except Exception:
+                            continue
+                    
+                    if total_market_value > 0:
+                        total_exposure = (total_market_value / equity) * 100
+                        
+                        # Sort positions by market value
+                        positions_summary.sort(key=lambda x: abs(x['market_value']), reverse=True)
+                        
+                        # Build positions text with weights
+                        positions_text = []
+                        for pos in positions_summary:
+                            weight = (abs(pos['market_value']) / total_market_value) * 100
+                            pnl_pct = (pos['pnl'] / abs(pos['market_value'])) * 100 if pos['market_value'] != 0 else 0
+                            positions_text.append(
+                                f"• {pos['symbol']}: {pos['side']} {pos['qty']} ({weight:.1f}% weight) | P&L: ${pos['pnl']:.2f} ({pnl_pct:.1f}%)"
+                            )
+                        
+                        summary = f"""
 💼 Portfolio Summary:
 Total Position Value: ${total_market_value:.2f}
 Total Account Exposure: {total_exposure:.2f}%
-Total Unrealized P&L: ${total_pnl:.2f}"""
-                    await update.message.reply_text(summary)
-            except Exception as e:
-                logger.error(f"Error generating position summary: {str(e)}")
-            
+Total Unrealized P&L: ${total_pnl:.2f}
+
+Open Positions:
+{chr(10).join(positions_text)}"""
+                        await update.message.reply_text(summary)
+                except Exception as e:
+                    logger.error(f"Error generating position summary: {str(e)}")
+                
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting position: {str(e)}")
 
