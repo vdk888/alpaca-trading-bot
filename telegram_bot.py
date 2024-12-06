@@ -10,6 +10,7 @@ from config import TRADING_SYMBOLS
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
+from portfolio import get_portfolio_history, create_portfolio_plot
 import pandas as pd
 import pytz
 from utils import get_api_symbol, get_display_symbol
@@ -54,6 +55,7 @@ class TradingBot:
         application.add_handler(CommandHandler("open", self.open_command))
         application.add_handler(CommandHandler("close", self.close_command))
         application.add_handler(CommandHandler("backtest", self.backtest_command))
+        application.add_handler(CommandHandler("portfolio", self.portfolio_command))
 
     @property
     def bot(self):
@@ -136,6 +138,11 @@ class TradingBot:
 /symbols - List all trading symbols
 /markets - View market hours for all symbols
 /help - Show this help message
+/portfolio - Get portfolio history graph. Examples:
+    • /portfolio (default: daily data for 1 month)
+    • /portfolio 1H 1W (hourly data for 1 week)
+    • /portfolio 15Min 1D (15-min data for 1 day)
+    • /portfolio 1D 3M (daily data for 3 months)
         """
         symbols_list = "\n".join([f"• {symbol}" for symbol in self.symbols])
         await update.message.reply_text(f"Trading bot started\nMonitoring the following symbols:\n{symbols_list}\n\n{commands}")
@@ -871,3 +878,32 @@ Price Changes:
             )
         except Exception as e:
             logger.error(f"Error updating backtest progress: {e}")
+
+    async def portfolio_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Send portfolio history graph"""
+        try:
+            # Get command arguments
+            args = context.args
+            timeframe = '1D'  # default
+            period = '1M'     # default
+            
+            if len(args) >= 1:
+                timeframe = args[0]
+            if len(args) >= 2:
+                period = args[1]
+                
+            # Get portfolio history
+            portfolio_history = get_portfolio_history(timeframe=timeframe, period=period)
+            
+            # Create plot
+            plot_buffer = create_portfolio_plot(portfolio_history)
+            
+            # Send plot
+            await update.message.reply_photo(
+                photo=plot_buffer,
+                caption=f'Portfolio History (Timeframe: {timeframe}, Period: {period})'
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in portfolio_command: {str(e)}")
+            await update.message.reply_text(f"Error getting portfolio history: {str(e)}")
