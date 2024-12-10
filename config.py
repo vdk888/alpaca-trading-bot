@@ -18,8 +18,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'SPY',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -29,8 +29,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'QQQ',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -40,8 +40,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'IWM',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -51,8 +51,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'DIA',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -64,8 +64,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'XLK',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -75,8 +75,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'XLF',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -86,8 +86,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'XLE',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -99,8 +99,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'UVXY',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -112,8 +112,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'TQQQ',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -125,8 +125,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'EEM',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -136,8 +136,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'EFA',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -149,8 +149,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'TLT',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -160,8 +160,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'HYG',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
@@ -173,8 +173,8 @@ TRADING_SYMBOLS = {
         'yfinance': 'GLD',
         'interval': '5m',
         'market_hours': {
-            'start': '09:30',
-            'end': '16:00',
+            'start': '00:00',
+            'end': '23:59',
             'timezone': 'US/Eastern'
         }
     },
