@@ -2,6 +2,59 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Union, List, Tuple
 
+def calculate_hurst_exponent(data: pd.Series, lags: List[int]) -> float:
+    """Calculate Hurst exponent using R/S analysis"""
+    # Convert to numpy array for faster computation
+    ts = np.array(data)
+    # Calculate R/S ratio for different lags
+    rs_values = []
+    
+    for lag in lags:
+        # Split time series into chunks
+        chunks = len(ts) // lag
+        if chunks < 1:
+            continue
+            
+        # Calculate R/S for each chunk
+        rs_chunk = []
+        for i in range(chunks):
+            chunk = ts[i*lag:(i+1)*lag]
+            if len(chunk) < 2:  # Need at least 2 points
+                continue
+            # Mean-adjust the chunk
+            mean_adj = chunk - chunk.mean()
+            # Range and standard deviation
+            r = max(mean_adj) - min(mean_adj)
+            s = np.std(chunk)
+            if s == 0:  # Avoid division by zero
+                continue
+            rs_chunk.append(r/s)
+            
+        if rs_chunk:  # If we have valid R/S values
+            rs_values.append(np.mean(rs_chunk))
+    
+    if len(rs_values) < 2:  # Need at least 2 points for regression
+        return 0.5
+    
+    # Calculate Hurst exponent from log-log regression
+    x = np.log(lags[:len(rs_values)])
+    y = np.log(rs_values)
+    hurstExp = np.polyfit(x, y, 1)[0]
+    return min(max(hurstExp, 0), 1)  # Bound between 0 and 1
+
+def calculate_fractal_complexity(data: pd.DataFrame, lags: List[int] = [10, 20, 40], window: int = 100) -> pd.Series:
+    """Calculate fractal complexity indicator using Hurst exponent."""
+    returns = np.log(data['close']).diff().dropna()
+    complexity = pd.Series(index=data.index, dtype=float)
+
+    for i in range(window, len(returns) + 1):
+        window_data = returns.iloc[i - window:i]
+        h = calculate_hurst_exponent(window_data, lags)
+        complexity.iloc[i - 1] = 2 * abs(h - 0.5)
+
+    return complexity.fillna(0)
+
+
 def calculate_macd(data: pd.DataFrame, fast: int = 12, slow: int = 26, signal: int = 9) -> pd.Series:
     """Calculate MACD (Moving Average Convergence Divergence)"""
     ema_fast = data['close'].ewm(span=fast, adjust=False).mean()
@@ -27,6 +80,9 @@ def calculate_stochastic(data: pd.DataFrame, k_period: int = 14, d_period: int =
     return k - d  # Similar to MACD, we return K-D
 
 def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[float, int]], reactivity: float = 1.0, is_weekly: bool = False) -> Tuple[pd.DataFrame, pd.Series, pd.Series]:
+    # Calculate fractal complexity
+    complexity = calculate_fractal_complexity(data, lags=params['fractal_lags'], window=params['fractal_window'])
+    
     # Print input data stats for debugging
     print(f"Debug: calculate_composite_indicator input stats:")
     print(f"Data points: {len(data)}")
@@ -52,19 +108,32 @@ def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[fl
     norm_rsi = (rsi - 50) / 25  # Center around 0 and scale
     norm_stoch = stoch / (100 if stoch.max() != 0 else 1)  # Scale to [-1, 1]
     
+    # Normalize fractal complexity
+    norm_complexity = (complexity - complexity.mean()) / (complexity.std() if complexity.std() != 0 else 1)
+    
     # Print normalized stats
     print(f"Normalized MACD range: {norm_macd.min():.4f} to {norm_macd.max():.4f}")
     print(f"Normalized RSI range: {norm_rsi.min():.4f} to {norm_rsi.max():.4f}")
     print(f"Normalized Stoch range: {norm_stoch.min():.4f} to {norm_stoch.max():.4f}")
+    print(f"Fractal complexity range: {complexity.min():.4f} to {complexity.max():.4f}")
+    print(f"Normalized complexity range: {norm_complexity.min():.4f} to {norm_complexity.max():.4f}")
     
+   # Extract weights from params
+    weights = params.get('weights', {'macd_weight': 0.25, 'rsi_weight': 0.25, 'stoch_weight': 0.25, 'complexity_weight': 0.25, 
+                                     'weekly_macd_weight': 0.25, 'weekly_rsi_weight': 0.25, 'weekly_stoch_weight': 0.25, 'weekly_complexity_weight': 0.25})
+
     # Combine indicators with weighted approach
     if is_weekly:
-        # Weekly composite puts more weight on longer-term indicators
-        composite = (0.4 * norm_macd + 0.4 * norm_rsi + 0.2 * norm_stoch)
+        composite = (weights['weekly_macd_weight'] * norm_macd + 
+                     weights['weekly_rsi_weight'] * norm_rsi + 
+                     weights['weekly_stoch_weight'] * norm_stoch + 
+                     weights['weekly_complexity_weight'] * norm_complexity)
     else:
-        # Daily composite weights all indicators equally
-        composite = (norm_macd + norm_rsi + norm_stoch) / 3
-    
+        composite = (weights['macd_weight'] * norm_macd + 
+                     weights['rsi_weight'] * norm_rsi + 
+                     weights['stoch_weight'] * norm_stoch + 
+                     weights['complexity_weight'] * norm_complexity)
+
     composite = composite.fillna(0)
     
     # Calculate the rolling standard deviation for thresholds
@@ -184,6 +253,7 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     
     return signals, daily_data, weekly_resampled
 
+
 def get_default_params():
     return {
         'percent_increase_buy': 0.02,
@@ -198,8 +268,21 @@ def get_default_params():
         'macd_fast': 12,
         'macd_slow': 26,
         'macd_signal': 9,
-        'reactivity': 1.0  # Add this line
+        'fractal_window': 100,  # Add default fractal window
+        'fractal_lags': [10, 20, 40],  # Add default fractal lags
+        'reactivity': 1.0,
+        'weights': {
+            'macd_weight': 0.25,
+            'rsi_weight': 0.25,
+            'stoch_weight': 0.25,
+            'complexity_weight': 0.25,
+            'weekly_macd_weight': 0.25,
+            'weekly_rsi_weight': 0.25,
+            'weekly_stoch_weight': 0.25,
+            'weekly_complexity_weight': 0.25
+}
     }
+
 
 # Example usage
 if __name__ == "__main__":

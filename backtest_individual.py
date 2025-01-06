@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
 from matplotlib.dates import HourLocator, num2date
+import json
+from itertools import product
+
+from datetime import datetime, timedelta
+import json
+
 
 def is_market_hours(timestamp, market_hours):
     """Check if given timestamp is within market hours"""
@@ -25,12 +31,142 @@ def is_market_hours(timestamp, market_hours):
     
     return market_start <= local_time <= market_end
 
-def run_backtest(symbol: str, days: int = 5) -> dict:
-    """Run backtest simulation for a symbol over specified number of days"""
+param_grid = {
+    'percent_increase_buy': [0.02],
+    'percent_decrease_sell': [0.02],
+    'sell_down_lim': [2.0],
+    'sell_rolling_std': [20],
+    'buy_up_lim': [-2.0],
+    'buy_rolling_std': [20],
+    'macd_fast': [12],
+    'macd_slow': [26],
+    'macd_signal': [9],
+    'rsi_period': [14],
+    'stochastic_k_period': [14],
+    'stochastic_d_period': [3],
+    'fractal_window': [50, 100, 150],
+    'fractal_lags': [[5, 10, 20], [10, 20, 40], [15, 30, 60]],
+    'weights': [
+        {'weekly_macd_weight': 0.25, 'weekly_rsi_weight': 0.25, 'weekly_stoch_weight': 0.25, 'weekly_complexity_weight': 0.25,'macd_weight': 0.4, 'rsi_weight': 0.3, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.2, 'weekly_rsi_weight': 0.4, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.2,'macd_weight': 0.3, 'rsi_weight': 0.4, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.3, 'weekly_rsi_weight': 0.2, 'weekly_stoch_weight': 0.3, 'weekly_complexity_weight': 0.2,'macd_weight': 0.2, 'rsi_weight': 0.3, 'stoch_weight': 0.4, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.4, 'weekly_rsi_weight': 0.3, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.1,'macd_weight': 0.1, 'rsi_weight': 0.4, 'stoch_weight': 0.3, 'complexity_weight': 0.2},
+        ]
+}
+
+def find_best_params(symbol: str, param_grid: dict, days: int = 5, output_file: str = "best_params.json") -> dict:
+    """Find the best parameter set by running a backtest for each combination."""
+    param_names = list(param_grid.keys())
+    param_values = [param_grid[name] for name in param_names]
+
+    # Load existing data to check the last update date
+    try:
+        with open(output_file, "r") as f:
+            existing_data = json.load(f)
+    except FileNotFoundError:
+        existing_data = {}
+
+    # Check if the current symbol exists in the JSON data
+    last_update_date = None
+    if symbol in existing_data:
+        last_update_date_str = existing_data[symbol].get('date')
+        if last_update_date_str:
+            last_update_date = datetime.strptime(last_update_date_str, "%Y-%m-%d")
+
+    # Determine if we need to run simulations
+    if last_update_date:
+        if datetime.now() - last_update_date < timedelta(weeks=1):
+            print(f"Using existing best parameters for {symbol} (last updated on {last_update_date_str}).")
+            return existing_data[symbol]['best_params']  # Return existing best params
+
+    # Proceed with simulations if no existing data or it's older than a week
+    param_combinations = [dict(zip(param_names, values)) for values in product(*param_values)]
+
+    best_params = None
+    best_performance = float('-inf')
+    best_metrics = {}
+    performances = []  # List to store all performance metrics
+
+    for params in param_combinations:
+        # Update default parameters with the current combination
+        default_params = get_default_params()
+        default_params.update(params)
+
+        # Access weights directly from default_params
+        weight_combination = default_params['weights']
+        default_params.update(weight_combination)
+
+        # Run a single backtest with the current parameter set
+        result = run_backtest(symbol, days=days, params=default_params, is_simulating=True)
+        performance = result['stats']['total_return']  # Use total return as the performance metric
+        win_rate = result['stats']['win_rate']  # Example metric
+        max_drawdown = result['stats']['max_drawdown']  # Example metric
+
+        # Store performance for later analysis
+        performances.append(performance)
+
+        print(f"Params: {params}, Performance: {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%")
+
+        # Update best parameters if current is better
+        if performance > best_performance:
+            best_performance = performance
+            best_params = params
+            best_metrics = {
+                'performance': performance,
+                'win_rate': win_rate,
+                'max_drawdown': max_drawdown,
+            }
+
+    # Calculate max, min, and average performance
+    max_performance = max(performances)
+    min_performance = min(performances)
+    avg_performance = sum(performances) / len(performances)
+
+    # Save best parameters and metrics to JSON
+    if output_file:
+        existing_data[symbol] = {
+            'best_params': best_params,
+            'metrics': best_metrics,
+            'performance_summary': {
+                'max_performance': max_performance,
+                'min_performance': min_performance,
+                'avg_performance': avg_performance,
+            },
+            'date': datetime.now().strftime("%Y-%m-%d")  # Add current date
+        }
+
+        # Write updated data back to JSON
+        with open(output_file, "w") as f:
+            json.dump(existing_data, f, indent=4)
+
+    print(f"Best params and metrics for {symbol} saved to {output_file}")
+    return best_params
+
+
+def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating: bool = False) -> dict:
+    """Run a single backtest simulation for a given symbol and parameter set."""
+    
+    # Load the best parameters from JSON based on the symbol
+    try:
+        with open("best_params.json", "r") as f:
+            best_params_data = json.load(f)
+    except FileNotFoundError:
+        print("Best parameters file not found. Using default parameters.")
+        best_params_data = {}
+
+    if is_simulating == False:
+        if symbol in best_params_data:
+            # Use the best parameters for this symbol
+            params = best_params_data[symbol]['best_params']
+        else:
+            print(f"No best parameters found for {symbol}. Using default parameters.")
+            params = get_default_params()  # Fallback to default parameters
+
+
     # Get symbol configuration
     symbol_config = TRADING_SYMBOLS[symbol]
     yf_symbol = symbol_config['yfinance']
-    
+
     # Handle crypto symbols with forward slashes
     if '/' in yf_symbol:
         yf_symbol = yf_symbol.replace('/', '-')
@@ -38,7 +174,7 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
     # Calculate date range
     end_date = datetime.now(pytz.UTC)
     start_date = end_date - timedelta(days=days + 2)  # Add buffer days
-    
+
     # Fetch historical data
     ticker = yf.Ticker(yf_symbol)
     data = ticker.history(
@@ -47,21 +183,21 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
         interval=symbol_config.get('interval', '5m'),
         actions=False
     )
-    
+
     if len(data) == 0:
         raise ValueError(f"No data available for {symbol} in the specified date range")
-    
+
     # Localize timezone if needed
     if data.index.tz is None:
         data.index = data.index.tz_localize('UTC')
-    
+
     # Filter for market hours
     data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
     data.columns = data.columns.str.lower()
-    
-    # Generate signals
-    params = get_default_params()
+
+    # Generate signals using the provided parameters
     signals, daily_data, weekly_data = generate_signals(data, params)
+    
     
     # Initialize portfolio tracking
     initial_capital = 100000  # $100k initial capital
@@ -200,7 +336,8 @@ def run_backtest(symbol: str, days: int = 5) -> dict:
             'total_trades': len(trades),
             'win_rate': win_rate,
             'max_drawdown': max_drawdown,
-            'sharpe_ratio': sharpe_ratio
+            'sharpe_ratio': sharpe_ratio,
+            'params_used': params
         }
     }
 
@@ -425,3 +562,37 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     buf.seek(0)
     
     return buf, backtest_result['stats']
+
+if __name__ == "__main__":
+    # Define the parameter grid
+
+    param_grid = {
+    'percent_increase_buy': [0.02],
+    'percent_decrease_sell': [0.02],
+        'sell_down_lim': [2.0],
+        'sell_rolling_std': [20],
+        'buy_up_lim': [-2.0],
+        'buy_rolling_std': [20],
+        'macd_fast': [12],
+        'macd_slow': [26],
+        'macd_signal': [9],
+        'rsi_period': [14],
+        'stochastic_k_period': [14],
+        'stochastic_d_period': [3],
+        'fractal_window': [50, 100, 150],
+    'fractal_lags': [[5, 10, 20], [10, 20, 40], [15, 30, 60]],
+    'weights': [
+        {'weekly_macd_weight': 0.25, 'weekly_rsi_weight': 0.25, 'weekly_stoch_weight': 0.25, 'weekly_complexity_weight': 0.25,'macd_weight': 0.4, 'rsi_weight': 0.3, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.2, 'weekly_rsi_weight': 0.4, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.2,'macd_weight': 0.3, 'rsi_weight': 0.4, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.3, 'weekly_rsi_weight': 0.2, 'weekly_stoch_weight': 0.3, 'weekly_complexity_weight': 0.2,'macd_weight': 0.2, 'rsi_weight': 0.3, 'stoch_weight': 0.4, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.4, 'weekly_rsi_weight': 0.3, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.1,'macd_weight': 0.1, 'rsi_weight': 0.4, 'stoch_weight': 0.3, 'complexity_weight': 0.2},
+        ]
+}
+
+    # Find the best parameters
+    best_params = find_best_params(symbol="SPY", param_grid=param_grid, days=10)
+    print(f"Optimal Parameters: {best_params}")
+
+    # Run the final backtest with the best parameters
+    final_result = run_backtest(symbol="SPY", days=10, params=best_params, is_simulating=False)
+    print(f"Final Backtest Results: {final_result}")
