@@ -158,6 +158,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         if symbol in best_params_data:
             # Use the best parameters for this symbol
             params = best_params_data[symbol]['best_params']
+            print(f"Using best parameters for {symbol}: {params}")
         else:
             print(f"No best parameters found for {symbol}. Using default parameters.")
             params = get_default_params()  # Fallback to default parameters
@@ -204,7 +205,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
     position = 0  # Current position in shares
     cash = initial_capital
     portfolio_value = [initial_capital]  # Start with initial capital
-    shares_owned = [0]  # Start with no shares
+    shares = [0]  # Start with no shares
     trades = []  # Track individual trades
     total_position_value = 0  # Track total position value for position sizing
     
@@ -280,7 +281,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         # Update portfolio value and shares owned after processing any trades
         current_value = cash + (position * current_price)
         portfolio_value.append(current_value)
-        shares_owned.append(position)
+        shares.append(position)
     
     # Calculate final portfolio value
     final_value = cash + (position * data['close'].iloc[-1])
@@ -327,7 +328,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         'daily_data': daily_data,
         'weekly_data': weekly_data,
         'portfolio_value': portfolio_value,
-        'shares_owned': shares_owned,
+        'shares': shares,
         'trades': trades,
         'stats': {
             'initial_capital': initial_capital,
@@ -365,7 +366,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     daily_data = backtest_result['daily_data']
     weekly_data = backtest_result['weekly_data']
     portfolio_value = backtest_result['portfolio_value']
-    shares_owned = backtest_result['shares_owned']
+    shares = backtest_result['shares']
     stats = backtest_result['stats']
     
     # Create figure with subplots
@@ -527,7 +528,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Create a DataFrame with portfolio data
     portfolio_df = pd.DataFrame({
         'value': portfolio_value[1:],  # Skip initial value
-        'shares': shares_owned[1:]  # Skip initial shares
+        'shares': shares[1:]  # Skip initial shares
     }, index=data.index)
     
     # Split portfolio data into sessions

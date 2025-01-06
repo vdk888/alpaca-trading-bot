@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
 from matplotlib.dates import HourLocator, num2date
+import json
 
 def is_market_hours(timestamp, market_hours):
     """Check if given timestamp is within market hours"""
@@ -29,6 +30,20 @@ def is_market_hours(timestamp, market_hours):
 
 def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) -> dict:
     """Run backtest simulation for a symbol over specified number of days"""
+    # Load the best parameters from JSON based on the symbol
+    try:
+        with open("best_params.json", "r") as f:
+            best_params_data = json.load(f)
+            if symbol in best_params_data:
+                params = best_params_data[symbol]['best_params']
+                print(f"Using best parameters for {symbol}: {params}")
+            else:
+                print(f"No best parameters found for {symbol}. Using default parameters.")
+                params = get_default_params()
+    except FileNotFoundError:
+        print("Best parameters file not found. Using default parameters.")
+        params = get_default_params()
+
     # Get symbol configuration
     symbol_config = TRADING_SYMBOLS[symbol]
     yf_symbol = symbol_config['yfinance']
@@ -61,8 +76,7 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
     data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
     data.columns = data.columns.str.lower()
     
-    # Generate signals
-    params = get_default_params()
+    # Generate signals using loaded parameters
     signals, daily_data, weekly_data = generate_signals(data, params)
     
     # Add signals to data

@@ -334,9 +334,12 @@ param_grid = {
     'fractal_window': [50, 100, 150],
     'fractal_lags': [[5, 10, 20], [10, 20, 40], [15, 30, 60]],
     'weights': [
-        {'weekly_macd_weight': 0.25, 'weekly_rsi_weight': 0.25, 'weekly_stoch_weight': 0.25, 'weekly_complexity_weight': 0.25,'macd_weight': 0.4, 'rsi_weight': 0.3, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
-        {'weekly_macd_weight': 0.2, 'weekly_rsi_weight': 0.4, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.2,'macd_weight': 0.3, 'rsi_weight': 0.4, 'stoch_weight': 0.2, 'complexity_weight': 0.1},
-        {'weekly_macd_weight': 0.3, 'weekly_rsi_weight': 0.2, 'weekly_stoch_weight': 0.3, 'weekly_complexity_weight': 0.2,'macd_weight': 0.2, 'rsi_weight': 0.3, 'stoch_weight': 0.4, 'complexity_weight': 0.1},
-        {'weekly_macd_weight': 0.4, 'weekly_rsi_weight': 0.3, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.1,'macd_weight': 0.1, 'rsi_weight': 0.4, 'stoch_weight': 0.3, 'complexity_weight': 0.2},
-        ]
+        {'weekly_macd_weight': 0.1, 'weekly_rsi_weight': 0.1, 'weekly_stoch_weight': 0.1, 'weekly_complexity_weight': 0.7,'macd_weight': 0.1, 'rsi_weight': 0.1, 'stoch_weight': 0.1, 'complexity_weight': 0.7},
+        {'weekly_macd_weight': 0.15, 'weekly_rsi_weight': 0.15, 'weekly_stoch_weight': 0.15, 'weekly_complexity_weight': 0.55,'macd_weight': 0.15, 'rsi_weight': 0.15, 'stoch_weight': 0.15, 'complexity_weight': 0.55},
+        {'weekly_macd_weight': 0.2, 'weekly_rsi_weight': 0.2, 'weekly_stoch_weight': 0.2, 'weekly_complexity_weight': 0.4,'macd_weight': 0.2, 'rsi_weight': 0.2, 'stoch_weight': 0.2, 'complexity_weight': 0.4},
+        {'weekly_macd_weight': 0.25, 'weekly_rsi_weight': 0.25, 'weekly_stoch_weight': 0.25, 'weekly_complexity_weight': 0.25,'macd_weight': 0.25, 'rsi_weight': 0.25, 'stoch_weight': 0.25, 'complexity_weight': 0.25},
+        {'weekly_macd_weight': 0.3, 'weekly_rsi_weight': 0.3, 'weekly_stoch_weight': 0.3, 'weekly_complexity_weight': 0.1,'macd_weight': 0.3, 'rsi_weight': 0.3, 'stoch_weight': 0.3, 'complexity_weight': 0.1},
+        {'weekly_macd_weight': 0.3, 'weekly_rsi_weight': 0.3, 'weekly_stoch_weight': 0.3, 'weekly_complexity_weight': 0.1,'macd_weight': 0.1, 'rsi_weight': 0.1, 'stoch_weight': 0.1, 'complexity_weight': 0.7},
+
+    ]
 }
