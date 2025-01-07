@@ -295,7 +295,19 @@ if __name__ == "__main__":
         "Volume": np.random.randint(1000, 5000, 100)
     }, index=pd.date_range(start="2023-01-01", periods=100))
     
-    params = get_default_params()
+    try:
+        with open("best_params.json", "r") as f:
+            best_params_data = json.load(f)
+            if self.symbol in best_params_data:
+                params = best_params_data[self.symbol]['best_params']
+                print(f"Using best parameters for {self.symbol}: {params}")
+            else:
+                print(f"No best parameters found for {self.symbol}. Using default parameters.")
+                params = get_default_params()
+    except FileNotFoundError:
+        print("Best parameters file not found. Using default parameters.")
+        params = get_default_params()        
+
     
     result = generate_signals(data, params)
     print(result[0].tail(10))
