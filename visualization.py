@@ -9,6 +9,7 @@ import pytz
 import numpy as np
 import logging
 import matplotlib
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -161,11 +162,11 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
         try:
             with open("best_params.json", "r") as f:
                 best_params_data = json.load(f)
-                if self.symbol in best_params_data:
-                    params = best_params_data[self.symbol]['best_params']
-                    print(f"Using best parameters for {self.symbol}: {params}")
+                if symbol in best_params_data:
+                    params = best_params_data[symbol]['best_params']
+                    print(f"Using best parameters for {symbol}: {params}")
                 else:
-                    print(f"No best parameters found for {self.symbol}. Using default parameters.")
+                    print(f"No best parameters found for {symbol}. Using default parameters.")
                     params = get_default_params()
         except FileNotFoundError:
             print("Best parameters file not found. Using default parameters.")

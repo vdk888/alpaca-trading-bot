@@ -15,6 +15,7 @@ import pandas as pd
 import pytz
 from utils import get_api_symbol, get_display_symbol
 import asyncio
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,19 @@ class TradingBot:
         self.application = Application.builder().token(self.bot_token).build()
         self._bot = None  # Will be initialized in start()
         self.setup_handlers(self.application)
-        
+            
+    def get_best_params(self, symbol):
+            """Get best parameters for a symbol from JSON file"""
+            try:
+                with open("best_params.json", "r") as f:
+                    best_params_data = json.load(f)
+                if symbol in best_params_data:
+                    return best_params_data[symbol]['best_params']
+                else:
+                    return "Using default parameters"
+            except FileNotFoundError:
+                return "Using default parameters"
+
     def setup_handlers(self, application: Application):
         """Setup all command handlers"""
         application.add_handler(CommandHandler("start", self.start_command))
@@ -175,6 +188,10 @@ class TradingBot:
                         has_data = True
                         position = "LONG" if self.strategies[sym].current_position == 1 else "SHORT" if self.strategies[sym].current_position == -1 else "NEUTRAL"
                         
+                        # Get best parameters
+                        params = self.get_best_params(sym)
+                        params_message = f"\nParameters: {params}"
+
                         # Get position details if any
                         try:
                             pos = self.trading_client.get_open_position(get_api_symbol(sym))
@@ -194,7 +211,7 @@ Indicators:
   - Lower: {analysis['daily_lower_limit']:.4f}
 • Weekly Composite: {analysis['weekly_composite']:.4f}
   - Upper: {analysis['weekly_upper_limit']:.4f}
-  - Lower: {analysis['weekly_lower_limit']:.4f}
+  - Lower: {analysis['weekly_lower_limit']:.4f}{params_message}
 
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
@@ -368,7 +385,10 @@ Current Equity: ${float(account.equity):.2f}
                         if not analysis:
                             chunk_messages.append(f"No data available for {sym}")
                             continue
-                            
+                        # Get best parameters
+                        params = self.get_best_params(sym)
+                        params_message = f"\nParameters: {params}"
+
                         has_data = True
                         message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Indicators:
@@ -379,7 +399,7 @@ Daily Composite: {analysis['daily_composite']:.4f}
 
 Weekly Composite: {analysis['weekly_composite']:.4f}
 • Upper Limit: {analysis['weekly_upper_limit']:.4f}
-• Lower Limit: {analysis['weekly_lower_limit']:.4f}
+• Lower Limit: {analysis['weekly_lower_limit']:.4f}{params_message}
 
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
@@ -436,16 +456,21 @@ Price Changes:
             
             # Generate and send plot for each symbol
             for symbol in symbols_to_plot:
+                # Get best parameters
+                params = self.get_best_params(symbol)
+
                 try:
                     buf, stats = create_strategy_plot(symbol, days)
                     
                     stats_message = f"""
 📈 {symbol} ({TRADING_SYMBOLS[symbol]['name']}) Statistics ({days} days):
+• Parameters: {params}
+
 • Trading Days: {stats['trading_days']}
 • Price Change: {stats['price_change']:.2f}%
 • Buy Signals: {stats['buy_signals']}
 • Sell Signals: {stats['sell_signals']}
-                    """
+"""
                     
                     await update.message.reply_document(
                         document=buf,
@@ -523,7 +548,10 @@ Price Changes:
                             else "WEAK SELL" if analysis['weekly_composite'] < 0
                             else "NEUTRAL"
                         )
-                        
+                                                # Get best parameters
+                        params = self.get_best_params(sym)
+                        params_message = f"\nParameters: {params}"
+
                         message = f"""
 📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Signals:
 ⏱ {last_signal_info}
@@ -537,7 +565,7 @@ Daily Signal: {daily_signal}
 Weekly Signal: {weekly_signal}
 • Composite: {analysis['weekly_composite']:.4f}
 • Upper Limit: {analysis['weekly_upper_limit']:.4f}
-• Lower Limit: {analysis['weekly_lower_limit']:.4f}
+• Lower Limit: {analysis['weekly_lower_limit']:.4f}{params_message}
 
 Price Changes:
 • 5min: {analysis['price_change_5m']*100:.2f}%
@@ -814,6 +842,10 @@ Price Changes:
             
             # Run backtest for each symbol
             for sym in symbols_to_test:
+                # Get best parameters
+                params = self.get_best_params(sym)
+                params_message = f"\nParameters: {params}"
+
                 try:
                     # Run backtest simulation asynchronously
                     result = await asyncio.get_event_loop().run_in_executor(
@@ -835,6 +867,7 @@ Price Changes:
 • Win Rate: {stats['win_rate']:.1f}%
 • Max Drawdown: {stats['max_drawdown']:.2f}%
 • Sharpe Ratio: {stats['sharpe_ratio']:.2f}
+{params_message}
                     """
                     
                     # Send plot and stats

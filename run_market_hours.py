@@ -12,6 +12,7 @@ import logging
 from telegram import Update, Bot
 from backtest_individual import find_best_params
 from config import TRADING_SYMBOLS, param_grid
+import json
 
 # Set up logging
 logging.basicConfig(
@@ -86,6 +87,20 @@ async def run_bot():
         while True:
             try:
                 for symbol in symbols:
+                    # Generate signals
+                    try:
+                        with open("best_params.json", "r") as f:
+                            best_params_data = json.load(f)
+                            if symbol in best_params_data:
+                                params = best_params_data[symbol]['best_params']
+                                print(f"Using best parameters for {symbol}: {params}")
+                            else:
+                                print(f"No best parameters found for {symbol}. Using default parameters.")
+                                params = get_default_params()
+                    except FileNotFoundError:
+                        print("Best parameters file not found. Using default parameters.")
+                        params = get_default_params()
+                    
                     try:
                         analysis = strategies[symbol].analyze()
                         if analysis['signal'] != 0:  # If there's a trading signal
@@ -96,6 +111,7 @@ Signal: {signal_type}
 Price: ${analysis['current_price']:.2f}
 Daily Score: {analysis['daily_composite']:.4f}
 Weekly Score: {analysis['weekly_composite']:.4f}
+Parameters: {params}
                             """
                             await trading_bot.send_message(message)
                             
