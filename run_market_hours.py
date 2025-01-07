@@ -75,7 +75,7 @@ async def run_bot():
     await trading_bot.start()
     for symbol in TRADING_SYMBOLS:
         print(f"Finding best parameters for {symbol}...")
-        best_params = find_best_params(symbol=symbol, param_grid=param_grid, days=10)
+        best_params = find_best_params(symbol=symbol, param_grid=param_grid, days=30)
         print(f"Optimal Parameters for {symbol}: {best_params}")
     
     logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")

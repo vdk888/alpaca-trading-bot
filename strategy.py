@@ -4,20 +4,20 @@ from indicators import generate_signals, get_default_params
 from fetch import get_latest_data, fetch_historical_data
 import logging
 import pytz
+import json
 
 logger = logging.getLogger(__name__)
 
 class TradingStrategy:
-    def __init__(self, symbol: str, interval: str = '5m', params: Optional[Dict] = None):
+    def __init__(self, symbol: str, interval: str = '5m'):
         self.symbol = symbol
         self.interval = interval
-        self.params = params if params is not None else get_default_params()
         self.current_position = 0  # -1: short, 0: neutral, 1: long
         self.data = None
         self.last_update = None
         self.last_signal_time = None
         self._initialize_data()
-        
+
     def _initialize_data(self) -> None:
         """Initialize historical data for the strategy"""
         try:
@@ -63,11 +63,29 @@ class TradingStrategy:
             # Update data
             self._update_data()
             
-            if self.data is None or self.data.empty:
+            if self.data is None:
+                logger.error("No data available for analysis.")
+                return None
+            
+            if self.data.empty:
                 raise ValueError(f"No data available for {self.symbol}")
             
+            # Initialize last signal time    
+            try:
+                with open("best_params.json", "r") as f:
+                    best_params_data = json.load(f)
+                    if self.symbol in best_params_data:
+                        params = best_params_data[self.symbol]['best_params']
+                        print(f"Using best parameters for {self.symbol}: {params}")
+                    else:
+                        print(f"No best parameters found for {self.symbol}. Using default parameters.")
+                        params = get_default_params()
+            except FileNotFoundError:
+                print("Best parameters file not found. Using default parameters.")
+                params = get_default_params()        
+            
             # Generate signals using our indicators
-            signals, daily_data, weekly_data = generate_signals(self.data, self.params)
+            signals, daily_data, weekly_data = generate_signals(self.data, params)
             
             if signals.empty:
                 raise ValueError(f"No signals generated for {self.symbol}")

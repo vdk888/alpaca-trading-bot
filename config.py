@@ -92,18 +92,7 @@ TRADING_SYMBOLS = {
         }
     },
     
-    # Volatility ETFs
-    'UVXY': {
-        'name': 'ProShares Ultra VIX',
-        'market': 'US',
-        'yfinance': 'UVXY',
-        'interval': '5m',
-        'market_hours': {
-            'start': '00:00',
-            'end': '23:59',
-            'timezone': 'US/Eastern'
-        }
-    },
+
     
     # Leveraged ETFs
     'TQQQ': {
