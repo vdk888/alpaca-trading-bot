@@ -13,6 +13,8 @@ from telegram import Update, Bot
 from backtest_individual import find_best_params
 from config import TRADING_SYMBOLS, param_grid
 import json
+from backtest_individual import run_backtest, create_backtest_plot
+
 
 # Set up logging
 logging.basicConfig(
@@ -114,7 +116,9 @@ Weekly Score: {analysis['weekly_composite']:.4f}
 Parameters: {params}
                             """
                             await trading_bot.send_message(message)
-                            
+                       
+
+                            ##############
                             # Execute trade with notifications through telegram bot
                             action = "BUY" if analysis['signal'] == 1 else "SELL"
                             await trading_executors[symbol].execute_trade(

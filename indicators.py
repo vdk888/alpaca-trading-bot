@@ -242,10 +242,13 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     buy_mask = (daily_data['Composite'] > daily_data['Up_Lim']) & (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))
     signals.loc[buy_mask, 'signal'] = 1
     
-    # Generate sell signals (weekly crossing below lower limit)
-    sell_mask = (weekly_resampled['Composite'] < weekly_resampled['Up_Lim']) & (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Up_Lim'].shift(1))
+    # Generate sell signals (weekly crossing below either upper or lower limit)
+    sell_mask = ((weekly_resampled['Composite'] < weekly_resampled['Up_Lim']) & 
+                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Up_Lim'].shift(1))) | \
+                ((weekly_resampled['Composite'] < weekly_resampled['Down_Lim']) & 
+                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Down_Lim'].shift(1)))
     signals.loc[sell_mask, 'signal'] = -1
-    
+
     # Print final signal counts for debugging
     buy_count = (signals['signal'] == 1).sum()
     sell_count = (signals['signal'] == -1).sum()
