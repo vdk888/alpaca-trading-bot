@@ -166,8 +166,8 @@ async def run_and_send_backtest(symbol: str, trading_bot, days: int = 5):
         # Run backtest
         backtest_result = run_backtest(symbol, days=days)
         
-        # Create plot
-        fig, stats = create_backtest_plot(backtest_result)
+        # Create plot and get stats
+        plot_buffer, stats = create_backtest_plot(backtest_result)
         
         # Send stats message
         stats_message = f"""
@@ -180,13 +180,8 @@ Max Drawdown: {stats['max_drawdown']:.2f}%
 """
         await trading_bot.send_message(stats_message)
         
-        # Save plot to bytes buffer and send it
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight')
-        buf.seek(0)
-        await trading_bot.send_photo(buf)
-        
-        plt.close(fig)
+        # Send the plot
+        await trading_bot.send_photo(plot_buffer)
         
     except Exception as e:
         await trading_bot.send_message(f"Error running backtest for {symbol}: {str(e)}")

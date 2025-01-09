@@ -126,6 +126,16 @@ class TradingBot:
         except Exception as e:
             logger.error(f"Failed to send Telegram message: {e}")
 
+    async def send_photo(self, photo_buffer):
+        """Send photo to Telegram"""
+        try:
+            await self.bot.send_photo(
+                chat_id=self.chat_id,
+                photo=photo_buffer
+            )
+        except Exception as e:
+            logger.error(f"Failed to send Telegram photo: {e}")
+            
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start the bot and show available commands"""
         commands = """
