@@ -14,7 +14,8 @@ from backtest_individual import find_best_params
 from config import TRADING_SYMBOLS, param_grid
 import json
 from backtest_individual import run_backtest, create_backtest_plot
-
+import io
+import matplotlib.pyplot as plt
 
 # Set up logging
 logging.basicConfig(
@@ -78,7 +79,7 @@ async def run_bot():
     await trading_bot.start()
     for symbol in TRADING_SYMBOLS:
         print(f"Finding best parameters for {symbol}...")
-        best_params = find_best_params(symbol=symbol, param_grid=param_grid, days=30)
+        best_params = find_best_params(symbol=symbol, param_grid=param_grid, days=20)
         print(f"Optimal Parameters for {symbol}: {best_params}")
     
     logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")
@@ -127,6 +128,9 @@ Parameters: {params}
                                 notify_callback=trading_bot.send_message
                             )
                             
+                            # Run and send backtest results
+                            await run_and_send_backtest(symbol, trading_bot)
+                            
                     except Exception as e:
                         logger.error(f"Error analyzing {symbol}: {str(e)}")
                         continue
@@ -155,6 +159,37 @@ Parameters: {params}
             except asyncio.CancelledError:
                 pass
         await trading_bot.stop()
+
+async def run_and_send_backtest(symbol: str, trading_bot, days: int = 5):
+    """Run a backtest for the symbol and send the results through telegram"""
+    try:
+        # Run backtest
+        backtest_result = run_backtest(symbol, days=days)
+        
+        # Create plot
+        fig, stats = create_backtest_plot(backtest_result)
+        
+        # Send stats message
+        stats_message = f"""
+📊 Backtest Results for {symbol} (Last {days} days):
+Total Return: {stats['total_return']:.2f}%
+Total Trades: {stats['total_trades']}
+Win Rate: {stats['win_rate']:.2f}%
+Sharpe Ratio: {stats['sharpe_ratio']:.2f}
+Max Drawdown: {stats['max_drawdown']:.2f}%
+"""
+        await trading_bot.send_message(stats_message)
+        
+        # Save plot to bytes buffer and send it
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight')
+        buf.seek(0)
+        await trading_bot.send_photo(buf)
+        
+        plt.close(fig)
+        
+    except Exception as e:
+        await trading_bot.send_message(f"Error running backtest for {symbol}: {str(e)}")
 
 async def send_stop_notification(reason: str):
     """Send a Telegram notification about program stopping"""

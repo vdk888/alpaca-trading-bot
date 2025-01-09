@@ -99,14 +99,17 @@ def find_best_params(symbol: str, param_grid: dict, days: int = 5, output_file: 
 
         # Run a single backtest with the current parameter set
         result = run_backtest(symbol, days=days, params=default_params, is_simulating=True)
-        performance = result['stats']['total_return']  # Use total return as the performance metric
+        performance = -result['stats']['max_drawdown']  # Use total return as the performance metric
         win_rate = result['stats']['win_rate']  # Example metric
         max_drawdown = result['stats']['max_drawdown']  # Example metric
+        total_return = result['stats']['total_return']  # Example metric
+        sharpe_ratio = result['stats']['sharpe_ratio']  # Example metric
+
 
         # Store performance for later analysis
         performances.append(performance)
 
-        print(f"Params: {params}, Performance: {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%")
+        print(f"Params: {params}, Target (Max Drawdown): {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%, Total Return: {total_return:.2f}%, Sharpe Ratio: {sharpe_ratio:.2f}")
 
         # Update best parameters if current is better
         if performance > best_performance:

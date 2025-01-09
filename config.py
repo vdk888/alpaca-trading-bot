@@ -278,17 +278,7 @@ TRADING_SYMBOLS = {
             'end': '23:59',
             'timezone': 'UTC'
         }
-    },
-    'BCH/USD': {
-        'name': 'Bitcoin Cash',
-        'market': 'CRYPTO',
-        'yfinance': 'BCH-USD',
-        'interval': '5m',
-        'market_hours': {
-            'start': '00:00',
-            'end': '23:59',
-            'timezone': 'UTC'
-        }
+    
     },
     'SHIB/USD': {
         'name': 'Shiba Inu',
