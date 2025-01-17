@@ -424,10 +424,30 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         drawdowns = (portfolio_series - rolling_max) / rolling_max * 100
         max_drawdown = abs(drawdowns.min())
         
-        # Calculate Sharpe Ratio (assuming risk-free rate of 2%)
-        returns = pd.Series(portfolio_value).pct_change().dropna()
-        excess_returns = returns - 0.02/252  # Daily risk-free rate
-        sharpe_ratio = np.sqrt(252) * excess_returns.mean() / excess_returns.std() if len(returns) > 0 else 0
+        # Calculate Sharpe Ratio
+        # Convert portfolio values to returns
+        portfolio_series = pd.Series(portfolio_value)
+        returns = np.log(portfolio_series / portfolio_series.shift(1)).dropna()
+        
+        # Determine annualization factor based on data frequency
+        # For 1h data: 252 days * 24 hours = 6048 periods per year
+        # For 5m data: 252 days * 24 hours * 12 five-min-periods = 72576 periods per year
+        periods_per_year = 72576 if symbol_config.get('interval', '5m') == '5m' else 6048
+        
+        # Annualized risk-free rate (2%)
+        annual_rf_rate = 0.02
+        period_rf_rate = (1 + annual_rf_rate) ** (1/periods_per_year) - 1
+        
+        # Calculate excess returns
+        excess_returns = returns - period_rf_rate
+        
+        # Calculate annualized Sharpe ratio
+        if len(returns) > 1:  # Need at least 2 points for std calculation
+            annualized_return = excess_returns.mean() * periods_per_year
+            annualized_vol = returns.std() * np.sqrt(periods_per_year)
+            sharpe_ratio = annualized_return / annualized_vol if annualized_vol != 0 else 0
+        else:
+            sharpe_ratio = 0
     else:
         win_rate = 0
         max_drawdown = 0
