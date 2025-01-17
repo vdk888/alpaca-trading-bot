@@ -28,6 +28,39 @@ def is_market_hours(timestamp, market_hours):
     
     return market_start <= local_time <= market_end
 
+def calculate_symbol_performances(current_time, days=5):
+    """Calculate trailing performance for all symbols"""
+    performances = {}
+    start_date = current_time - timedelta(days=days)
+    
+    for sym, config in TRADING_SYMBOLS.items():
+        try:
+            # Get yfinance symbol
+            yf_symbol = config['yfinance']
+            if '/' in yf_symbol:
+                yf_symbol = yf_symbol.replace('/', '-')
+            
+            # Fetch hourly data
+            ticker = yf.Ticker(yf_symbol)
+            data = ticker.history(
+                start=start_date,
+                end=current_time,
+                interval='1h'
+            )
+            
+            if len(data) >= 2:  # Need at least 2 points for performance calculation
+                start_price = data['Close'].iloc[0]
+                end_price = data['Close'].iloc[-1]
+                performance = ((end_price - start_price) / start_price) * 100
+                performances[sym] = performance
+            
+        except Exception as e:
+            print(f"Error calculating performance for {sym}: {str(e)}")
+    
+    # Rank symbols by performance (best to worst)
+    ranked_symbols = dict(sorted(performances.items(), key=lambda x: x[1], reverse=True))
+    return ranked_symbols
+
 def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) -> dict:
     """Run backtest simulation for a symbol over specified number of days"""
     # Load the best parameters from JSON based on the symbol
@@ -149,18 +182,76 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
                         })
             
             elif signal == -1 and position > 0:  # Sell signal
-                # Sell entire position
-                sale_value = position * current_price
-                cash += sale_value
-                trades.append({
-                    'time': current_time,
-                    'type': 'sell',
-                    'price': current_price,
-                    'shares': position,
-                    'value': sale_value,
-                    'total_position': 0
-                })
-                position = 0
+                # Calculate performances and get rankings
+                ranked_symbols = calculate_symbol_performances(current_time)
+                
+                # Calculate sell portion based on ranking
+                if symbol in ranked_symbols:
+                    symbol_ranks = list(ranked_symbols.keys())
+                    current_rank = symbol_ranks.index(symbol)
+                    total_symbols = len(symbol_ranks)
+                    
+                    # Calculate sell portion (10% for best performer, 100% for worst)
+                    sell_portion = 0.1 + (0.9 * (current_rank / (total_symbols - 1))) if total_symbols > 1 else 1.0
+                    
+                    # Calculate shares to sell
+                    shares_to_sell = position * sell_portion
+                    if symbol_config['market'] == 'CRYPTO':
+                        shares_to_sell = round(shares_to_sell, 8)
+                    else:
+                        shares_to_sell = int(shares_to_sell)
+                    
+                    # Ensure minimum sell amount
+                    min_qty = 1 if symbol_config['market'] != 'CRYPTO' else 0.0001
+                    if shares_to_sell < min_qty and position >= min_qty:
+                        shares_to_sell = min_qty
+                else:
+                    # If no ranking data available, sell entire position
+                    print(f"No performance data for {symbol}, selling entire position")
+                    shares_to_sell = position
+                    sell_portion = 1.0
+                
+                if shares_to_sell > 0:
+                    # Execute sell
+                    sale_value = shares_to_sell * current_price
+                    position -= shares_to_sell
+                    cash += sale_value
+                    
+                    # Log trade with additional info
+                    trade_info = {
+                        'time': current_time,
+                        'type': 'sell',
+                        'price': current_price,
+                        'shares': shares_to_sell,
+                        'value': sale_value,
+                        'total_position': position
+                    }
+                    
+                    # Add ranking info if available
+                    if symbol in ranked_symbols:
+                        trade_info.update({
+                            'performance': ranked_symbols[symbol],
+                            'rank': current_rank + 1,
+                            'total_symbols': total_symbols,
+                            'sell_portion': sell_portion
+                        })
+                    
+                    trades.append(trade_info)
+                    
+                    # Print trade details
+                    print(f"\nSell at {current_time}:")
+                    print(f"Symbol: {symbol}")
+                    if symbol in ranked_symbols:
+                        print(f"5-day Performance: {ranked_symbols[symbol]:.2f}%")
+                        print(f"Rank: {current_rank + 1}/{total_symbols}")
+                    print(f"Selling {shares_to_sell:.8f} shares ({sell_portion*100:.1f}% of position)")
+                    print(f"Sale Value: ${sale_value:.2f}")
+                    print(f"Remaining Position: {position:.8f} shares")
+                    if ranked_symbols:
+                        print("\nAll Symbol Rankings:")
+                        for sym, perf in ranked_symbols.items():
+                            print(f"{sym}: {perf:.2f}%")
+                    print("-" * 50)
         
         # Update data for this timestamp
         data.loc[current_time, 'shares'] = float(position)
