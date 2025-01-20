@@ -5,7 +5,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
 from config import TRADING_SYMBOLS
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
 
 logger = logging.getLogger(__name__)
@@ -103,6 +103,57 @@ class TradingExecutor:
             shares = int(shares)  # Round down to nearest whole share for stocks
         return shares
 
+    def calculate_performance_ranking(self, current_price: float, lookback_days: int = 5) -> float:
+        """Calculate performance ranking compared to other symbols."""
+        try:
+            # Get historical data for all symbols
+            end_time = datetime.now(pytz.UTC)
+            start_time = end_time - timedelta(days=lookback_days)
+            
+            performance_dict = {}
+            
+            # Calculate performance for each symbol
+            for sym, config in TRADING_SYMBOLS.items():
+                try:
+                    # Get the API symbol format
+                    api_symbol = get_api_symbol(sym)
+                    
+                    # Get historical bars
+                    bars = self.trading_client.get_bars(
+                        api_symbol,
+                        start=start_time,
+                        end=end_time,
+                        timeframe='5Min'
+                    )
+                    
+                    if len(bars) >= 2:
+                        start_price = bars[0].close
+                        end_price = bars[-1].close
+                        performance = ((end_price - start_price) / start_price) * 100
+                        performance_dict[sym] = performance
+                        
+                        logger.info(f"{sym} Performance: {performance:.2f}% (Start: ${start_price:.2f}, End: ${end_price:.2f})")
+                    
+                except Exception as e:
+                    logger.error(f"Error calculating performance for {sym}: {str(e)}")
+                    continue
+            
+            # Calculate percentile ranking
+            if performance_dict:
+                performances = list(performance_dict.values())
+                current_perf = performance_dict.get(self.symbol)
+                if current_perf is not None:
+                    # Calculate rank as percentile (0 to 1)
+                    rank = sum(p <= current_perf for p in performances) / len(performances)
+                    logger.info(f"Performance rank for {self.symbol}: {rank:.2f}")
+                    return rank
+            
+            return 0.0  # Default to worst rank if calculation fails
+            
+        except Exception as e:
+            logger.error(f"Error in performance ranking calculation: {str(e)}")
+            return 0.0
+
     async def execute_trade(self, action: str, analysis: dict, notify_callback=None) -> bool:
         """
         Execute trade on Alpaca
@@ -199,18 +250,35 @@ class TradingExecutor:
             else:
                 try:
                     position = self.trading_client.get_open_position(get_api_symbol(self.symbol))
-                    qty = abs(float(position.qty))
+                    total_qty = abs(float(position.qty))
                     avg_entry_price = float(position.avg_entry_price)
                     
-                    # Calculate performance
-                    profit_loss = (analysis['current_price'] - avg_entry_price) * qty
+                    # Calculate performance ranking and sell percentage
+                    rank = self.calculate_performance_ranking(analysis['current_price'])
+                    
+                    # Calculate sell percentage (linear function)
+                    # rank 1 (best) = 10% sell
+                    # rank 0 (worst) = 100% sell
+                    sell_percentage = 1.0 - (0.9 * rank)
+                    qty_to_sell = total_qty * sell_percentage
+                    
+                    # Round based on market type
+                    if self.config['market'] == 'CRYPTO':
+                        qty_to_sell = round(qty_to_sell, 8)
+                    else:
+                        qty_to_sell = int(qty_to_sell)
+                    
+                    # Calculate performance metrics
+                    profit_loss = (analysis['current_price'] - avg_entry_price) * qty_to_sell
                     profit_loss_percentage = ((analysis['current_price'] / avg_entry_price) - 1) * 100
                     
                     # Notify that order is being sent
                     sending_message = f"""🔄 Sending SELL Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
-• Quantity: {qty}
+• Performance Rank: {rank:.2f}
+• Sell Percentage: {sell_percentage*100:.1f}%
+• Quantity to Sell: {qty_to_sell} of {total_qty}
 • Target Price: ${analysis['current_price']:.2f}
-• Estimated Value: ${(qty * analysis['current_price']):.2f}"""
+• Estimated Value: ${(qty_to_sell * analysis['current_price']):.2f}"""
                     logger.info(sending_message)
                     if notify_callback:
                         await notify_callback(sending_message)
@@ -218,7 +286,7 @@ class TradingExecutor:
                     # Submit sell order
                     order = MarketOrderRequest(
                         symbol=get_api_symbol(self.symbol),
-                        qty=qty,
+                        qty=qty_to_sell,
                         side=OrderSide.SELL,
                         time_in_force=TimeInForce.GTC if self.config['market'] == 'CRYPTO' else TimeInForce.DAY
                     )
@@ -227,9 +295,11 @@ class TradingExecutor:
                     
                     # Create detailed order confirmation message
                     message = f"""✅ SELL Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
-• Quantity: {qty}
+• Performance Rank: {rank:.2f}
+• Sell Percentage: {sell_percentage*100:.1f}%
+• Quantity Sold: {qty_to_sell} of {total_qty}
 • Price: ${analysis['current_price']:.2f}
-• Total Value: ${(qty * analysis['current_price']):.2f}
+• Total Value: ${(qty_to_sell * analysis['current_price']):.2f}
 • P&L: ${profit_loss:.2f} ({profit_loss_percentage:+.2f}%)
 • Daily Signal: {analysis['daily_composite']:.4f}
 • Weekly Signal: {analysis['weekly_composite']:.4f}
@@ -240,7 +310,7 @@ class TradingExecutor:
                         await notify_callback(message)
                     
                     return True
-                    
+
                 except Exception as e:
                     if "no position" in str(e).lower():
                         message = f"No position to sell for {get_display_symbol(self.symbol)} ({self.config['name']})"
