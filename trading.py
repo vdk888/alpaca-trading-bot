@@ -264,7 +264,10 @@ class TradingExecutor:
                     
                     # Round based on market type
                     if self.config['market'] == 'CRYPTO':
-                        qty_to_sell = round(qty_to_sell, 8)
+                        # For crypto, ensure we don't exceed available balance by rounding down
+                        qty_to_sell = float(str(total_qty * sell_percentage).rstrip('0'))  # Remove trailing zeros
+                        if qty_to_sell > total_qty:
+                            qty_to_sell = total_qty
                     else:
                         qty_to_sell = int(qty_to_sell)
                     
