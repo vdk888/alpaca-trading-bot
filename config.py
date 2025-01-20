@@ -11,8 +11,6 @@ if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
 
 # Trading symbols configuration
 TRADING_SYMBOLS = {
-    
-    
     # Cryptocurrencies
     'BTC/USD': {
         'name': 'Bitcoin',
@@ -123,12 +121,132 @@ TRADING_SYMBOLS = {
             'end': '23:59',
             'timezone': 'UTC'
         }
-    
     },
     'SHIB/USD': {
         'name': 'Shiba Inu',
         'market': 'CRYPTO',
         'yfinance': 'SHIB-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'BAT/USD': {
+        'name': 'Basic Attention Token',
+        'market': 'CRYPTO',
+        'yfinance': 'BAT-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'BCH/USD': {
+        'name': 'Bitcoin Cash',
+        'market': 'CRYPTO',
+        'yfinance': 'BCH-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'CRV/USD': {
+        'name': 'Curve DAO Token',
+        'market': 'CRYPTO',
+        'yfinance': 'CRV-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'GRT/USD': {
+        'name': 'The Graph',
+        'market': 'CRYPTO',
+        'yfinance': 'GRT6719-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'MKR/USD': {
+        'name': 'Maker',
+        'market': 'CRYPTO',
+        'yfinance': 'MKR-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'SUSHI/USD': {
+        'name': 'SushiSwap',
+        'market': 'CRYPTO',
+        'yfinance': 'SUSHI-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'USDC/USD': {
+        'name': 'USD Coin',
+        'market': 'CRYPTO',
+        'yfinance': 'USDC-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'USDT/USD': {
+        'name': 'Tether',
+        'market': 'CRYPTO',
+        'yfinance': 'USDT-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'XTZ/USD': {
+        'name': 'Tezos',
+        'market': 'CRYPTO',
+        'yfinance': 'XTZ-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'YFI/USD': {
+        'name': 'yearn.finance',
+        'market': 'CRYPTO',
+        'yfinance': 'YFI-USD',
+        'interval': '5m',
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'XRP/USD': {
+        'name': 'Ripple',
+        'market': 'CRYPTO',
+        'yfinance': 'XRP-USD',
         'interval': '5m',
         'market_hours': {
             'start': '00:00',

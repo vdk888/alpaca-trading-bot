@@ -700,7 +700,7 @@
             "min_performance": -14.018884811594113,
             "avg_performance": -8.606778706155035
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "SOL/USD": {
         "best_params": {
@@ -744,7 +744,7 @@
             "min_performance": -15.3598332372783,
             "avg_performance": -9.02077779885452
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "AVAX/USD": {
         "best_params": {
@@ -788,7 +788,7 @@
             "min_performance": -21.4454417872425,
             "avg_performance": -11.926517218077558
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "DOT/USD": {
         "best_params": {
@@ -832,7 +832,7 @@
             "min_performance": -13.193709787300381,
             "avg_performance": -6.692038974178062
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "LINK/USD": {
         "best_params": {
@@ -876,7 +876,7 @@
             "min_performance": -23.28251845218407,
             "avg_performance": -10.25507369221699
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "DOGE/USD": {
         "best_params": {
@@ -920,7 +920,7 @@
             "min_performance": -12.465798117261045,
             "avg_performance": -6.88018563547905
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "AAVE/USD": {
         "best_params": {
@@ -964,7 +964,7 @@
             "min_performance": -24.1420843734384,
             "avg_performance": -13.170048079074336
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "UNI/USD": {
         "best_params": {
@@ -1008,7 +1008,7 @@
             "min_performance": -9.449250452291333,
             "avg_performance": -5.170294480241885
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "LTC/USD": {
         "best_params": {
@@ -1052,7 +1052,7 @@
             "min_performance": -19.156990440353912,
             "avg_performance": -8.453235533035341
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     },
     "SHIB/USD": {
         "best_params": {
@@ -1096,6 +1096,6 @@
             "min_performance": -11.8488507457133,
             "avg_performance": -6.53931246075931
         },
-        "date": "2025-01-15"
+        "date": "2025-01-01"
     }
 }
