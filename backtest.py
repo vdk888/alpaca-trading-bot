@@ -12,6 +12,7 @@ import io
 import matplotlib.dates as mdates
 from matplotlib.dates import HourLocator, num2date
 import json
+from backtest_individual import run_backtest as run_individual_backtest
 
 def is_market_hours(timestamp, market_hours):
     """Check if given timestamp is within market hours"""
@@ -44,177 +45,57 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
         print("Best parameters file not found. Using default parameters.")
         params = get_default_params()
 
-    # Get symbol configuration
-    symbol_config = TRADING_SYMBOLS[symbol]
-    yf_symbol = symbol_config['yfinance']
+    # Call the individual backtest with our parameters
+    result = run_individual_backtest(symbol=symbol, days=days, params=params, is_simulating=False)
     
-    # Handle crypto symbols with forward slashes
-    if '/' in yf_symbol:
-        yf_symbol = yf_symbol.replace('/', '-')
-
-    # Calculate date range
-    end_date = datetime.now(pytz.UTC)
-    start_date = end_date - timedelta(days=days + 2)  # Add buffer days
-    
-    # Fetch historical data
-    ticker = yf.Ticker(yf_symbol)
-    data = ticker.history(
-        start=start_date,
-        end=end_date,
-        interval=symbol_config.get('interval', '5m'),
-        actions=False
-    )
-    
-    if len(data) == 0:
-        raise ValueError(f"No data available for {symbol} in the specified date range")
-    
-    # Localize timezone if needed
-    if data.index.tz is None:
-        data.index = data.index.tz_localize('UTC')
-    
-    # Filter for market hours
-    data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
-    data.columns = data.columns.str.lower()
-    
-    # Generate signals using loaded parameters
-    signals, daily_data, weekly_data = generate_signals(data, params)
+    # Add all required data to the DataFrame to maintain compatibility
+    data = result['data'].copy()
     
     # Add signals to data
-    data['signal'] = signals['signal']
+    data['signal'] = result['signals']['signal']
     
-    # Initialize portfolio tracking
-    data['shares'] = 0.0  # Current position in shares
-    data['cash'] = initial_capital  # Available cash
-    data['position_value'] = 0.0  # Value of current position
-    data['portfolio_value'] = initial_capital  # Total portfolio value
+    # Scale factor to adjust from 100k to actual initial capital
+    scale_factor = initial_capital / 100000.0
     
-    position = 0.0  # Current position in shares
-    cash = initial_capital
-    trades = []  # Track individual trades
+    # Add shares data (scale down shares proportionally)
+    shares_list = result['shares']
+    if len(shares_list) == len(data) + 1:  # Individual backtest includes initial position
+        shares_list = shares_list[1:]  # Remove initial position
+    data['shares'] = [s * scale_factor for s in shares_list]
     
-    # Simulate trading
-    for i in range(len(data)):
-        current_price = data['close'].iloc[i]
-        current_time = data.index[i]
-        
-        # Update position value
-        position_value = position * current_price
-        
-        if i > 0:  # Skip first bar for signal processing
-            signal = signals['signal'].iloc[i]
-            
-            # Process signals
-            if signal == 1:  # Buy signal
-                # Calculate maximum position value (100% of initial capital)
-                max_position_value = initial_capital
-                
-                # If total position is less than max, allow adding 20% more
-                if position_value < max_position_value:
-                    # Calculate position size as 20% of initial capital
-                    capital_to_use = initial_capital * 0.20
-                    shares_to_buy = capital_to_use / current_price
-                    
-                    # Round based on market type
-                    if symbol_config['market'] == 'CRYPTO':
-                        shares_to_buy = round(shares_to_buy, 8)  # Round to 8 decimal places for crypto
-                    else:
-                        shares_to_buy = int(shares_to_buy)  # Round down to whole shares for stocks
-                    
-                    # Ensure minimum position size
-                    min_qty = 1 if symbol_config['market'] != 'CRYPTO' else 0.0001
-                    if shares_to_buy < min_qty:
-                        shares_to_buy = min_qty
-                    
-                    # Check if adding this position would exceed max position value
-                    new_total_value = position_value + (shares_to_buy * current_price)
-                    if new_total_value > max_position_value:
-                        # Adjust shares to not exceed max position
-                        shares_to_buy = (max_position_value - position_value) / current_price
-                        if symbol_config['market'] == 'CRYPTO':
-                            shares_to_buy = round(shares_to_buy, 8)
-                        else:
-                            shares_to_buy = int(shares_to_buy)
-                    
-                    cost = shares_to_buy * current_price
-                    if cost <= cash and shares_to_buy > 0:  # Check if we have enough cash and shares to buy
-                        position += shares_to_buy  # Add to existing position
-                        cash -= cost
-                        trades.append({
-                            'time': current_time,
-                            'type': 'buy',
-                            'price': current_price,
-                            'shares': shares_to_buy,
-                            'value': cost,
-                            'total_position': position
-                        })
-            
-            elif signal == -1 and position > 0:  # Sell signal
-                # Sell entire position
-                sale_value = position * current_price
-                cash += sale_value
-                trades.append({
-                    'time': current_time,
-                    'type': 'sell',
-                    'price': current_price,
-                    'shares': position,
-                    'value': sale_value,
-                    'total_position': 0
-                })
-                position = 0
-        
-        # Update data for this timestamp
-        data.loc[current_time, 'shares'] = float(position)
-        data.loc[current_time, 'cash'] = float(cash)
-        data.loc[current_time, 'position_value'] = float(position * current_price)
-        data.loc[current_time, 'portfolio_value'] = float(cash + (position * current_price))
+    # Scale down portfolio values
+    portfolio_values = result['portfolio_value']
+    if len(portfolio_values) == len(data) + 1:  # Remove initial value if present
+        portfolio_values = portfolio_values[1:]
+    portfolio_values = [pv * scale_factor for pv in portfolio_values]
     
-    # Calculate performance metrics
-    final_value = cash + (position * data['close'].iloc[-1])
-    total_return = ((final_value - initial_capital) / initial_capital) * 100
+    # Add all required columns exactly as in original implementation
+    data['portfolio_value'] = portfolio_values
+    data['position_value'] = data['shares'] * data['close']  # Calculate position value
+    data['cash'] = data['portfolio_value'] - data['position_value']  # Calculate cash as difference
     
-    if trades:
-        trades_df = pd.DataFrame(trades)
-        if len(trades_df) > 0:
-            # Calculate win rate
-            buy_trades = trades_df[trades_df['type'] == 'buy']
-            sell_trades = trades_df[trades_df['type'] == 'sell']
-            
-            if len(buy_trades) > 0 and len(sell_trades) > 0:
-                min_trades = min(len(buy_trades), len(sell_trades))
-                profits = sell_trades['value'].iloc[:min_trades].values - buy_trades['value'].iloc[:min_trades].values
-                win_rate = (len(profits[profits > 0]) / len(profits)) * 100 if len(profits) > 0 else 0
-            else:
-                win_rate = 0
-        else:
-            win_rate = 0
-        
-        # Calculate max drawdown
-        portfolio_series = data['portfolio_value']
-        rolling_max = portfolio_series.expanding().max()
-        drawdowns = (portfolio_series - rolling_max) / rolling_max * 100
-        max_drawdown = abs(drawdowns.min())
-        
-        # Calculate Sharpe Ratio (assuming risk-free rate of 2%)
-        returns = data['portfolio_value'].pct_change().dropna()
-        excess_returns = returns - 0.02/252  # Daily risk-free rate
-        sharpe_ratio = np.sqrt(252) * excess_returns.mean() / excess_returns.std() if len(returns) > 0 else 0
-    else:
-        win_rate = 0
-        max_drawdown = 0
-        sharpe_ratio = 0
+    # Scale down trade values in the trades list
+    scaled_trades = []
+    for trade in result['trades']:
+        scaled_trade = trade.copy()
+        scaled_trade['shares'] = trade['shares'] * scale_factor
+        scaled_trade['value'] = trade['value'] * scale_factor
+        scaled_trade['total_position'] = trade['total_position'] * scale_factor
+        scaled_trades.append(scaled_trade)
     
+    # Format the result to match the original function's output format exactly
     return {
-        'symbol': symbol,
+        'symbol': result['symbol'],
         'data': data,
-        'trades': trades,
+        'trades': scaled_trades,
         'stats': {
-            'initial_capital': initial_capital,
-            'final_value': final_value,
-            'total_return': total_return,
-            'total_trades': len(trades),
-            'win_rate': win_rate,
-            'max_drawdown': max_drawdown,
-            'sharpe_ratio': sharpe_ratio
+            'initial_capital': initial_capital,  # Use actual initial capital
+            'final_value': data['portfolio_value'].iloc[-1],  # Use scaled final value
+            'total_return': result['stats']['total_return'],  # Return % stays the same
+            'total_trades': result['stats']['total_trades'],
+            'win_rate': result['stats']['win_rate'],
+            'max_drawdown': result['stats']['max_drawdown'],
+            'sharpe_ratio': result['stats']['sharpe_ratio']
         }
     }
 
