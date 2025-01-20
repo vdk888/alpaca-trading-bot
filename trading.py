@@ -5,9 +5,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
 from config import TRADING_SYMBOLS
 import pytz
-from datetime import datetime, timedelta
-import yfinance as yf
-import pandas as pd
+from datetime import datetime
 from utils import get_api_symbol, get_display_symbol
 
 logger = logging.getLogger(__name__)
@@ -201,52 +199,18 @@ class TradingExecutor:
             else:
                 try:
                     position = self.trading_client.get_open_position(get_api_symbol(self.symbol))
-                    total_qty = abs(float(position.qty))
+                    qty = abs(float(position.qty))
                     avg_entry_price = float(position.avg_entry_price)
                     
-                    # Get performance rankings
-                    ranked_symbols = self.calculate_symbol_performances()
-                    
-                    # Calculate sell portion based on ranking
-                    if self.symbol in ranked_symbols:
-                        symbol_ranks = list(ranked_symbols.keys())
-                        current_rank = symbol_ranks.index(self.symbol)
-                        total_symbols = len(symbol_ranks)
-                        
-                        # Calculate sell portion (10% for best performer, 100% for worst)
-                        sell_portion = 0.1 + (0.9 * (current_rank / (total_symbols - 1))) if total_symbols > 1 else 1.0
-                        
-                        # Calculate quantity to sell
-                        qty = total_qty * sell_portion
-                        if self.config['market'] == 'CRYPTO':
-                            qty = round(qty, 8)
-                        else:
-                            qty = int(qty)
-                            
-                        # Ensure minimum sell amount
-                        min_qty = 1 if self.config['market'] != 'CRYPTO' else 0.0001
-                        if qty < min_qty and total_qty >= min_qty:
-                            qty = min_qty
-                    else:
-                        logger.warning(f"No performance data for {self.symbol}, selling entire position")
-                        qty = total_qty
-                        sell_portion = 1.0
-                    
-                    # Calculate performance metrics
+                    # Calculate performance
                     profit_loss = (analysis['current_price'] - avg_entry_price) * qty
                     profit_loss_percentage = ((analysis['current_price'] / avg_entry_price) - 1) * 100
                     
-                    # Create ranking information message
-                    ranking_info = "\n\n📊 Performance Rankings (5-day):"
-                    for sym, perf in ranked_symbols.items():
-                        ranking_info += f"\n{sym}: {perf:.2f}%"
-                    
                     # Notify that order is being sent
                     sending_message = f"""🔄 Sending SELL Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
-• Quantity: {qty} ({sell_portion*100:.1f}% of position)
+• Quantity: {qty}
 • Target Price: ${analysis['current_price']:.2f}
-• Estimated Value: ${(qty * analysis['current_price']):.2f}
-• Remaining Position: {total_qty - qty:.8f}{ranking_info}"""
+• Estimated Value: ${(qty * analysis['current_price']):.2f}"""
                     logger.info(sending_message)
                     if notify_callback:
                         await notify_callback(sending_message)
@@ -263,13 +227,13 @@ class TradingExecutor:
                     
                     # Create detailed order confirmation message
                     message = f"""✅ SELL Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
-• Quantity: {qty} ({sell_portion*100:.1f}% of position)
+• Quantity: {qty}
 • Price: ${analysis['current_price']:.2f}
 • Total Value: ${(qty * analysis['current_price']):.2f}
 • P&L: ${profit_loss:.2f} ({profit_loss_percentage:+.2f}%)
 • Daily Signal: {analysis['daily_composite']:.4f}
 • Weekly Signal: {analysis['weekly_composite']:.4f}
-• Order ID: {submitted_order.id}{ranking_info}"""
+• Order ID: {submitted_order.id}"""
                     
                     logger.info(message)
                     if notify_callback:
@@ -434,40 +398,3 @@ Order ID: {submitted_order.id}"""
         """Resume trading"""
         self.is_active = True
         return "Trading resumed. Bot will now execute trades."
-
-    def calculate_symbol_performances(self) -> dict:
-        """Calculate trailing 5-day performance for all symbols"""
-        performances = {}
-        end_date = datetime.now(pytz.UTC)
-        start_date = end_date - timedelta(days=5)
-        
-        for sym, config in TRADING_SYMBOLS.items():
-            try:
-                # Get yfinance symbol
-                yf_symbol = config['yfinance']
-                if '/' in yf_symbol:
-                    yf_symbol = yf_symbol.replace('/', '-')
-                
-                # Fetch hourly data
-                ticker = yf.Ticker(yf_symbol)
-                data = ticker.history(
-                    start=start_date,
-                    end=end_date,
-                    interval='1h'
-                )
-                
-                if len(data) >= 2:  # Need at least 2 points for performance calculation
-                    start_price = data['Close'].iloc[0]
-                    end_price = data['Close'].iloc[-1]
-                    performance = ((end_price - start_price) / start_price) * 100
-                    performances[sym] = performance
-                    logger.info(f"Performance for {sym}: {performance:.2f}%")
-                else:
-                    logger.warning(f"Insufficient data for {sym}")
-                    
-            except Exception as e:
-                logger.error(f"Error calculating performance for {sym}: {str(e)}")
-        
-        # Rank symbols by performance (best to worst)
-        ranked_symbols = dict(sorted(performances.items(), key=lambda x: x[1], reverse=True))
-        return ranked_symbols

@@ -109,7 +109,7 @@ def find_best_params(symbol: str, param_grid: dict, days: int = 5, output_file: 
         # Store performance for later analysis
         performances.append(performance)
 
-        print(f"Params: {params}, Target (Max Drawdown): {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%, Total Return: {total_return:.2f}%, Sharpe Ratio: {sharpe_ratio:.2f}")
+        print(f"Params: {params}, Target (Sharpe Ratio): {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%, Total Return: {total_return:.2f}%, Sharpe Ratio: {sharpe_ratio:.2f}")
 
         # Update best parameters if current is better
         if performance > best_performance:
@@ -150,37 +150,36 @@ def find_best_params(symbol: str, param_grid: dict, days: int = 5, output_file: 
 def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating: bool = False) -> dict:
     """Run a single backtest simulation for a given symbol and parameter set."""
     
-    # Fetch 1h price data for all symbols for the last 30 days
+    # Fetch price data for all symbols
     end_date = datetime.now(pytz.UTC)
-    start_date = end_date - timedelta(days=30)
-    prices_dataset = {}
+    start_date = end_date - timedelta(days=30)  # 30 days of data
     
+    prices_dataset = {}
     for sym, config in TRADING_SYMBOLS.items():
         yf_symbol = config['yfinance']
         if '/' in yf_symbol:
             yf_symbol = yf_symbol.replace('/', '-')
             
         ticker = yf.Ticker(yf_symbol)
-        hist_data = ticker.history(
+        data = ticker.history(
             start=start_date,
             end=end_date,
-            interval='1h',
+            interval='5m',
             actions=False
         )
         
-        if len(hist_data) == 0:
+        if len(data) == 0:
             print(f"Warning: No data available for {sym} in the specified date range")
             continue
             
         # Localize timezone if needed
-        if hist_data.index.tz is None:
-            hist_data.index = hist_data.index.tz_localize('UTC')
+        if data.index.tz is None:
+            data.index = data.index.tz_localize('UTC')
             
         # Filter for market hours
-        hist_data = hist_data[hist_data.index.map(lambda x: is_market_hours(x, config['market_hours']))]
-        hist_data.columns = hist_data.columns.str.lower()
-        prices_dataset[sym] = hist_data
-
+        data = data[data.index.map(lambda x: is_market_hours(x, config['market_hours']))]
+        prices_dataset[sym] = data
+    
     # Load the best parameters from JSON based on the symbol
     try:
         with open("best_params.json", "r") as f:
@@ -244,26 +243,6 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
     trades = []  # Track individual trades
     total_position_value = 0  # Track total position value for position sizing
     
-    def calculate_symbol_performances(prices_dataset, current_time):
-        """Calculate trailing 5-day performance for all symbols"""
-        performances = {}
-        five_days_ago = current_time - timedelta(days=5)
-        
-        for sym, data in prices_dataset.items():
-            # Get data up to current_time and after five_days_ago
-            mask = (data.index <= current_time) & (data.index >= five_days_ago)
-            period_data = data[mask]
-            
-            if len(period_data) >= 2:  # Need at least 2 points for performance calculation
-                start_price = period_data['close'].iloc[0]
-                end_price = period_data['close'].iloc[-1]
-                performance = ((end_price - start_price) / start_price) * 100
-                performances[sym] = performance
-        
-        # Rank symbols by performance (best to worst)
-        ranked_symbols = dict(sorted(performances.items(), key=lambda x: x[1], reverse=True))
-        return ranked_symbols
-
     # Simulate trading
     for i in range(len(data)):
         current_price = data['close'].iloc[i]
@@ -319,64 +298,63 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
                             'value': cost,
                             'total_position': position
                         })
+                        print(f"\n{'='*80}")
+                        print(f"BUY SIGNAL detected for {symbol} at {current_time}")
+                        print(f"Current position: {position:.8f} shares at ${current_price:.2f}")
+                        print(f"Buying {shares_to_buy:.8f} shares at ${current_price:.2f}")
+                        print(f"Remaining cash: ${cash:.2f}")
             
             elif signal == -1 and position > 0:  # Sell signal
-                # Calculate performances and get rankings
-                ranked_symbols = calculate_symbol_performances(prices_dataset, current_time)
+                print(f"\n{'='*80}")
+                print(f"SELL SIGNAL detected for {symbol} at {current_time}")
+                print(f"Current position: {position:.8f} shares at ${current_price:.2f}")
                 
-                # Find the rank of current symbol
-                symbol_ranks = list(ranked_symbols.keys())
-                try:
-                    current_rank = symbol_ranks.index(symbol)
-                    total_symbols = len(symbol_ranks)
+                # Calculate performance ranking
+                perf_rankings = calculate_performance_ranking(prices_dataset, current_time)
+                
+                if perf_rankings is not None and symbol in perf_rankings.index:
+                    # Get percentile rank (0 to 1)
+                    rank = perf_rankings.loc[symbol, 'rank']
+                    performance = perf_rankings.loc[symbol, 'performance']
                     
-                    # Calculate sell portion (10% for best performer, 100% for worst)
-                    sell_portion = 0.1 + (0.9 * (current_rank / (total_symbols - 1))) if total_symbols > 1 else 1.0
+                    # Calculate sell percentage (linear function)
+                    # rank 1 (best) = 10% sell
+                    # rank 0 (worst) = 100% sell
+                    sell_percentage = 1.0 - (0.9 * rank)  # Linear interpolation between 0.1 and 1.0
                     
                     # Calculate shares to sell
-                    shares_to_sell = position * sell_portion
+                    shares_to_sell = position * sell_percentage
+                    
+                    # Round based on market type
                     if symbol_config['market'] == 'CRYPTO':
                         shares_to_sell = round(shares_to_sell, 8)
                     else:
                         shares_to_sell = int(shares_to_sell)
                     
-                    # Ensure minimum sell amount
-                    min_qty = 1 if symbol_config['market'] != 'CRYPTO' else 0.0001
-                    if shares_to_sell < min_qty and position >= min_qty:
-                        shares_to_sell = min_qty
+                    print(f"\nSell Decision:")
+                    print(f"Performance: {performance:.2f}%")
+                    print(f"Rank: {rank:.2f}")
+                    print(f"Sell Percentage: {sell_percentage*100:.1f}%")
+                    print(f"Shares to sell: {shares_to_sell:.8f} out of {position:.8f}")
                     
                     if shares_to_sell > 0:
                         sale_value = shares_to_sell * current_price
-                        position -= shares_to_sell
                         cash += sale_value
-                        
-                        # Print detailed information about the sell action
-                        print(f"\nSell Action at {current_time}:")
-                        print(f"Symbol: {symbol}")
-                        print(f"5-day Performance: {ranked_symbols[symbol]:.2f}%")
-                        print(f"Rank: {current_rank + 1}/{total_symbols}")
-                        print(f"Selling {shares_to_sell:.8f} shares ({sell_portion*100:.1f}% of position)")
-                        print(f"Sale Value: ${sale_value:.2f}")
-                        print(f"Remaining Position: {position:.8f} shares")
-                        print("\nAll Symbol Rankings:")
-                        for sym, perf in ranked_symbols.items():
-                            print(f"{sym}: {perf:.2f}%")
-                        print("-" * 50)
-                        
+                        position -= shares_to_sell
                         trades.append({
                             'time': current_time,
                             'type': 'sell',
                             'price': current_price,
                             'shares': shares_to_sell,
                             'value': sale_value,
-                            'performance': ranked_symbols[symbol],
-                            'rank': current_rank + 1,
-                            'total_symbols': total_symbols,
-                            'sell_portion': sell_portion
+                            'total_position': position,
+                            'performance_rank': rank,
+                            'sell_percentage': sell_percentage * 100
                         })
-                except ValueError:
-                    # If symbol not found in rankings (no data), sell everything
-                    print(f"\nWarning: No ranking data available for {symbol} at {current_time}, selling entire position")
+                        print(f"Trade executed: Sold {shares_to_sell:.8f} shares at ${current_price:.2f}")
+                        print(f"Remaining position: {position:.8f} shares")
+                else:
+                    # Fallback to selling entire position if we can't calculate ranking
                     sale_value = position * current_price
                     cash += sale_value
                     trades.append({
@@ -385,11 +363,12 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
                         'price': current_price,
                         'shares': position,
                         'value': sale_value,
-                        'performance': None,
-                        'rank': None,
-                        'total_symbols': len(ranked_symbols),
-                        'sell_portion': 1.0
+                        'total_position': 0,
+                        'performance_rank': None,
+                        'sell_percentage': 100
                     })
+                    print("\nWARNING: Could not calculate rankings, selling entire position")
+                    print(f"Sold all {position:.8f} shares at ${current_price:.2f}")
                     position = 0
         
         # Update portfolio value and shares owned after processing any trades
@@ -426,26 +405,21 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         
         # Calculate Sharpe Ratio
         # Convert portfolio values to returns
-        portfolio_series = pd.Series(portfolio_value)
-        returns = np.log(portfolio_series / portfolio_series.shift(1)).dropna()
+        returns = pd.Series(portfolio_value).pct_change().dropna()
         
-        # Determine annualization factor based on data frequency
-        # For 1h data: 252 days * 24 hours = 6048 periods per year
-        # For 5m data: 252 days * 24 hours * 12 five-min-periods = 72576 periods per year
-        periods_per_year = 72576 if symbol_config.get('interval', '5m') == '5m' else 6048
-        
-        # Annualized risk-free rate (2%)
+        # Annualize the risk-free rate (2%)
         annual_rf_rate = 0.02
-        period_rf_rate = (1 + annual_rf_rate) ** (1/periods_per_year) - 1
+        # Convert to 5-minute rate (assuming 252 trading days, 24/7 trading for crypto)
+        period_rf_rate = (1 + annual_rf_rate) ** (1 / (252 * 24 * 12)) - 1
         
         # Calculate excess returns
         excess_returns = returns - period_rf_rate
         
-        # Calculate annualized Sharpe ratio
+        # Calculate annualized Sharpe Ratio
+        # For 5-minute data, multiply by sqrt(252 * 24 * 12) to annualize
         if len(returns) > 1:  # Need at least 2 points for std calculation
-            annualized_return = excess_returns.mean() * periods_per_year
-            annualized_vol = returns.std() * np.sqrt(periods_per_year)
-            sharpe_ratio = annualized_return / annualized_vol if annualized_vol != 0 else 0
+            annualization_factor = np.sqrt(252 * 24 * 12)  # For 5-minute data
+            sharpe_ratio = annualization_factor * (excess_returns.mean() / excess_returns.std())
         else:
             sharpe_ratio = 0
     else:
@@ -473,6 +447,56 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
             'params_used': params
         }
     }
+
+def calculate_performance_ranking(prices_dataset, current_time):
+    """Calculate performance ranking of all symbols over the last 5 days."""
+    performance_dict = {}
+    lookback_days = 5
+    lookback_time = current_time - pd.Timedelta(days=lookback_days)
+    
+    print(f"\n{'='*80}")
+    print(f"Calculating rankings at {current_time}")
+    print(f"Looking back to {lookback_time}")
+    print(f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12}")
+    print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12}")
+    
+    for symbol, data in prices_dataset.items():
+        try:
+            # Get data up until current time and within lookback period
+            mask = (data.index <= current_time) & (data.index >= lookback_time)
+            symbol_data = data[mask]
+            
+            if len(symbol_data) >= 2:  # Need at least 2 points to calculate performance
+                # Make column names lowercase if they aren't already
+                symbol_data.columns = symbol_data.columns.str.lower()
+                
+                if 'close' not in symbol_data.columns:
+                    print(f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}")
+                    continue
+                    
+                start_price = symbol_data['close'].iloc[0]
+                end_price = symbol_data['close'].iloc[-1]
+                performance = ((end_price - start_price) / start_price) * 100
+                performance_dict[symbol] = performance
+                
+                print(f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}%")
+        except Exception as e:
+            print(f"Error processing {symbol}: {str(e)}")
+            continue
+    
+    # Convert to DataFrame and calculate rankings
+    if performance_dict:
+        perf_df = pd.DataFrame.from_dict(performance_dict, orient='index', columns=['performance'])
+        perf_df['rank'] = perf_df['performance'].rank(pct=True)  # Percentile ranking
+        
+        print("\nFinal Rankings:")
+        print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
+        print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
+        for idx in perf_df.index:
+            print(f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}")
+        
+        return perf_df
+    return None
 
 def split_into_sessions(data):
     """Split data into continuous market sessions"""
