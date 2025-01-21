@@ -628,6 +628,50 @@
             "rsi_period": 14,
             "stochastic_k_period": 14,
             "stochastic_d_period": 3,
+            "fractal_window": 50,
+            "fractal_lags": [
+                10,
+                20,
+                40
+            ],
+            "reactivity": 1.0,
+            "weights": {
+                "weekly_macd_weight": 0.3,
+                "weekly_rsi_weight": 0.3,
+                "weekly_stoch_weight": 0.3,
+                "weekly_complexity_weight": 0.1,
+                "macd_weight": 0.3,
+                "rsi_weight": 0.3,
+                "stoch_weight": 0.3,
+                "complexity_weight": 0.1
+            }
+        },
+        "metrics": {
+            "performance": 6.207486686525867,
+            "win_rate": 61.111111111111114,
+            "max_drawdown": 6.99325500366052
+        },
+        "performance_summary": {
+            "max_performance": 6.207486686525867,
+            "min_performance": -0.35622692742187523,
+            "avg_performance": 2.9285651088790003
+        },
+        "date": "2025-01-21"
+    },
+    "ETH/USD": {
+        "best_params": {
+            "percent_increase_buy": 0.02,
+            "percent_decrease_sell": 0.02,
+            "sell_down_lim": 2.0,
+            "sell_rolling_std": 20,
+            "buy_up_lim": -2.0,
+            "buy_rolling_std": 20,
+            "macd_fast": 12,
+            "macd_slow": 26,
+            "macd_signal": 9,
+            "rsi_period": 14,
+            "stochastic_k_period": 14,
+            "stochastic_d_period": 3,
             "fractal_window": 150,
             "fractal_lags": [
                 15,
@@ -647,106 +691,18 @@
             }
         },
         "metrics": {
-            "performance": -2.213138241911199,
-            "win_rate": 95.74468085106383,
-            "max_drawdown": 2.213138241911199
+            "performance": 5.114329109331726,
+            "win_rate": 52.41935483870967,
+            "max_drawdown": 10.752628176765059
         },
         "performance_summary": {
-            "max_performance": -2.213138241911199,
-            "min_performance": -9.155381827490212,
-            "avg_performance": -5.546494888428603
+            "max_performance": 5.114329109331726,
+            "min_performance": -0.36492047583715614,
+            "avg_performance": 2.4398403142410174
         },
-        "date": "2025-01-15"
-    },
-    "ETH/USD": {
-        "best_params": {
-            "percent_increase_buy": 0.02,
-            "percent_decrease_sell": 0.02,
-            "sell_down_lim": 2.0,
-            "sell_rolling_std": 20,
-            "buy_up_lim": -2.0,
-            "buy_rolling_std": 20,
-            "macd_fast": 12,
-            "macd_slow": 26,
-            "macd_signal": 9,
-            "rsi_period": 14,
-            "stochastic_k_period": 14,
-            "stochastic_d_period": 3,
-            "fractal_window": 50,
-            "fractal_lags": [
-                15,
-                30,
-                60
-            ],
-            "reactivity": 0.8,
-            "weights": {
-                "weekly_macd_weight": 0.25,
-                "weekly_rsi_weight": 0.25,
-                "weekly_stoch_weight": 0.25,
-                "weekly_complexity_weight": 0.25,
-                "macd_weight": 0.25,
-                "rsi_weight": 0.25,
-                "stoch_weight": 0.25,
-                "complexity_weight": 0.25
-            }
-        },
-        "metrics": {
-            "performance": -4.314391215137431,
-            "win_rate": 85.96491228070175,
-            "max_drawdown": 4.314391215137431
-        },
-        "performance_summary": {
-            "max_performance": -4.314391215137431,
-            "min_performance": -14.018884811594113,
-            "avg_performance": -8.606778706155035
-        },
-        "date": "2025-01-01"
+        "date": "2025-01-20"
     },
     "SOL/USD": {
-        "best_params": {
-            "percent_increase_buy": 0.02,
-            "percent_decrease_sell": 0.02,
-            "sell_down_lim": 2.0,
-            "sell_rolling_std": 20,
-            "buy_up_lim": -2.0,
-            "buy_rolling_std": 20,
-            "macd_fast": 12,
-            "macd_slow": 26,
-            "macd_signal": 9,
-            "rsi_period": 14,
-            "stochastic_k_period": 14,
-            "stochastic_d_period": 3,
-            "fractal_window": 100,
-            "fractal_lags": [
-                5,
-                10,
-                20
-            ],
-            "reactivity": 0.8,
-            "weights": {
-                "weekly_macd_weight": 0.25,
-                "weekly_rsi_weight": 0.25,
-                "weekly_stoch_weight": 0.25,
-                "weekly_complexity_weight": 0.25,
-                "macd_weight": 0.25,
-                "rsi_weight": 0.25,
-                "stoch_weight": 0.25,
-                "complexity_weight": 0.25
-            }
-        },
-        "metrics": {
-            "performance": -5.044003791765356,
-            "win_rate": 85.71428571428571,
-            "max_drawdown": 5.044003791765356
-        },
-        "performance_summary": {
-            "max_performance": -5.044003791765356,
-            "min_performance": -15.3598332372783,
-            "avg_performance": -9.02077779885452
-        },
-        "date": "2025-01-01"
-    },
-    "AVAX/USD": {
         "best_params": {
             "percent_increase_buy": 0.02,
             "percent_decrease_sell": 0.02,
@@ -768,29 +724,29 @@
             ],
             "reactivity": 1.2,
             "weights": {
-                "weekly_macd_weight": 0.15,
-                "weekly_rsi_weight": 0.15,
-                "weekly_stoch_weight": 0.15,
-                "weekly_complexity_weight": 0.55,
-                "macd_weight": 0.15,
-                "rsi_weight": 0.15,
-                "stoch_weight": 0.15,
-                "complexity_weight": 0.55
+                "weekly_macd_weight": 0.2,
+                "weekly_rsi_weight": 0.2,
+                "weekly_stoch_weight": 0.2,
+                "weekly_complexity_weight": 0.4,
+                "macd_weight": 0.2,
+                "rsi_weight": 0.2,
+                "stoch_weight": 0.2,
+                "complexity_weight": 0.4
             }
         },
         "metrics": {
-            "performance": -6.455431528751554,
-            "win_rate": 82.8125,
-            "max_drawdown": 6.455431528751554
+            "performance": 8.344094321147786,
+            "win_rate": 58.04195804195804,
+            "max_drawdown": 10.888244613330007
         },
         "performance_summary": {
-            "max_performance": -6.455431528751554,
-            "min_performance": -21.4454417872425,
-            "avg_performance": -11.926517218077558
+            "max_performance": 8.344094321147786,
+            "min_performance": 1.8018465010648375,
+            "avg_performance": 4.138415657260321
         },
-        "date": "2025-01-01"
+        "date": "2025-01-21"
     },
-    "DOT/USD": {
+    "AVAX/USD": {
         "best_params": {
             "percent_increase_buy": 0.02,
             "percent_decrease_sell": 0.02,
@@ -823,18 +779,18 @@
             }
         },
         "metrics": {
-            "performance": -3.5099464734724424,
-            "win_rate": 91.52542372881356,
-            "max_drawdown": 3.5099464734724424
+            "performance": 6.802782541318109,
+            "win_rate": 63.793103448275865,
+            "max_drawdown": 10.708902794924898
         },
         "performance_summary": {
-            "max_performance": -3.5099464734724424,
-            "min_performance": -13.193709787300381,
-            "avg_performance": -6.692038974178062
+            "max_performance": 6.802782541318109,
+            "min_performance": -2.6031890210085824,
+            "avg_performance": 3.248738486828586
         },
-        "date": "2025-01-01"
+        "date": "2025-01-21"
     },
-    "LINK/USD": {
+    "DOT/USD": {
         "best_params": {
             "percent_increase_buy": 0.02,
             "percent_decrease_sell": 0.02,
@@ -850,33 +806,77 @@
             "stochastic_d_period": 3,
             "fractal_window": 50,
             "fractal_lags": [
-                15,
-                30,
-                60
+                5,
+                10,
+                20
             ],
-            "reactivity": 1.0,
+            "reactivity": 1.1,
             "weights": {
-                "weekly_macd_weight": 0.3,
-                "weekly_rsi_weight": 0.3,
-                "weekly_stoch_weight": 0.3,
-                "weekly_complexity_weight": 0.1,
-                "macd_weight": 0.1,
-                "rsi_weight": 0.1,
-                "stoch_weight": 0.1,
-                "complexity_weight": 0.7
+                "weekly_macd_weight": 0.2,
+                "weekly_rsi_weight": 0.2,
+                "weekly_stoch_weight": 0.2,
+                "weekly_complexity_weight": 0.4,
+                "macd_weight": 0.2,
+                "rsi_weight": 0.2,
+                "stoch_weight": 0.2,
+                "complexity_weight": 0.4
             }
         },
         "metrics": {
-            "performance": -5.346823529353308,
-            "win_rate": 82.75862068965517,
-            "max_drawdown": 5.346823529353308
+            "performance": 7.613373164051002,
+            "win_rate": 67.85714285714286,
+            "max_drawdown": 8.226661989860954
         },
         "performance_summary": {
-            "max_performance": -5.346823529353308,
-            "min_performance": -23.28251845218407,
-            "avg_performance": -10.25507369221699
+            "max_performance": 7.613373164051002,
+            "min_performance": -0.6101047768051161,
+            "avg_performance": 3.832992330844279
         },
-        "date": "2025-01-01"
+        "date": "2025-01-21"
+    },
+    "LINK/USD": {
+        "best_params": {
+            "percent_increase_buy": 0.02,
+            "percent_decrease_sell": 0.02,
+            "sell_down_lim": 2.0,
+            "sell_rolling_std": 20,
+            "buy_up_lim": -2.0,
+            "buy_rolling_std": 20,
+            "macd_fast": 12,
+            "macd_slow": 26,
+            "macd_signal": 9,
+            "rsi_period": 14,
+            "stochastic_k_period": 14,
+            "stochastic_d_period": 3,
+            "fractal_window": 100,
+            "fractal_lags": [
+                10,
+                20,
+                40
+            ],
+            "reactivity": 1.1,
+            "weights": {
+                "weekly_macd_weight": 0.25,
+                "weekly_rsi_weight": 0.25,
+                "weekly_stoch_weight": 0.25,
+                "weekly_complexity_weight": 0.25,
+                "macd_weight": 0.25,
+                "rsi_weight": 0.25,
+                "stoch_weight": 0.25,
+                "complexity_weight": 0.25
+            }
+        },
+        "metrics": {
+            "performance": 6.162928085257941,
+            "win_rate": 58.490566037735846,
+            "max_drawdown": 10.773859172611434
+        },
+        "performance_summary": {
+            "max_performance": 6.162928085257941,
+            "min_performance": -0.5061682043170949,
+            "avg_performance": 3.6622303982911273
+        },
+        "date": "2025-01-21"
     },
     "DOGE/USD": {
         "best_params": {
