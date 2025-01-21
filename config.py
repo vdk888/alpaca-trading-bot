@@ -103,7 +103,7 @@ TRADING_SYMBOLS = {
     'UNI/USD': {
         'name': 'Uniswap',
         'market': 'CRYPTO',
-        'yfinance': 'UNI-USD',
+        'yfinance': 'UNI7083-USD',
         'interval': '5m',
         'market_hours': {
             'start': '00:00',
