@@ -892,35 +892,35 @@
             "rsi_period": 14,
             "stochastic_k_period": 14,
             "stochastic_d_period": 3,
-            "fractal_window": 50,
+            "fractal_window": 100,
             "fractal_lags": [
-                15,
-                30,
-                60
+                10,
+                20,
+                40
             ],
-            "reactivity": 0.8,
+            "reactivity": 0.9,
             "weights": {
-                "weekly_macd_weight": 0.2,
-                "weekly_rsi_weight": 0.2,
-                "weekly_stoch_weight": 0.2,
-                "weekly_complexity_weight": 0.4,
-                "macd_weight": 0.2,
-                "rsi_weight": 0.2,
-                "stoch_weight": 0.2,
-                "complexity_weight": 0.4
+                "weekly_macd_weight": 0.25,
+                "weekly_rsi_weight": 0.25,
+                "weekly_stoch_weight": 0.25,
+                "weekly_complexity_weight": 0.25,
+                "macd_weight": 0.25,
+                "rsi_weight": 0.25,
+                "stoch_weight": 0.25,
+                "complexity_weight": 0.25
             }
         },
         "metrics": {
-            "performance": -2.8883001788764817,
-            "win_rate": 82.75862068965517,
-            "max_drawdown": 2.8883001788764817
+            "performance": 9.506265248071324,
+            "win_rate": 85.71428571428571,
+            "max_drawdown": 5.729613146763342
         },
         "performance_summary": {
-            "max_performance": -2.8883001788764817,
-            "min_performance": -12.465798117261045,
-            "avg_performance": -6.88018563547905
+            "max_performance": 9.506265248071324,
+            "min_performance": 0.7585186164114983,
+            "avg_performance": 4.942047213768895
         },
-        "date": "2025-01-01"
+        "date": "2025-01-21"
     },
     "AAVE/USD": {
         "best_params": {

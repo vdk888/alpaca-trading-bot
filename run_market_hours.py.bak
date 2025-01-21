@@ -77,58 +77,13 @@ async def run_bot():
     # Start the Telegram bot
     logger.info("Starting Telegram bot...")
     await trading_bot.start()
+    for symbol in TRADING_SYMBOLS:
+        print(f"Finding best parameters for {symbol}...")
+        best_params = find_best_params(symbol=symbol, param_grid=param_grid, days=30)
+        print(f"Optimal Parameters for {symbol}: {best_params}")
     
-    async def backtest_loop():
-        """Background task for running backtests"""
-        while True:
-            try:
-                for symbol in TRADING_SYMBOLS:
-                    try:
-                        # Check if we need to update parameters
-                        needs_update = True
-                        try:
-                            with open("best_params.json", "r") as f:
-                                best_params_data = json.load(f)
-                                if symbol in best_params_data:
-                                    last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
-                                    days_since_update = (datetime.datetime.now() - last_update).days
-                                    needs_update = days_since_update >= 7  # Update weekly
-                        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-                            logger.warning(f"Could not read best_params.json for {symbol}: {str(e)}")
-                            needs_update = True
-                            
-                        if needs_update:
-                            logger.info(f"Running backtest for {symbol}...")
-                            await trading_bot.send_message(f"🔄 Running background optimization for {symbol}...")
-                            try:
-                                # Run the CPU-intensive backtest in a thread pool
-                                loop = asyncio.get_event_loop()
-                                best_params = await loop.run_in_executor(
-                                    None,  # Use default executor
-                                    find_best_params,
-                                    symbol,
-                                    param_grid,
-                                    30
-                                )
-                                
-                                await trading_bot.send_message(f"✅ Optimization complete for {symbol}")
-                                logger.info(f"New optimal parameters for {symbol}: {best_params}")
-                            except Exception as e:
-                                error_msg = f"Failed to optimize {symbol}: {str(e)}"
-                                logger.error(error_msg)
-                                await trading_bot.send_message(f"❌ {error_msg}")
-                                
-                            # Small delay between symbols to prevent overload
-                            await asyncio.sleep(1)
-                    except Exception as e:
-                        logger.error(f"Error in backtest for {symbol}: {str(e)}")
-                        continue
-                
-                # Sleep for 1 hour before checking again
-                await asyncio.sleep(3600)
-            except Exception as e:
-                logger.error(f"Error in backtest loop: {str(e)}")
-                await asyncio.sleep(300)  # Wait 5 minutes before retrying
+    logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")
+    # Assuming TRADING_SYMBOLS is defined somewhere in your code
     
     async def trading_loop():
         """Background task for trading logic"""
@@ -185,12 +140,9 @@ Parameters: {params}
                 logger.error(f"Error in trading loop: {str(e)}")
                 await asyncio.sleep(60)  # Wait a minute before retrying
 
-    logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")
-    
     try:
-        # Start both the trading and backtest loops
+        # Start the trading loop
         trading_task = asyncio.create_task(trading_loop())
-        backtest_task = asyncio.create_task(backtest_loop())
         
         # Keep the main task running
         while True:
@@ -200,19 +152,12 @@ Parameters: {params}
         logger.error(f"Error in main loop: {str(e)}")
     finally:
         # Cleanup
-        tasks_to_cancel = []
         if 'trading_task' in locals():
-            tasks_to_cancel.append(trading_task)
-        if 'backtest_task' in locals():
-            tasks_to_cancel.append(backtest_task)
-            
-        for task in tasks_to_cancel:
-            task.cancel()
+            trading_task.cancel()
             try:
-                await task
+                await trading_task
             except asyncio.CancelledError:
                 pass
-            
         await trading_bot.stop()
 
 async def run_and_send_backtest(symbol: str, trading_bot, days: int = 5):
