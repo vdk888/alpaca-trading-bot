@@ -7,6 +7,7 @@ from config import TRADING_SYMBOLS
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
@@ -115,20 +116,21 @@ class TradingExecutor:
             # Calculate performance for each symbol
             for sym, config in TRADING_SYMBOLS.items():
                 try:
-                    # Get the API symbol format
-                    api_symbol = get_api_symbol(sym)
+                    # Get the yfinance symbol
+                    yf_symbol = config['yfinance']
                     
-                    # Get historical bars
-                    bars = self.trading_client.get_bars(
-                        api_symbol,
+                    # Get historical data from yfinance
+                    ticker = yf.Ticker(yf_symbol)
+                    data = ticker.history(
                         start=start_time,
                         end=end_time,
-                        timeframe='5Min'
+                        interval='5m'
                     )
                     
-                    if len(bars) >= 2:
-                        start_price = bars[0].close
-                        end_price = bars[-1].close
+                    if len(data) >= 2:
+                        # For current symbol use provided current price, for others use last close
+                        start_price = data['Close'].iloc[0]
+                        end_price = current_price if sym == self.symbol else data['Close'].iloc[-1]
                         performance = ((end_price - start_price) / start_price) * 100
                         performance_dict[sym] = performance
                         
