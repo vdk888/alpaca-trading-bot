@@ -16,6 +16,7 @@ import json
 from backtest_individual import run_backtest, create_backtest_plot
 import io
 import matplotlib.pyplot as plt
+from indicators import get_default_params
 
 # Set up logging
 logging.basicConfig(
@@ -132,55 +133,78 @@ async def run_bot():
     
     async def trading_loop():
         """Background task for trading logic"""
+        symbol_last_check = {symbol: None for symbol in symbols}
+        
         while True:
             try:
+                current_time = datetime.datetime.now(pytz.UTC)
+                
                 for symbol in symbols:
-                    # Generate signals
                     try:
-                        with open("best_params.json", "r") as f:
-                            best_params_data = json.load(f)
-                            if symbol in best_params_data:
-                                params = best_params_data[symbol]['best_params']
-                                print(f"Using best parameters for {symbol}: {params}")
-                            else:
-                                print(f"No best parameters found for {symbol}. Using default parameters.")
-                                params = get_default_params()
-                    except FileNotFoundError:
-                        print("Best parameters file not found. Using default parameters.")
-                        params = get_default_params()
-                    
-                    try:
-                        analysis = strategies[symbol].analyze()
-                        if analysis['signal'] != 0:  # If there's a trading signal
-                            signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
-                            message = f"""
+                        # Check if 5 minutes have passed since last check for this symbol
+                        if (symbol_last_check[symbol] is not None and 
+                            (current_time - symbol_last_check[symbol]).total_seconds() < 300):
+                            continue
+                            
+                        # Generate signals
+                        try:
+                            with open("best_params.json", "r") as f:
+                                best_params_data = json.load(f)
+                                if symbol in best_params_data:
+                                    params = best_params_data[symbol]['best_params']
+                                    print(f"Using best parameters for {symbol}: {params}")
+                                else:
+                                    print(f"No best parameters found for {symbol}. Using default parameters.")
+                                    params = get_default_params()
+                        except FileNotFoundError:
+                            print("Best parameters file not found. Using default parameters.")
+                            params = get_default_params()
+                        
+                        try:
+                            analysis = strategies[symbol].analyze()
+                            if analysis and analysis['signal'] != 0:  # If there's a trading signal
+                                signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
+                                message = f"""
 🔔 Trading Signal for {symbol}:
 Signal: {signal_type}
 Price: ${analysis['current_price']:.2f}
 Daily Score: {analysis['daily_composite']:.4f}
 Weekly Score: {analysis['weekly_composite']:.4f}
 Parameters: {params}
-                            """
-                            await trading_bot.send_message(message)
-                       
-
-                            ##############
-                            # Execute trade with notifications through telegram bot
-                            action = "BUY" if analysis['signal'] == 1 else "SELL"
-                            await trading_executors[symbol].execute_trade(
-                                action=action,
-                                analysis=analysis,
-                                notify_callback=trading_bot.send_message
-                            )
+Bar Time: {analysis['bar_time']}
+                                """
+                                await trading_bot.send_message(message)
+                           
+                                # Execute trade with notifications through telegram bot
+                                action = "BUY" if analysis['signal'] == 1 else "SELL"
+                                await trading_executors[symbol].execute_trade(
+                                    action=action,
+                                    analysis=analysis,
+                                    notify_callback=trading_bot.send_message
+                                )
+                                
+                                # Run and send backtest results
+                                await run_and_send_backtest(symbol, trading_bot)
+                                
+                        except Exception as e:
+                            logger.error(f"Error analyzing {symbol}: {str(e)}")
+                            continue
                             
-                            # Run and send backtest results
-                            await run_and_send_backtest(symbol, trading_bot)
-                            
+                        # Update last check time for this symbol
+                        symbol_last_check[symbol] = current_time
+                        
+                        # Small delay between symbols to prevent overload
+                        await asyncio.sleep(1)
+                        
                     except Exception as e:
-                        logger.error(f"Error analyzing {symbol}: {str(e)}")
+                        logger.error(f"Error processing {symbol}: {str(e)}")
                         continue
                 
-                await asyncio.sleep(300)  # Wait 5 minutes between iterations
+                # Calculate time to sleep until next check
+                elapsed_time = (datetime.datetime.now(pytz.UTC) - current_time).total_seconds()
+                sleep_time = max(60, 300 - elapsed_time)  # At least 1 minute, at most 5 minutes
+                await asyncio.sleep(sleep_time)
+                
             except Exception as e:
                 logger.error(f"Error in trading loop: {str(e)}")
                 await asyncio.sleep(60)  # Wait a minute before retrying

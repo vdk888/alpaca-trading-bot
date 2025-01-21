@@ -938,33 +938,33 @@
             "stochastic_d_period": 3,
             "fractal_window": 50,
             "fractal_lags": [
+                5,
                 10,
-                20,
-                40
+                20
             ],
             "reactivity": 0.8,
             "weights": {
-                "weekly_macd_weight": 0.3,
-                "weekly_rsi_weight": 0.3,
-                "weekly_stoch_weight": 0.3,
-                "weekly_complexity_weight": 0.1,
-                "macd_weight": 0.3,
-                "rsi_weight": 0.3,
-                "stoch_weight": 0.3,
-                "complexity_weight": 0.1
+                "weekly_macd_weight": 0.2,
+                "weekly_rsi_weight": 0.2,
+                "weekly_stoch_weight": 0.2,
+                "weekly_complexity_weight": 0.4,
+                "macd_weight": 0.2,
+                "rsi_weight": 0.2,
+                "stoch_weight": 0.2,
+                "complexity_weight": 0.4
             }
         },
         "metrics": {
-            "performance": -7.306053368211805,
-            "win_rate": 95.83333333333334,
-            "max_drawdown": 7.306053368211805
+            "performance": 7.266361500507719,
+            "win_rate": 56.33802816901409,
+            "max_drawdown": 15.71720294584129
         },
         "performance_summary": {
-            "max_performance": -7.306053368211805,
-            "min_performance": -24.1420843734384,
-            "avg_performance": -13.170048079074336
+            "max_performance": 7.266361500507719,
+            "min_performance": 0.6698591227199542,
+            "avg_performance": 4.177862456216441
         },
-        "date": "2025-01-01"
+        "date": "2025-01-21"
     },
     "UNI/USD": {
         "best_params": {
