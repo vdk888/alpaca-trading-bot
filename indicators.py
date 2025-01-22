@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, Union, List, Tuple
+import json
 
 def calculate_hurst_exponent(data: pd.Series, lags: List[int]) -> float:
     """Calculate Hurst exponent using R/S analysis"""
@@ -149,10 +150,16 @@ def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[fl
         # Weekly thresholds are more conservative
         down_lim_line = -rolling_std * reactivity
         up_lim_line = rolling_std * reactivity
+        # Add 2 std lines for weekly
+        down_lim_line_2std = 2 *params['sell_down_lim'] * rolling_std * reactivity
+        up_lim_line_2std = 2 * params['buy_up_lim'] * rolling_std * reactivity
     else:
         # Daily thresholds use parameter-based multipliers
         down_lim_line = params['sell_down_lim'] * rolling_std * reactivity
         up_lim_line = params['buy_up_lim'] * rolling_std * reactivity
+        # Add 2 std lines for daily
+        down_lim_line_2std = 2 * params['sell_down_lim'] * rolling_std * reactivity
+        up_lim_line_2std = 2 * params['buy_up_lim'] * rolling_std * reactivity
     
     # Print final composite stats
     print(f"{'Weekly' if is_weekly else 'Daily'} Composite stats:")
@@ -160,11 +167,14 @@ def calculate_composite_indicator(data: pd.DataFrame, params: Dict[str, Union[fl
     print(f"Std: {composite.std():.4f}")
     print(f"Range: {composite.min():.4f} to {composite.max():.4f}")
     print(f"Threshold range: {down_lim_line.min():.4f} to {up_lim_line.max():.4f}")
+    print(f"2 STD Threshold range: {down_lim_line_2std.min():.4f} to {up_lim_line_2std.max():.4f}")
 
     return pd.DataFrame({
         'Composite': composite,
         'Down_Lim': down_lim_line,
-        'Up_Lim': up_lim_line
+        'Up_Lim': up_lim_line,
+        'Down_Lim_2STD': down_lim_line_2std,
+        'Up_Lim_2STD': up_lim_line_2std
     }), composite, rolling_std
 
 def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], reactivity: float = 1.0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -183,7 +193,7 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     
     # Calculate weekly composite (35-minute timeframe = 7 * 5min)
     try:
-        weekly_data = data.resample('35min').agg({
+        weekly_data = data.resample('30min').agg({
             'open': 'first',
             'high': 'max',
             'low': 'min',
@@ -226,7 +236,7 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
         print(f"Non-zero range: {non_zero.min():.4f} to {non_zero.max():.4f}")
     
     # Initialize signals DataFrame with zeros
-    signals = pd.DataFrame(0, index=data.index, columns=['signal', 'daily_composite', 'daily_down_lim', 'daily_up_lim', 'weekly_composite', 'weekly_down_lim', 'weekly_up_lim'])
+    signals = pd.DataFrame(0, index=data.index, columns=['signal', 'daily_composite', 'daily_down_lim', 'daily_up_lim', 'weekly_composite', 'weekly_down_lim', 'weekly_up_lim', 'weekly_down_lim_2std', 'weekly_up_lim_2std'])
     
     # Assign values without chaining
     signals = signals.assign(
@@ -235,18 +245,27 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
         daily_up_lim=daily_data['Up_Lim'],
         weekly_composite=weekly_resampled['Composite'],
         weekly_down_lim=weekly_resampled['Down_Lim'],
-        weekly_up_lim=weekly_resampled['Up_Lim']
+        weekly_up_lim=weekly_resampled['Up_Lim'],
+        weekly_down_lim_2std=weekly_resampled['Down_Lim_2STD'],
+        weekly_up_lim_2std=weekly_resampled['Up_Lim_2STD']
     )
     
-    # Generate buy signals (daily crossing above upper limit)
-    buy_mask = (daily_data['Composite'] > daily_data['Up_Lim']) & (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))
+    # Generate buy signals (daily crossing above upper limit or crossing above -2std)
+    buy_mask = ((daily_data['Composite'] > daily_data['Up_Lim']) & 
+               (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))) | \
+              ((daily_data['Composite'] > daily_data['Down_Lim_2STD']) & 
+               (daily_data['Composite'].shift(1) <= daily_data['Down_Lim_2STD'].shift(1)))
     signals.loc[buy_mask, 'signal'] = 1
     
-    # Generate sell signals (weekly crossing below either upper or lower limit)
+    # Generate sell signals (weekly crossing below either upper or lower limit, or crossing below ±2std)
     sell_mask = ((weekly_resampled['Composite'] < weekly_resampled['Up_Lim']) & 
                 (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Up_Lim'].shift(1))) | \
                 ((weekly_resampled['Composite'] < weekly_resampled['Down_Lim']) & 
-                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Down_Lim'].shift(1)))
+                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Down_Lim'].shift(1))) | \
+                ((weekly_resampled['Composite'] < weekly_resampled['Up_Lim_2STD']) & 
+                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Up_Lim_2STD'].shift(1))) | \
+                ((weekly_resampled['Composite'] < weekly_resampled['Down_Lim_2STD']) & 
+                (weekly_resampled['Composite'].shift(1) >= weekly_resampled['Down_Lim_2STD'].shift(1)))
     signals.loc[sell_mask, 'signal'] = -1
 
     # Print final signal counts for debugging

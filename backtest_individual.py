@@ -317,10 +317,34 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
                     rank = perf_rankings.loc[symbol, 'rank']
                     performance = perf_rankings.loc[symbol, 'performance']
                     
-                    # Calculate sell percentage (linear function)
-                    # rank 1 (best) = 10% sell
-                    # rank 0 (worst) = 100% sell
-                    sell_percentage = 1.0 - (0.9 * rank)  # Linear interpolation between 0.1 and 1.0
+                    # Calculate sell percentage using new dynamic formula
+                    def calculate_sell_percentage(rank: int, total_assets: int) -> float:
+                        """
+                        Calculate sell percentage based on rank and total number of assets.
+                        rank: 1 is best performer, total_assets is worst performer
+                        Returns: float between 0.1 and 1.0 representing sell percentage
+                        """
+                        # Calculate cutoff points
+                        bottom_third = int(total_assets * (1/3))
+                        top_two_thirds = total_assets - bottom_third
+                        
+                        # If in bottom third, sell 100%
+                        if rank > top_two_thirds:
+                            return 1.0
+                            
+                        # For top two-thirds, use a wave function
+                        x = (rank - 1) / (top_two_thirds - 1)
+                        wave = 0.1 * np.sin(2 * np.pi * x)  # Oscillation between -0.1 and 0.1
+                        linear = 0.3 + 0.7 * x  # Linear increase from 0.3 to 1.0
+                        return max(0.1, min(1.0, linear + wave))  # Clamp between 0.1 and 1.0
+
+                    # Get total number of assets
+                    total_assets = len(perf_rankings)
+                    
+                    # Calculate sell percentage using new dynamic formula
+                    rank = 1 + sum(1 for other_metric in perf_rankings['rank'].values 
+                                 if other_metric > rank)
+                    sell_percentage = calculate_sell_percentage(rank, total_assets)
                     
                     # Calculate shares to sell
                     shares_to_sell = position * sell_percentage

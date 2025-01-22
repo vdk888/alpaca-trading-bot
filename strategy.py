@@ -136,7 +136,7 @@ class TradingStrategy:
                 'timestamp': current_bar_time,
                 'position': self.current_position,
                 'data_points': len(self.data),
-                'weekly_bars': len(self.data.resample('35min').last()),
+                'weekly_bars': len(self.data.resample('30min').last()),
                 'last_signal_time': self.last_signal_time,
                 'bar_time': current_bar_time.floor('5min')
             }
