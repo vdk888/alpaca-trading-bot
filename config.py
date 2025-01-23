@@ -210,17 +210,6 @@ TRADING_SYMBOLS = {
             'timezone': 'UTC'
         }
     },
-    'USDT/USD': {
-        'name': 'Tether',
-        'market': 'CRYPTO',
-        'yfinance': 'USDT-USD',
-        'interval': '5m',
-        'market_hours': {
-            'start': '00:00',
-            'end': '23:59',
-            'timezone': 'UTC'
-        }
-    },
     'XTZ/USD': {
         'name': 'Tezos',
         'market': 'CRYPTO',
