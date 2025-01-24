@@ -1405,5 +1405,137 @@
             "avg_performance": -2.3152961389884226
         },
         "date": "2025-01-23"
+    },
+    "XTZ/USD": {
+        "best_params": {
+            "percent_increase_buy": 0.02,
+            "percent_decrease_sell": 0.02,
+            "sell_down_lim": 2.0,
+            "sell_rolling_std": 20,
+            "buy_up_lim": -2.0,
+            "buy_rolling_std": 20,
+            "macd_fast": 12,
+            "macd_slow": 26,
+            "macd_signal": 9,
+            "rsi_period": 14,
+            "stochastic_k_period": 14,
+            "stochastic_d_period": 3,
+            "fractal_window": 50,
+            "fractal_lags": [
+                5,
+                10,
+                20
+            ],
+            "reactivity": 1.1,
+            "weights": {
+                "weekly_macd_weight": 0.3,
+                "weekly_rsi_weight": 0.3,
+                "weekly_stoch_weight": 0.3,
+                "weekly_complexity_weight": 0.1,
+                "macd_weight": 0.1,
+                "rsi_weight": 0.1,
+                "stoch_weight": 0.1,
+                "complexity_weight": 0.7
+            }
+        },
+        "metrics": {
+            "performance": 9.694324898725927,
+            "win_rate": 75.35211267605634,
+            "max_drawdown": 7.730166549827255
+        },
+        "performance_summary": {
+            "max_performance": 9.694324898725927,
+            "min_performance": -1.6572350303471457,
+            "avg_performance": 3.4957680021356614
+        },
+        "date": "2025-01-23"
+    },
+    "YFI/USD": {
+        "best_params": {
+            "percent_increase_buy": 0.02,
+            "percent_decrease_sell": 0.02,
+            "sell_down_lim": 2.0,
+            "sell_rolling_std": 20,
+            "buy_up_lim": -2.0,
+            "buy_rolling_std": 20,
+            "macd_fast": 12,
+            "macd_slow": 26,
+            "macd_signal": 9,
+            "rsi_period": 14,
+            "stochastic_k_period": 14,
+            "stochastic_d_period": 3,
+            "fractal_window": 50,
+            "fractal_lags": [
+                10,
+                20,
+                40
+            ],
+            "reactivity": 0.8,
+            "weights": {
+                "weekly_macd_weight": 0.3,
+                "weekly_rsi_weight": 0.3,
+                "weekly_stoch_weight": 0.3,
+                "weekly_complexity_weight": 0.1,
+                "macd_weight": 0.3,
+                "rsi_weight": 0.3,
+                "stoch_weight": 0.3,
+                "complexity_weight": 0.1
+            }
+        },
+        "metrics": {
+            "performance": 11.418440936317198,
+            "win_rate": 64.23357664233576,
+            "max_drawdown": 3.3151913506141515
+        },
+        "performance_summary": {
+            "max_performance": 11.418440936317198,
+            "min_performance": -2.264931635413989,
+            "avg_performance": 4.648313510514852
+        },
+        "date": "2025-01-24"
+    },
+    "XRP/USD": {
+        "best_params": {
+            "percent_increase_buy": 0.02,
+            "percent_decrease_sell": 0.02,
+            "sell_down_lim": 2.0,
+            "sell_rolling_std": 20,
+            "buy_up_lim": -2.0,
+            "buy_rolling_std": 20,
+            "macd_fast": 12,
+            "macd_slow": 26,
+            "macd_signal": 9,
+            "rsi_period": 14,
+            "stochastic_k_period": 14,
+            "stochastic_d_period": 3,
+            "fractal_window": 100,
+            "fractal_lags": [
+                15,
+                30,
+                60
+            ],
+            "reactivity": 1.1,
+            "weights": {
+                "weekly_macd_weight": 0.25,
+                "weekly_rsi_weight": 0.25,
+                "weekly_stoch_weight": 0.25,
+                "weekly_complexity_weight": 0.25,
+                "macd_weight": 0.25,
+                "rsi_weight": 0.25,
+                "stoch_weight": 0.25,
+                "complexity_weight": 0.25
+            }
+        },
+        "metrics": {
+            "performance": 12.335514727366961,
+            "win_rate": 64.47368421052632,
+            "max_drawdown": 4.721166516000528
+        },
+        "performance_summary": {
+            "max_performance": 12.335514727366961,
+            "min_performance": 3.5762664556843187,
+            "avg_performance": 8.917188580365078
+        },
+        "date": "2025-01-01"
     }
 }

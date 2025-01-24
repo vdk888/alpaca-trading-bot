@@ -102,6 +102,7 @@ async def run_bot():
                             logger.info(f"Running backtest for {symbol}...")
                             await trading_bot.send_message(f"🔄 Running background optimization for {symbol}...")
                             try:
+                                logger.info(f"Starting optimization for {symbol} with param_grid: {param_grid}")
                                 # Run the CPU-intensive backtest in a thread pool
                                 loop = asyncio.get_event_loop()
                                 best_params = await loop.run_in_executor(
@@ -112,13 +113,19 @@ async def run_bot():
                                     30
                                 )
                                 
-                                await trading_bot.send_message(f"✅ Optimization complete for {symbol}")
-                                logger.info(f"New optimal parameters for {symbol}: {best_params}")
+                                if best_params:
+                                    logger.info(f"Successfully found best params for {symbol}: {best_params}")
+                                    await trading_bot.send_message(f"✅ Optimization complete for {symbol}")
+                                    logger.info(f"New optimal parameters for {symbol}: {best_params}")
+                                else:
+                                    error_msg = f"Failed to find best parameters for {symbol} - no valid results returned"
+                                    logger.error(error_msg)
+                                    await trading_bot.send_message(f"❌ {error_msg}")
                             except Exception as e:
                                 error_msg = f"Failed to optimize {symbol}: {str(e)}"
-                                logger.error(error_msg)
+                                logger.error(f"Full optimization error for {symbol}: {str(e)}", exc_info=True)
                                 await trading_bot.send_message(f"❌ {error_msg}")
-                                
+                                input("Press Enter to continue...")
                             # Small delay between symbols to prevent overload
                             await asyncio.sleep(1)
                     except Exception as e:

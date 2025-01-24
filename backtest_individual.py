@@ -154,12 +154,15 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
     end_date = datetime.now(pytz.UTC)
     start_date = end_date - timedelta(days=30)  # 30 days of data
     
+    print(f"\nFetching data for {symbol} from {start_date} to {end_date}")
+    
     prices_dataset = {}
     for sym, config in TRADING_SYMBOLS.items():
         yf_symbol = config['yfinance']
         if '/' in yf_symbol:
             yf_symbol = yf_symbol.replace('/', '-')
             
+        print(f"Fetching {yf_symbol} data...")
         ticker = yf.Ticker(yf_symbol)
         data = ticker.history(
             start=start_date,
@@ -168,8 +171,12 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
             actions=False
         )
         
+        print(f"Retrieved {len(data)} data points for {sym}")
+        
         if len(data) == 0:
             print(f"Warning: No data available for {sym} in the specified date range")
+            print(f"Start date: {start_date}, End date: {end_date}")
+            print(f"Symbol config: {config}")
             continue
             
         # Localize timezone if needed
@@ -177,8 +184,15 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
             data.index = data.index.tz_localize('UTC')
             
         # Filter for market hours
-        data = data[data.index.map(lambda x: is_market_hours(x, config['market_hours']))]
-        prices_dataset[sym] = data
+        market_hours_data = data[data.index.map(lambda x: is_market_hours(x, config['market_hours']))]
+        print(f"After market hours filtering: {len(market_hours_data)} data points for {sym}")
+        
+        if len(market_hours_data) == 0:
+            print(f"Warning: No data available for {sym} after market hours filtering")
+            print(f"Market hours config: {config['market_hours']}")
+            continue
+            
+        prices_dataset[sym] = market_hours_data
     
     # Load the best parameters from JSON based on the symbol
     try:
@@ -208,6 +222,8 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
 
     # Calculate date range
     end_date = datetime.now(pytz.UTC)
+    # Round down end_date to the nearest minute to avoid potential future timestamps
+    end_date = end_date.replace(second=0, microsecond=0)
     start_date = end_date - timedelta(days=days + 2)  # Add buffer days
 
     # Fetch historical data

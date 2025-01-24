@@ -404,22 +404,37 @@ def create_portfolio_backtest_plot(backtest_result: dict) -> io.BytesIO:
     
     data = backtest_result['data']
     
+    # Calculate benchmark (equal-weight portfolio)
+    price_columns = [col for col in data.columns if col.endswith('_price')]
+    initial_prices = data[price_columns].iloc[0]
+    
+    # Calculate returns for each asset
+    asset_returns = data[price_columns].div(initial_prices) - 1
+    
+    # Equal-weight benchmark return
+    benchmark_return = asset_returns.mean(axis=1)
+    initial_capital = backtest_result['metrics']['initial_capital']
+    benchmark_value = (1 + benchmark_return) * initial_capital
+    
     # Portfolio Performance Plot (top)
     ax1 = fig.add_subplot(gs[0])
     ax1.plot(data.index, data['portfolio_total'], 
              label='Portfolio Value', linewidth=2, color='blue')
+    ax1.plot(data.index, benchmark_value,
+             label='Benchmark (Equal-Weight)', linewidth=2, color='red', linestyle='--')
     
     # Format y-axis to show dollar values
     ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${int(x):,}'))
     
     # Add some padding to y-axis
-    ymin = data['portfolio_total'].min() * 0.99
-    ymax = data['portfolio_total'].max() * 1.01
+    ymin = min(data['portfolio_total'].min(), benchmark_value.min()) * 0.99
+    ymax = max(data['portfolio_total'].max(), benchmark_value.max()) * 1.01
     ax1.set_ylim(ymin, ymax)
     
     ax1.set_title('Portfolio Performance')
     ax1.set_ylabel('Total Value ($)')
     ax1.grid(True)
+    ax1.legend()
     
     # Asset Allocation Plot (bottom)
     ax2 = fig.add_subplot(gs[1])
