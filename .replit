@@ -1,2 +1,9 @@
-run = "python main.py"
+run = "python run_market_hours.py"
 language = "python3"
+modules = ["python-3.12"]
+
+[deployment]
+run = ["sh", "-c", "python run_market_hours.py"]
+
+[nix]
+channel = "stable-24_05"
