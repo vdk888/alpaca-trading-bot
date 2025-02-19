@@ -127,7 +127,7 @@ def simulate_and_plot(symbol='SPY', start_date=None, end_date=None):
     
     # Fetch data
     print(f"Fetching {symbol} data from {start_date} to {end_date}")
-    data = yf.download(symbol, start=start_date, end=end_date, interval='5m')
+    data = yf.download(symbol, start=start_date, end=end_date, interval=config.DEFAULT_INTERVAL)
     
     if len(data) == 0:
         print("No data fetched. Please check your dates and symbol.")

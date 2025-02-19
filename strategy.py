@@ -5,11 +5,12 @@ from fetch import get_latest_data, fetch_historical_data
 import logging
 import pytz
 import json
+import config
 
 logger = logging.getLogger(__name__)
 
 class TradingStrategy:
-    def __init__(self, symbol: str, interval: str = '5m'):
+    def __init__(self, symbol: str, interval: str = config.DEFAULT_INTERVAL):
         self.symbol = symbol
         self.interval = interval
         self.current_position = 0  # -1: short, 0: neutral, 1: long
@@ -75,7 +76,7 @@ class TradingStrategy:
             
             # Check if we already generated a signal for this bar
             if (self.last_signal_time is not None and 
-                current_bar_time.floor('5min') == self.last_signal_time.floor('5min')):
+                current_bar_time.floor(self.interval) == self.last_signal_time.floor(self.interval)):
                 # Return the last analysis but with signal=0 to prevent duplicate signals
                 if hasattr(self, '_last_analysis'):
                     no_signal_analysis = self._last_analysis.copy()
@@ -136,9 +137,9 @@ class TradingStrategy:
                 'timestamp': current_bar_time,
                 'position': self.current_position,
                 'data_points': len(self.data),
-                'weekly_bars': len(self.data.resample('30min').last()),
+                'weekly_bars': len(self.data.resample(config.DEFAULT_INTERVAL_WEEKLY).last()),
                 'last_signal_time': self.last_signal_time,
-                'bar_time': current_bar_time.floor('5min')
+                'bar_time': current_bar_time.floor(self.interval)
             }
             
             # Store the analysis for reference

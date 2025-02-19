@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Union, List, Tuple
 import json
+import config
 
 def calculate_hurst_exponent(data: pd.Series, lags: List[int]) -> float:
     """Calculate Hurst exponent using R/S analysis"""
@@ -193,7 +194,7 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     
     # Calculate weekly composite (35-minute timeframe = 7 * 5min)
     try:
-        weekly_data = data.resample('30min').agg({
+        weekly_data = data.resample(config.DEFAULT_INTERVAL_WEEKLY).agg({
             'open': 'first',
             'high': 'max',
             'low': 'min',

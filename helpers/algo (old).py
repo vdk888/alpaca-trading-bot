@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize components
 trading_client = TradingClient(API_KEY, API_SECRET, paper=True)
-strategy = TradingStrategy(SYMBOL, interval='5m')
+strategy = TradingStrategy(SYMBOL, interval=config.DEFAULT_INTERVAL)
 executor = TradingExecutor(trading_client, SYMBOL)
 telegram_bot = TradingBot(trading_client, strategy, SYMBOL)
 

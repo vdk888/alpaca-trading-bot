@@ -124,7 +124,7 @@ class TradingExecutor:
                     data = ticker.history(
                         start=start_time,
                         end=end_time,
-                        interval='5m'
+                        interval=config.DEFAULT_INTERVAL
                     )
                     
                     if len(data) >= 2:

@@ -167,7 +167,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
         data = ticker.history(
             start=start_date,
             end=end_date,
-            interval='5m',
+            interval=config.DEFAULT_INTERVAL,
             actions=False
         )
         
@@ -231,7 +231,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
     data = ticker.history(
         start=start_date,
         end=end_date,
-        interval=symbol_config.get('interval', '5m'),
+        interval=symbol_config.get('interval', config.DEFAULT_INTERVAL),
         actions=False
     )
 

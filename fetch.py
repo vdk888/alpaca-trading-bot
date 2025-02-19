@@ -2,13 +2,13 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Optional
-from config import TRADING_SYMBOLS
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL
 import logging
 import pytz
 
 logger = logging.getLogger(__name__)
 
-def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> pd.DataFrame:
+def fetch_historical_data(symbol: str, interval: str = DEFAULT_INTERVAL, days: int = 3) -> pd.DataFrame:
     """
     Fetch historical data from Yahoo Finance
     
@@ -62,7 +62,7 @@ def fetch_historical_data(symbol: str, interval: str = '5m', days: int = 3) -> p
     
     return df
 
-def get_latest_data(symbol: str, interval: str = '5m', limit: Optional[int] = None) -> pd.DataFrame:
+def get_latest_data(symbol: str, interval: str = DEFAULT_INTERVAL, limit: Optional[int] = None) -> pd.DataFrame:
     """
     Get the most recent data points
     

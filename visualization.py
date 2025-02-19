@@ -443,7 +443,7 @@ def create_multi_symbol_plot(symbols=None, days=5):
             data = ticker.history(
                 start=start_date,
                 end=end_date,
-                interval='5m',
+                interval=config.DEFAULT_INTERVAL,
                 actions=False
             )
             
