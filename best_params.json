@@ -1514,7 +1514,7 @@
                 30,
                 60
             ],
-            "reactivity": 1.1,
+            "reactivity": 0.9,
             "weights": {
                 "weekly_macd_weight": 0.25,
                 "weekly_rsi_weight": 0.25,
@@ -1527,15 +1527,15 @@
             }
         },
         "metrics": {
-            "performance": 12.335514727366961,
-            "win_rate": 64.47368421052632,
-            "max_drawdown": 4.721166516000528
+            "performance": 12.740239869309043,
+            "win_rate": 63.33333333333333,
+            "max_drawdown": 4.657076050972455
         },
         "performance_summary": {
-            "max_performance": 12.335514727366961,
-            "min_performance": 3.5762664556843187,
-            "avg_performance": 8.917188580365078
+            "max_performance": 12.740239869309043,
+            "min_performance": 2.783527128347193,
+            "avg_performance": 8.936758367637339
         },
-        "date": "2025-01-01"
+        "date": "2025-01-24"
     }
 }

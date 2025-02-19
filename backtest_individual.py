@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS
+from config import TRADING_SYMBOLS, TRADING_COSTS
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -259,6 +259,12 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
     trades = []  # Track individual trades
     total_position_value = 0  # Track total position value for position sizing
     
+    # Get trading costs based on market type
+    market_type = symbol_config['market']
+    costs = TRADING_COSTS.get(market_type, TRADING_COSTS['DEFAULT'])
+    trading_fee = costs['trading_fee']
+    spread = costs['spread']
+    
     # Simulate trading
     for i in range(len(data)):
         current_price = data['close'].iloc[i]
@@ -303,15 +309,20 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
                             shares_to_buy = int(shares_to_buy)
                     
                     cost = shares_to_buy * current_price
-                    if cost <= cash and shares_to_buy > 0:  # Check if we have enough cash and shares to buy
+                    # Apply trading costs to buy (full spread + fee)
+                    total_cost = cost * (1 + spread + trading_fee)
+                    
+                    if total_cost <= cash and shares_to_buy > 0:  # Check if we have enough cash and shares to buy
                         position += shares_to_buy  # Add to existing position
-                        cash -= cost
+                        cash -= total_cost
                         trades.append({
                             'time': current_time,
                             'type': 'buy',
                             'price': current_price,
                             'shares': shares_to_buy,
                             'value': cost,
+                            'total_cost': total_cost,
+                            'trading_costs': total_cost - cost,
                             'total_position': position
                         })
                         print(f"\n{'='*80}")
@@ -378,31 +389,43 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
                     print(f"Shares to sell: {shares_to_sell:.8f} out of {position:.8f}")
                     
                     if shares_to_sell > 0:
-                        sale_value = shares_to_sell * current_price
-                        cash += sale_value
+                        # Calculate sale value with trading costs (half spread + fee since we're already at bid)
+                        gross_sale_value = shares_to_sell * current_price
+                        trading_costs = gross_sale_value * (trading_fee + spread/2)
+                        net_sale_value = gross_sale_value - trading_costs
+                        
+                        cash += net_sale_value
                         position -= shares_to_sell
                         trades.append({
                             'time': current_time,
                             'type': 'sell',
                             'price': current_price,
                             'shares': shares_to_sell,
-                            'value': sale_value,
+                            'gross_value': gross_sale_value,
+                            'value': net_sale_value,
+                            'trading_costs': trading_costs,
                             'total_position': position,
                             'performance_rank': rank,
                             'sell_percentage': sell_percentage * 100
                         })
                         print(f"Trade executed: Sold {shares_to_sell:.8f} shares at ${current_price:.2f}")
+                        print(f"Gross value: ${gross_sale_value:.2f}, Trading costs: ${trading_costs:.2f}")
+                        print(f"Net value: ${net_sale_value:.2f}")
                         print(f"Remaining position: {position:.8f} shares")
                 else:
                     # Fallback to selling entire position if we can't calculate ranking
-                    sale_value = position * current_price
-                    cash += sale_value
+                    gross_sale_value = position * current_price
+                    trading_costs = gross_sale_value * (trading_fee + spread/2)
+                    net_sale_value = gross_sale_value - trading_costs
+                    cash += net_sale_value
                     trades.append({
                         'time': current_time,
                         'type': 'sell',
                         'price': current_price,
                         'shares': position,
-                        'value': sale_value,
+                        'gross_value': gross_sale_value,
+                        'value': net_sale_value,
+                        'trading_costs': trading_costs,
                         'total_position': 0,
                         'performance_rank': None,
                         'sell_percentage': 100
@@ -432,7 +455,7 @@ def run_backtest(symbol: str, days: int = 5, params: dict = None, is_simulating:
             if len(buy_trades) > 0 and len(sell_trades) > 0:
                 # Take the minimum length to ensure we only compare complete trades
                 min_trades = min(len(buy_trades), len(sell_trades))
-                profits = sell_trades['value'].iloc[:min_trades].values - buy_trades['value'].iloc[:min_trades].values
+                profits = sell_trades['value'].iloc[:min_trades].values - buy_trades['total_cost'].iloc[:min_trades].values
                 win_rate = (len(profits[profits > 0]) / len(profits)) * 100 if len(profits) > 0 else 0
             else:
                 win_rate = 0

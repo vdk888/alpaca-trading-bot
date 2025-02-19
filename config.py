@@ -249,6 +249,22 @@ TRADING_SYMBOLS = {
 DEFAULT_RISK_PERCENT = 0.95
 DEFAULT_INTERVAL = '5m'
 
+# Trading costs configuration
+TRADING_COSTS = {
+    'DEFAULT': {
+        'trading_fee': 0.001,  # 0.1% trading fee
+        'spread': 0.006,  # 0.6% spread (bid-ask)
+    },
+    'CRYPTO': {
+        'trading_fee': 0.001,  # 0.1% trading fee
+        'spread': 0.006,  # 0.6% spread (bid-ask)
+    },
+    'STOCK': {
+        'trading_fee': 0.0005,  # 0.05% trading fee
+        'spread': 0.001,  # 0.1% spread (bid-ask)
+    }
+}
+
 param_grid = {
     'percent_increase_buy': [0.02],
     'percent_decrease_sell': [0.02],
