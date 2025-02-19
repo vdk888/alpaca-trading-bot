@@ -33,6 +33,7 @@ def fetch_historical_data(symbol: str, interval: str = DEFAULT_INTERVAL, days: i
     for attempt in range(max_retries):
         try:
             df = ticker.history(start=start, end=end, interval=interval)
+            print(f"start {start} end {end}, interval {interval}, len(df) {len(df)} bars of {interval} data for {symbol} ({yf_symbol})")
             if not df.empty:
                 break
         except Exception as e:
