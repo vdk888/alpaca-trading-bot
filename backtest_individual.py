@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo
+from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -209,7 +209,7 @@ def run_backtest(symbol: str,
 
     # Fetch price data for all symbols
     end_date = datetime.now(pytz.UTC)
-    start_date = end_date - timedelta(days=30)  # 30 days of data
+    start_date = end_date - timedelta(days=default_backtest_interval)  # 30 days of data
 
     print(f"\nFetching data for {symbol} from {start_date} to {end_date}")
 

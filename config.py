@@ -11,11 +11,19 @@ if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95
-DEFAULT_INTERVAL = '5T'
-DEFAULT_INTERVAL_WEEKLY = '30min'
+DEFAULT_INTERVAL = '30min' # available intervals: 1T, 5T, 15T, 30T, 1h, 4h, 1d
+DEFAULT_INTERVAL_WEEKLY = '240min'
 
-default_interval_yahoo = '5m'
+default_interval_yahoo = '30m' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
 
+default_backtest_interval = 59 #in days
+
+#1-minute interval: Maximum of 7 days of historical data.
+#5-minute interval: Maximum of 60 days of historical data.
+#15-minute interval: Maximum of 60 days of historical data.
+#30-minute interval: Maximum of 60 days of historical data.
+#1-hour interval: Maximum of 730 days (2 years) of historical data.
+#Daily interval: No strict limit, can fetch data for the entire available history.
 
 # Trading symbols configuration
 TRADING_SYMBOLS = {
