@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo
 import matplotlib
 matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt

@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY
+from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -223,7 +223,7 @@ def run_backtest(symbol: str,
         ticker = yf.Ticker(yf_symbol)
         data = ticker.history(start=start_date,
                               end=end_date,
-                              interval=config.DEFAULT_INTERVAL,
+                              interval=default_interval_yahoo,
                               actions=False)
 
         print(f"Retrieved {len(data)} data points for {sym}")
@@ -293,8 +293,7 @@ def run_backtest(symbol: str,
     ticker = yf.Ticker(yf_symbol)
     data = ticker.history(start=start_date,
                           end=end_date,
-                          interval=symbol_config.get('interval',
-                                                     config.DEFAULT_INTERVAL),
+                          interval=symbol_config.get('interval', DEFAULT_INTERVAL),
                           actions=False)
 
     if len(data) == 0:

@@ -10,7 +10,7 @@ import config
 logger = logging.getLogger(__name__)
 
 class TradingStrategy:
-    def __init__(self, symbol: str, interval: str = config.DEFAULT_INTERVAL):
+    def __init__(self, symbol: str, interval: str = config.default_interval_yahoo):
         self.symbol = symbol
         self.interval = interval
         self.current_position = 0  # -1: short, 0: neutral, 1: long
@@ -139,7 +139,7 @@ class TradingStrategy:
                 'data_points': len(self.data),
                 'weekly_bars': len(self.data.resample(config.DEFAULT_INTERVAL_WEEKLY).last()),
                 'last_signal_time': self.last_signal_time,
-                'bar_time': current_bar_time.floor(self.interval)
+                'bar_time': current_bar_time.floor(config.DEFAULT_INTERVAL)
             }
             
             # Store the analysis for reference

@@ -11,8 +11,10 @@ if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95
-DEFAULT_INTERVAL = '5m'
-DEFAULT_INTERVAL_WEEKLY = str(int(DEFAULT_INTERVAL[:-1]) * 5) + DEFAULT_INTERVAL[-1]
+DEFAULT_INTERVAL = '5T'
+DEFAULT_INTERVAL_WEEKLY = '30min'
+
+default_interval_yahoo = '5m'
 
 
 # Trading symbols configuration
@@ -22,7 +24,7 @@ TRADING_SYMBOLS = {
         'name': 'Bitcoin',
         'market': 'CRYPTO',
         'yfinance': 'BTC-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -33,7 +35,7 @@ TRADING_SYMBOLS = {
         'name': 'Ethereum',
         'market': 'CRYPTO',
         'yfinance': 'ETH-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -44,7 +46,7 @@ TRADING_SYMBOLS = {
         'name': 'Solana',
         'market': 'CRYPTO',
         'yfinance': 'SOL-USD',
-        'interval': DEFAULT_INTERVAL,    
+        'interval': default_interval_yahoo,       
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -55,7 +57,7 @@ TRADING_SYMBOLS = {
         'name': 'Avalanche',
         'market': 'CRYPTO',
         'yfinance': 'AVAX-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -66,7 +68,7 @@ TRADING_SYMBOLS = {
         'name': 'Polkadot',
         'market': 'CRYPTO',
         'yfinance': 'DOT-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -77,7 +79,7 @@ TRADING_SYMBOLS = {
         'name': 'Chainlink',
         'market': 'CRYPTO',
         'yfinance': 'LINK-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -88,7 +90,7 @@ TRADING_SYMBOLS = {
         'name': 'Dogecoin',
         'market': 'CRYPTO',
         'yfinance': 'DOGE-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -99,7 +101,7 @@ TRADING_SYMBOLS = {
         'name': 'Aave',
         'market': 'CRYPTO',
         'yfinance': 'AAVE-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -110,7 +112,7 @@ TRADING_SYMBOLS = {
         'name': 'Uniswap',
         'market': 'CRYPTO',
         'yfinance': 'UNI7083-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -121,7 +123,7 @@ TRADING_SYMBOLS = {
         'name': 'Litecoin',
         'market': 'CRYPTO',
         'yfinance': 'LTC-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -132,7 +134,7 @@ TRADING_SYMBOLS = {
         'name': 'Shiba Inu',
         'market': 'CRYPTO',
         'yfinance': 'SHIB-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -143,7 +145,7 @@ TRADING_SYMBOLS = {
         'name': 'Basic Attention Token',
         'market': 'CRYPTO',
         'yfinance': 'BAT-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -154,7 +156,7 @@ TRADING_SYMBOLS = {
         'name': 'Bitcoin Cash',
         'market': 'CRYPTO',
         'yfinance': 'BCH-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -165,7 +167,7 @@ TRADING_SYMBOLS = {
         'name': 'Curve DAO Token',
         'market': 'CRYPTO',
         'yfinance': 'CRV-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -176,7 +178,7 @@ TRADING_SYMBOLS = {
         'name': 'The Graph',
         'market': 'CRYPTO',
         'yfinance': 'GRT6719-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -187,7 +189,7 @@ TRADING_SYMBOLS = {
         'name': 'Maker',
         'market': 'CRYPTO',
         'yfinance': 'MKR-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -198,7 +200,7 @@ TRADING_SYMBOLS = {
         'name': 'SushiSwap',
         'market': 'CRYPTO',
         'yfinance': 'SUSHI-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -209,7 +211,7 @@ TRADING_SYMBOLS = {
         'name': 'USD Coin',
         'market': 'CRYPTO',
         'yfinance': 'USDC-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -220,7 +222,7 @@ TRADING_SYMBOLS = {
         'name': 'Tezos',
         'market': 'CRYPTO',
         'yfinance': 'XTZ-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -231,7 +233,7 @@ TRADING_SYMBOLS = {
         'name': 'yearn.finance',
         'market': 'CRYPTO',
         'yfinance': 'YFI-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',
@@ -242,7 +244,7 @@ TRADING_SYMBOLS = {
         'name': 'Ripple',
         'market': 'CRYPTO',
         'yfinance': 'XRP-USD',
-        'interval': DEFAULT_INTERVAL,
+        'interval': default_interval_yahoo,
         'market_hours': {
             'start': '00:00',
             'end': '23:59',

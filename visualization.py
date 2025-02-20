@@ -10,6 +10,7 @@ import numpy as np
 import logging
 import matplotlib
 import json
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -443,7 +444,7 @@ def create_multi_symbol_plot(symbols=None, days=5):
             data = ticker.history(
                 start=start_date,
                 end=end_date,
-                interval=config.DEFAULT_INTERVAL,
+                interval=config.default_interval_yahoo,
                 actions=False
             )
             

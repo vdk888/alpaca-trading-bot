@@ -3,7 +3,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
-from config import TRADING_SYMBOLS
+from config import TRADING_SYMBOLS, default_interval_yahoo
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
@@ -124,7 +124,7 @@ class TradingExecutor:
                     data = ticker.history(
                         start=start_time,
                         end=end_time,
-                        interval=config.DEFAULT_INTERVAL
+                        interval=config.default_interval_yahoo
                     )
                     
                     if len(data) >= 2:
