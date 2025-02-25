@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval
 import matplotlib
 matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ def is_market_hours(timestamp, market_hours):
     
     return market_start <= local_time <= market_end
 
-def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) -> dict:
+def run_backtest(symbol: str, days: int = default_backtest_interval, initial_capital: float = 100000) -> dict:
     """Run backtest simulation for a symbol over specified number of days"""
     # Load the best parameters from JSON based on the symbol
     try:
@@ -99,7 +99,7 @@ def run_backtest(symbol: str, days: int = 5, initial_capital: float = 100000) ->
         }
     }
 
-def run_portfolio_backtest(symbols: list, days: int = 5, progress_callback=None) -> dict:
+def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval, progress_callback=None) -> dict:
     """Run backtest simulation for multiple symbols as a portfolio"""
     # Calculate per-symbol capital
     initial_capital = 100000  # Total portfolio capital

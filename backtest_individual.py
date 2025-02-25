@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval
+from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, lookback_days_param
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -155,7 +155,8 @@ def find_best_params(symbol: str,
         result = run_backtest(symbol,
                               days=days,
                               params=default_params,
-                              is_simulating=True)
+                              is_simulating=True,
+                              lookback_days_param=lookback_days_param)
         performance = result['stats'][
             'sharpe_ratio']  # Use total return as the performance metric
         win_rate = result['stats']['win_rate']  # Example metric
@@ -209,7 +210,8 @@ def find_best_params(symbol: str,
 def run_backtest(symbol: str,
                  days: int = 5,
                  params: dict = None,
-                 is_simulating: bool = False) -> dict:
+                 is_simulating: bool = False,
+                 lookback_days_param: int = 5) -> dict:
     """Run a single backtest simulation for a given symbol and parameter set."""
 
     # Fetch price data for all symbols
@@ -345,42 +347,72 @@ def run_backtest(symbol: str,
 
             # Process signals
             if signal == 1:  # Buy signal
-                # Calculate maximum position value (100% of initial capital)
-                max_position_value = initial_capital
+                # Calculate performance ranking
+                perf_rankings = calculate_performance_ranking(
+                    prices_dataset, current_time, lookback_days_param)
 
-                # If total position is less than max, allow adding 20% more
-                if total_position_value < max_position_value:
-                    # Calculate position size as 20% of initial capital
-                    capital_to_use = initial_capital * 0.20
+                if perf_rankings is not None and symbol in perf_rankings.index:
+                    # Get percentile rank (0 to 1)
+                    rank = perf_rankings.loc[symbol, 'rank']
+                    performance = perf_rankings.loc[symbol, 'performance']
+
+                    # Calculate buy percentage using new dynamic formula
+                    def calculate_buy_percentage(rank: int,
+                                                  total_assets: int) -> float:
+                        """
+                        Calculate buy percentage based on rank and total number of assets.
+                        rank: 1 is best performer, total_assets is worst performer
+                        Returns: float between 0.0 and 0.2 representing buy percentage
+                        """
+                        # Calculate cutoff points
+                        bottom_third = int(total_assets * (1 / 3))
+                        top_two_thirds = total_assets - bottom_third
+
+                        # If in bottom third, buy 0%
+                        if rank > top_two_thirds:
+                            return 0.0
+
+                        # For top two-thirds, use inverted wave function
+                        x = (rank - 1) / (top_two_thirds - 1)
+                        wave = 0.02 * np.sin(
+                            2 * np.pi * x)  # Smaller oscillation
+                        linear = 0.48 - 0.48 * x  # Linear decrease from 0.18 to 0.0
+                        return max(0.0, min(0.5, linear + wave))  # Clamp between 0.0 and 0.2
+
+                    # Get total number of assets
+                    total_assets = len(perf_rankings)
+
+                    # Calculate buy percentage using new dynamic formula
+                    rank = 1 + sum(
+                        1 for other_metric in perf_rankings['rank'].values
+                        if other_metric > rank)
+                    buy_percentage = calculate_buy_percentage(rank, total_assets)
+
+                    # Calculate position size as percentage of initial capital
+                    capital_to_use = initial_capital * buy_percentage
                     shares_to_buy = capital_to_use / current_price
+
+                    print(f"\nBuy Decision:")
+                    print(f"Rank: {rank:.2f}")
+                    print(f"Buy Percentage: {buy_percentage*100:.1f}%")
+                    print(
+                        f"Current position: {position:.8f} shares at ${current_price:.2f}"
+                    )
+                    print(
+                        f"Buying {shares_to_buy:.8f} shares at ${current_price:.2f}"
+                    )
 
                     # Round based on market type
                     if symbol_config['market'] == 'CRYPTO':
-                        shares_to_buy = round(
-                            shares_to_buy,
-                            8)  # Round to 8 decimal places for crypto
+                        shares_to_buy = round(shares_to_buy, 8)
                     else:
-                        shares_to_buy = int(
-                            shares_to_buy
-                        )  # Round down to whole shares for stocks
+                        shares_to_buy = int(shares_to_buy)
 
                     # Ensure minimum position size
                     min_qty = 1 if symbol_config[
                         'market'] != 'CRYPTO' else 0.0001
                     if shares_to_buy < min_qty:
                         shares_to_buy = min_qty
-
-                    # Check if adding this position would exceed max position value
-                    new_total_value = total_position_value + (shares_to_buy *
-                                                              current_price)
-                    if new_total_value > max_position_value:
-                        # Adjust shares to not exceed max position
-                        shares_to_buy = (max_position_value -
-                                         total_position_value) / current_price
-                        if symbol_config['market'] == 'CRYPTO':
-                            shares_to_buy = round(shares_to_buy, 8)
-                        else:
-                            shares_to_buy = int(shares_to_buy)
 
                     cost = shares_to_buy * current_price
                     # Apply trading costs to buy (full spread + fee)
@@ -399,16 +431,6 @@ def run_backtest(symbol: str,
                             'trading_costs': total_cost - cost,
                             'total_position': position
                         })
-                        print(f"\n{'='*80}")
-                        print(
-                            f"BUY SIGNAL detected for {symbol} at {current_time}"
-                        )
-                        print(
-                            f"Current position: {position:.8f} shares at ${current_price:.2f}"
-                        )
-                        print(
-                            f"Buying {shares_to_buy:.8f} shares at ${current_price:.2f}"
-                        )
                         print(f"Remaining cash: ${cash:.2f}")
 
             elif signal == -1 and position > 0:  # Sell signal
@@ -420,7 +442,7 @@ def run_backtest(symbol: str,
 
                 # Calculate performance ranking
                 perf_rankings = calculate_performance_ranking(
-                    prices_dataset, current_time)
+                    prices_dataset, current_time, lookback_days_param)
 
                 if perf_rankings is not None and symbol in perf_rankings.index:
                     # Get percentile rank (0 to 1)
@@ -616,10 +638,10 @@ def run_backtest(symbol: str,
     }
 
 
-def calculate_performance_ranking(prices_dataset, current_time):
+def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
     """Calculate performance ranking of all symbols over the last 5 days."""
     performance_dict = {}
-    lookback_days = 5
+    lookback_days = lookback_days_param
     lookback_time = current_time - pd.Timedelta(days=lookback_days)
 
     print(f"\n{'='*80}")
@@ -989,5 +1011,6 @@ if __name__ == "__main__":
     final_result = run_backtest(symbol="SPY",
                                 days=10,
                                 params=best_params,
-                                is_simulating=False)
+                                is_simulating=False,
+                                lookback_days_param=lookback_days_param)
     print(f"Final Backtest Results: {final_result}")

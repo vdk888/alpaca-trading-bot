@@ -11,10 +11,10 @@ if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95
-DEFAULT_INTERVAL = '30min' # available intervals: 1T, 5T, 15T, 30T, 1h, 4h, 1d
-DEFAULT_INTERVAL_WEEKLY = '240min'
+DEFAULT_INTERVAL = '1h' # available intervals: 1T, 5T, 15T, 30T, 1h, 4h, 1d
+DEFAULT_INTERVAL_WEEKLY = '4h'
 
-default_interval_yahoo = '30m' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
+default_interval_yahoo = '1h' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
 
 # Bars per day for each interval
 BARS_PER_DAY = {
@@ -48,7 +48,8 @@ def get_max_days(interval: str) -> int:
 INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_DAY}
 
 # Default backtest interval based on DEFAULT_INTERVAL
-default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 2  # Default to 2 years if no limit
+default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 0.4  # Default to 2 years if no limit
+lookback_days_param = default_backtest_interval/5
 
 #1-minute interval: Maximum of 7 days of historical data.
 #5-minute interval: Maximum of 60 days of historical data.
