@@ -30,7 +30,7 @@ BARS_PER_DAY = {
 # Maximum data points per request
 MAX_DATA_POINTS = 2000
 
-# Calculate maximum days based on interval
+# Calculate maximum number of days for a given interval
 def get_max_days(interval: str) -> int:
     """
     Calculate maximum number of days for a given interval
@@ -42,7 +42,10 @@ def get_max_days(interval: str) -> int:
         Maximum number of days
     """
     bars_per_day = BARS_PER_DAY.get(interval, 24)  # Default to 24 bars/day
-    return min(60, MAX_DATA_POINTS // bars_per_day)
+    max_days = MAX_DATA_POINTS // bars_per_day
+    if interval == '1h':
+        return min(730, max_days)
+    return min(60, max_days)
 
 # Interval to maximum days mapping
 INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_DAY}
