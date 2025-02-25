@@ -107,53 +107,62 @@ class TradingExecutor:
     def calculate_performance_ranking(self, current_price: float, lookback_days: int = 5) -> float:
         """Calculate performance ranking compared to other symbols."""
         try:
+            logger.info(f"Calculating performance ranking for {self.symbol} at price {current_price:.2f} over {lookback_days} days")
+
             # Get historical data for all symbols
             end_time = datetime.now(pytz.UTC)
             start_time = end_time - timedelta(days=lookback_days)
-            
+            logger.info(f"Time range for performance calculation: {start_time} to {end_time}")
+
             performance_dict = {}
-            
+
             # Calculate performance for each symbol
             for sym, config in TRADING_SYMBOLS.items():
                 try:
                     # Get the yfinance symbol
                     yf_symbol = config['yfinance']
-                    
+                    logger.info(f"Processing symbol: {sym} (yfinance: {yf_symbol})")
+
                     # Get historical data from yfinance
                     ticker = yf.Ticker(yf_symbol)
                     data = ticker.history(
                         start=start_time,
                         end=end_time,
-                        interval=config.default_interval_yahoo
+                        interval=config.default_interval_yahoo,
+                        actions=True
                     )
-                    
+
                     if len(data) >= 2:
-                        # For current symbol use provided current price, for others use last close
                         start_price = data['Close'].iloc[0]
                         end_price = current_price if sym == self.symbol else data['Close'].iloc[-1]
                         performance = ((end_price - start_price) / start_price) * 100
                         performance_dict[sym] = performance
-                        
+
                         logger.info(f"{sym} Performance: {performance:.2f}% (Start: ${start_price:.2f}, End: ${end_price:.2f})")
-                    
+                    else:
+                        logger.warning(f"Insufficient data points for {sym}: {len(data)} (need at least 2)")
+
                 except Exception as e:
                     logger.error(f"Error calculating performance for {sym}: {str(e)}")
                     continue
-            
+
             # Calculate percentile ranking
             if performance_dict:
                 performances = list(performance_dict.values())
                 current_perf = performance_dict.get(self.symbol)
                 if current_perf is not None:
-                    # Calculate rank as percentile (0 to 1)
                     rank = sum(p <= current_perf for p in performances) / len(performances)
-                    logger.info(f"Performance rank for {self.symbol}: {rank:.2f}")
+                    logger.info(f"Performance rank for {self.symbol}: {rank:.2f} (based on {len(performances)} symbols)")
                     return rank
-            
+                else:
+                    logger.warning(f"No performance data found for current symbol {self.symbol}")
+            else:
+                logger.warning("No performance data available for any symbols")
+
             return 0.0  # Default to worst rank if calculation fails
-            
+
         except Exception as e:
-            logger.error(f"Error in performance ranking calculation: {str(e)}")
+            logger.error(f"Error in performance ranking calculation: {str(e)}", exc_info=True)
             return 0.0
 
     async def execute_trade(self, action: str, analysis: dict, notify_callback=None) -> bool:

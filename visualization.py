@@ -51,24 +51,27 @@ def is_market_hours(timestamp, market_config):
 
 def split_into_sessions(data):
     """Split data into continuous market sessions"""
-    sessions = []
-    current_session = []
-    last_timestamp = None
+    if len(data) == 0:
+        return []
     
     # Ensure data index is timezone-aware
     if data.index.tz is None:
         data.index = data.index.tz_localize('UTC')
     
+    # Calculate typical time interval between data points
+    if len(data) > 1:
+        typical_interval = (data.index[1] - data.index[0]).total_seconds() / 60
+    else:
+        typical_interval = 1  # Default to 1 minute if there's only one data point
+    
+    sessions = []
+    current_session = []
+    last_timestamp = None
+    
     for timestamp, row in data.iterrows():
         if last_timestamp is not None:
-            # Ensure both timestamps are timezone-aware for comparison
-            if timestamp.tz is None:
-                timestamp = timestamp.tz_localize('UTC')
-            if last_timestamp.tz is None:
-                last_timestamp = last_timestamp.tz_localize('UTC')
-            # Check if there's a gap larger than 5 minutes (typical interval)
             time_diff = (timestamp - last_timestamp).total_seconds() / 60
-            if time_diff > 6:  # Allow for small delays
+            if time_diff > typical_interval * 10:  # More lenient gap threshold
                 if current_session:
                     sessions.append(pd.DataFrame(current_session))
                 current_session = []
@@ -131,9 +134,12 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
         data = ticker.history(
             start=start_date,
             end=end_date,
-            interval=symbol_config.get('interval', '5m'),
-            actions=False
+            interval=config.default_interval_yahoo,
+            actions=True
         )
+        
+        logger.info(f"Fetched data for {symbol} ({yf_symbol}): {len(data)} rows")
+        logger.info(f"Columns: {data.columns.tolist()}")
         
         if len(data) == 0:
             raise ValueError(f"No data available for {symbol} ({yf_symbol}) in the specified date range")
@@ -146,6 +152,8 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
         if symbol_config['market_hours']['start'] != '00:00' and symbol_config['market_hours']['end'] != '23:59':
             data = data[data.index.map(lambda x: is_market_hours(x, symbol_config['market_hours']))]
         
+        logger.info(f"Data after market hours filtering: {len(data)} rows")
+        
         # Ensure we have enough data after filtering
         if len(data) == 0:
             raise ValueError(f"No market hours data available for {symbol} in the specified date range")
@@ -157,6 +165,7 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
         required_columns = ['close', 'open', 'high', 'low', 'volume']
         missing_columns = [col for col in required_columns if col not in data.columns]
         if missing_columns:
+            logger.error(f"Missing required columns: {missing_columns}")
             raise ValueError(f"Missing required columns: {missing_columns}. Available columns: {data.columns.tolist()}")
         
         # Generate signals
@@ -165,15 +174,18 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
                 best_params_data = json.load(f)
                 if symbol in best_params_data:
                     params = best_params_data[symbol]['best_params']
-                    print(f"Using best parameters for {symbol}: {params}")
+                    logger.info(f"Using best parameters for {symbol}: {params}")
                 else:
-                    print(f"No best parameters found for {symbol}. Using default parameters.")
+                    logger.info(f"No best parameters found for {symbol}. Using default parameters.")
                     params = get_default_params()
         except FileNotFoundError:
-            print("Best parameters file not found. Using default parameters.")
-            params = get_default_params()        
-
+            logger.warning("Best parameters file not found. Using default parameters.")
+            params = get_default_params()
+        
         signals, daily_data, weekly_data = generate_signals(data, params)
+        
+        logger.info(f"Generated signals: {len(signals)} rows")
+        logger.info(f"Signal distribution: {signals['signal'].value_counts().to_dict()}")
         
         if return_data:
             return data, signals
@@ -445,7 +457,7 @@ def create_multi_symbol_plot(symbols=None, days=5):
                 start=start_date,
                 end=end_date,
                 interval=config.default_interval_yahoo,
-                actions=False
+                actions=True
             )
             
             if len(data) == 0:

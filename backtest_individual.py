@@ -11,6 +11,11 @@ import matplotlib.dates as mdates
 from matplotlib.dates import HourLocator, num2date
 import json
 from itertools import product
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from datetime import datetime, timedelta
 import json
@@ -224,7 +229,7 @@ def run_backtest(symbol: str,
         data = ticker.history(start=start_date,
                               end=end_date,
                               interval=default_interval_yahoo,
-                              actions=False)
+                              actions=True)
 
         print(f"Retrieved {len(data)} data points for {sym}")
 
@@ -294,7 +299,7 @@ def run_backtest(symbol: str,
     data = ticker.history(start=start_date,
                           end=end_date,
                           interval=symbol_config.get('interval', DEFAULT_INTERVAL),
-                          actions=False)
+                          actions=True)
 
     if len(data) == 0:
         raise ValueError(
@@ -710,59 +715,34 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Plot 1: Price and Signals
     ax1 = plt.subplot(gs[0])
     ax1_volume = ax1.twinx()
-
-    # Split data into sessions
-    sessions = split_into_sessions(data)
-
-    # Plot each session separately
-    all_timestamps = []
-    session_boundaries = []
-    last_timestamp = None
-    shifted_data = pd.DataFrame()
-    session_start_times = []
-
-    # Plot each session
-    for i, session in enumerate(sessions):
-        session_df = session.copy()
-
-        if last_timestamp is not None:
-            # Add a small gap between sessions
-            gap = pd.Timedelta(minutes=5)
-            time_shift = (last_timestamp + gap) - session_df.index[0]
-            session_df.index = session_df.index + time_shift
-
-        # Store original and shifted start times
-        session_start_times.append((session_df.index[0], session.index[0]))
-
-        # Plot price
-        ax1.plot(session_df.index,
-                 session_df['close'],
-                 color='blue',
-                 alpha=0.7)
-
-        # Plot volume
-        volume_data = session_df['volume'].rolling(window=5).mean()
-        ax1_volume.fill_between(session_df.index,
-                                volume_data,
-                                color='gray',
-                                alpha=0.3)
-
-        all_timestamps.extend(session_df.index)
-        session_boundaries.append(session_df.index[0])
-        last_timestamp = session_df.index[-1]
-        shifted_data = pd.concat([shifted_data, session_df])
-
+    
+    # Plot price data directly without splitting into sessions
+    logger.info(f"Plotting price data: {len(data)} points")
+    logger.info(f"First price: {data['close'].iloc[0]}, Last price: {data['close'].iloc[-1]}")
+    price_line, = ax1.plot(data.index,
+                         data['close'],
+                         color='blue',
+                         alpha=0.7,
+                         linewidth=2,
+                         label='Price')
+    
+    # Plot volume
+    volume_data = data['volume'].rolling(window=5).mean()
+    ax1_volume.fill_between(data.index,
+                            volume_data,
+                            color='gray',
+                            alpha=0.3)
+    
     # Create timestamp mapping for signals
     original_to_shifted = {}
-    for orig_session, shifted_session in zip(sessions, session_boundaries):
-        time_diff = shifted_session - orig_session.index[0]
-        for orig_time in orig_session.index:
-            original_to_shifted[orig_time] = orig_time + time_diff
+    for orig_time in signals.index:
+        original_to_shifted[orig_time] = orig_time
 
     # Plot signals with correct timestamps
     buy_signals = signals[signals['signal'] == 1]
     sell_signals = signals[signals['signal'] == -1]
 
+    logger.info(f"Plotting {len(buy_signals)} buy signals and {len(sell_signals)} sell signals")
     for signals_df, color, marker, va, offset in [
         (buy_signals, 'green', '^', 'bottom', 10),
         (sell_signals, 'red', 'v', 'top', -10)
@@ -823,116 +803,109 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     ax1_volume.set_ylabel('Volume')
     ax1.legend(['Price', 'Buy Signal', 'Sell Signal'])
 
-    # Plot 2: Daily Composite (reduced height)
+    # Plot 2: Daily Composite
     ax2 = plt.subplot(gs[1])
-    sessions_daily = split_into_sessions(daily_data)
-    last_timestamp = None
-
-    for session_data in sessions_daily:
-        if last_timestamp is not None:
-            gap = pd.Timedelta(minutes=5)
-            session_data.index = session_data.index.shift(
-                -1, freq=(session_data.index[0] - (last_timestamp + gap)))
-
-        ax2.plot(session_data.index, session_data['Composite'], color='blue')
-        ax2.plot(session_data.index,
-                 session_data['Up_Lim'],
-                 '--',
-                 color='green',
-                 alpha=0.6)
-        ax2.plot(session_data.index,
-                 session_data['Down_Lim'],
-                 '--',
-                 color='red',
-                 alpha=0.6)
-        ax2.fill_between(session_data.index,
-                         session_data['Up_Lim'],
-                         session_data['Down_Lim'],
-                         color='gray',
-                         alpha=0.1)
-        last_timestamp = session_data.index[-1]
-
+    
+    # Plot daily composite
+    ax2.plot(daily_data.index,
+             daily_data['Composite'],
+             color='blue',
+             label='Daily Composite')
+    ax2.plot(daily_data.index,
+             daily_data['Up_Lim'],
+             '--',
+             color='green',
+             alpha=0.6,
+             label='Upper Limit')
+    ax2.plot(daily_data.index,
+             daily_data['Down_Lim'],
+             '--',
+             color='red',
+             alpha=0.6,
+             label='Lower Limit')
+    ax2.fill_between(daily_data.index,
+                     daily_data['Up_Lim'],
+                     daily_data['Down_Lim'],
+                     color='gray',
+                     alpha=0.1)
+    
     ax2.set_title('Daily Composite Indicator')
-    ax2.legend(['Daily Composite', 'Upper Limit', 'Lower Limit'])
+    ax2.legend()
     ax2.grid(True, alpha=0.3)
     ax2.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
-
-    # Plot 3: Weekly Composite (reduced height)
+    
+    # Plot 3: Weekly Composite
     ax3 = plt.subplot(gs[2])
-    sessions_weekly = split_into_sessions(weekly_data)
-    last_timestamp = None
-
-    for session_data in sessions_weekly:
-        if last_timestamp is not None:
-            gap = pd.Timedelta(minutes=5)
-            session_data.index = session_data.index.shift(
-                -1, freq=(session_data.index[0] - (last_timestamp + gap)))
-
-        ax3.plot(session_data.index, session_data['Composite'], color='purple')
-        ax3.plot(session_data.index,
-                 session_data['Up_Lim'],
-                 '--',
-                 color='green',
-                 alpha=0.6)
-        ax3.plot(session_data.index,
-                 session_data['Down_Lim'],
-                 '--',
-                 color='red',
-                 alpha=0.6)
-        ax3.fill_between(session_data.index,
-                         session_data['Up_Lim'],
-                         session_data['Down_Lim'],
-                         color='gray',
-                         alpha=0.1)
-        last_timestamp = session_data.index[-1]
-
+    
+    # Plot weekly composite
+    ax3.plot(weekly_data.index,
+             weekly_data['Composite'],
+             color='purple',
+             label='Weekly Composite')
+    ax3.plot(weekly_data.index,
+             weekly_data['Up_Lim'],
+             '--',
+             color='green',
+             alpha=0.6,
+             label='Upper Limit')
+    ax3.plot(weekly_data.index,
+             weekly_data['Down_Lim'],
+             '--',
+             color='red',
+             alpha=0.6,
+             label='Lower Limit')
+    ax3.fill_between(weekly_data.index,
+                     weekly_data['Up_Lim'],
+                     weekly_data['Down_Lim'],
+                     color='gray',
+                     alpha=0.1)
+    
     ax3.set_title('Weekly Composite Indicator')
-    ax3.legend(['Weekly Composite', 'Upper Limit', 'Lower Limit'])
+    ax3.legend()
     ax3.grid(True, alpha=0.3)
     ax3.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
     plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
-    # Plot 4: Portfolio Performance and Position Size
+    # Plot 4: Portfolio Value and Shares Owned
     ax4 = plt.subplot(gs[3])
     ax4_shares = ax4.twinx()
-
-    # Create a DataFrame with portfolio data
+    
+    # Ensure portfolio values match data length
+    if len(portfolio_value) > len(data.index):
+        portfolio_value = portfolio_value[:len(data.index)]
+    elif len(portfolio_value) < len(data.index):
+        portfolio_value = np.append(portfolio_value, [portfolio_value[-1]] * (len(data.index) - len(portfolio_value)))
+    
+    # Create DataFrame with both portfolio and shares data
     portfolio_df = pd.DataFrame(
         {
-            'value': portfolio_value[1:],  # Skip initial value
-            'shares': shares[1:]  # Skip initial shares
+            'value': portfolio_value,
+            'shares': shares[:len(portfolio_value)]
         },
         index=data.index)
-
-    # Split portfolio data into sessions
-    sessions_portfolio = split_into_sessions(portfolio_df)
-    last_timestamp = None
-
-    for session_data in sessions_portfolio:
-        if last_timestamp is not None:
-            gap = pd.Timedelta(minutes=5)
-            session_data.index = session_data.index.shift(
-                -1, freq=(session_data.index[0] - (last_timestamp + gap)))
-
-        ax4.plot(session_data.index, session_data['value'], color='green')
-        ax4_shares.plot(session_data.index,
-                        session_data['shares'],
-                        color='blue',
-                        alpha=0.5)
-        last_timestamp = session_data.index[-1]
-
+    
+    # Plot portfolio value
+    ax4.plot(portfolio_df.index,
+             portfolio_df['value'],
+             color='green',
+             label='Portfolio Value')
+    
+    # Plot shares
+    ax4_shares.plot(portfolio_df.index,
+                    portfolio_df['shares'],
+                    color='blue',
+                    alpha=0.5,
+                    label='Shares')
+    
+    ax4.set_title('Portfolio Value and Position Size')
     ax4.set_ylabel('Portfolio Value ($)')
     ax4_shares.set_ylabel('Shares Owned')
-    ax4.set_title('Portfolio Performance and Position Size')
-
-    # Add both legends
-    ax4_shares.legend(['Portfolio Value', 'Shares Owned'], loc='upper left')
-
+    ax4.grid(True, alpha=0.3)
     ax4.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
     plt.setp(ax4.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
-    plt.tight_layout()
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.15, hspace=0.5)
 
     # Save plot to bytes
     buf = io.BytesIO()

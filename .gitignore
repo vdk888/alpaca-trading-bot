@@ -15,3 +15,5 @@ venv/
 # IDE
 .vscode/
 .idea/
+
+best_params.json
