@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
-from config import TRADING_SYMBOLS
+from config import TRADING_SYMBOLS, default_backtest_interval
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -462,8 +462,8 @@ Price Changes:
                         await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
                         return
             
-            if days <= 0 or days > 30:
-                await update.message.reply_text("❌ Days must be between 1 and 30")
+            if days <= 0 or days > default_backtest_interval:
+                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
                 return
             
             await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
@@ -733,8 +733,8 @@ Price Changes:
                         return
                 
                 # Validate days
-                if days <= 0 or days > 30:
-                    await update.message.reply_text("❌ Days must be between 1 and 30")
+                if days <= 0 or days > default_backtest_interval:
+                    await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
                     return
                 
                 status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")
@@ -867,8 +867,8 @@ Price Changes:
                 return
             
             # Validate days
-            if days <= 0 or days > 30:
-                await update.message.reply_text("❌ Days must be between 1 and 30")
+            if days <= 0 or days > default_backtest_interval:
+                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
                 return
             
             symbols_to_test = [symbol] if symbol else self.symbols

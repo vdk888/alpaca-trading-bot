@@ -16,7 +16,39 @@ DEFAULT_INTERVAL_WEEKLY = '240min'
 
 default_interval_yahoo = '30m' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
 
-default_backtest_interval = 59 #in days
+# Bars per day for each interval
+BARS_PER_DAY = {
+    '1m': 1440,
+    '5m': 288,
+    '15m': 96,
+    '30m': 48,
+    '60m': 24,
+    '1h': 24,
+    '1d': 1
+}
+
+# Maximum data points per request
+MAX_DATA_POINTS = 2000
+
+# Calculate maximum days based on interval
+def get_max_days(interval: str) -> int:
+    """
+    Calculate maximum number of days for a given interval
+    
+    Args:
+        interval: Data interval
+    
+    Returns:
+        Maximum number of days
+    """
+    bars_per_day = BARS_PER_DAY.get(interval, 24)  # Default to 24 bars/day
+    return min(60, MAX_DATA_POINTS // bars_per_day)
+
+# Interval to maximum days mapping
+INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_DAY}
+
+# Default backtest interval based on DEFAULT_INTERVAL
+default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 2  # Default to 2 years if no limit
 
 #1-minute interval: Maximum of 7 days of historical data.
 #5-minute interval: Maximum of 60 days of historical data.
@@ -60,8 +92,209 @@ TRADING_SYMBOLS = {
             'end': '23:59',
             'timezone': 'UTC'
         }
+    }, 
+    'AVAX/USD': {
+        'name': 'Avalanche',
+        'market': 'CRYPTO',
+        'yfinance': 'AVAX-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'DOT/USD': {
+        'name': 'Polkadot',
+        'market': 'CRYPTO',
+        'yfinance': 'DOT-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'LINK/USD': {
+        'name': 'Chainlink',
+        'market': 'CRYPTO',
+        'yfinance': 'LINK-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'DOGE/USD': {
+        'name': 'Dogecoin',
+        'market': 'CRYPTO',
+        'yfinance': 'DOGE-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'AAVE/USD': {
+        'name': 'Aave',
+        'market': 'CRYPTO',
+        'yfinance': 'AAVE-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'UNI/USD': {
+        'name': 'Uniswap',
+        'market': 'CRYPTO',
+        'yfinance': 'UNI7083-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'LTC/USD': {
+        'name': 'Litecoin',
+        'market': 'CRYPTO',
+        'yfinance': 'LTC-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'SHIB/USD': {
+        'name': 'Shiba Inu',
+        'market': 'CRYPTO',
+        'yfinance': 'SHIB-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'BAT/USD': {
+        'name': 'Basic Attention Token',
+        'market': 'CRYPTO',
+        'yfinance': 'BAT-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'BCH/USD': {
+        'name': 'Bitcoin Cash',
+        'market': 'CRYPTO',
+        'yfinance': 'BCH-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'CRV/USD': {
+        'name': 'Curve DAO Token',
+        'market': 'CRYPTO',
+        'yfinance': 'CRV-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'GRT/USD': {
+        'name': 'The Graph',
+        'market': 'CRYPTO',
+        'yfinance': 'GRT6719-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'MKR/USD': {
+        'name': 'Maker',
+        'market': 'CRYPTO',
+        'yfinance': 'MKR-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'SUSHI/USD': {
+        'name': 'SushiSwap',
+        'market': 'CRYPTO',
+        'yfinance': 'SUSHI-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'USDC/USD': {
+        'name': 'USD Coin',
+        'market': 'CRYPTO',
+        'yfinance': 'USDC-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'XTZ/USD': {
+        'name': 'Tezos',
+        'market': 'CRYPTO',
+        'yfinance': 'XTZ-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'YFI/USD': {
+        'name': 'yearn.finance',
+        'market': 'CRYPTO',
+        'yfinance': 'YFI-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
+    },
+    'XRP/USD': {
+        'name': 'Ripple',
+        'market': 'CRYPTO',
+        'yfinance': 'XRP-USD',
+        'interval': default_interval_yahoo,
+        'market_hours': {
+            'start': '00:00',
+            'end': '23:59',
+            'timezone': 'UTC'
+        }
     }
 }
+
+
+
 
 
 # Trading costs configuration

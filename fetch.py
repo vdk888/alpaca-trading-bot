@@ -28,15 +28,21 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     end = datetime.now(pytz.UTC)
     start = end - timedelta(days=days)
     
+    # Debug logging
+    logger.debug(f"Attempting to fetch {interval} data for {symbol} ({yf_symbol})")
+    logger.debug(f"Date range: {start} to {end}")
+    logger.debug(f"Requested days: {days}")
+    
     # Fetch data with retry mechanism
     max_retries = 3
     for attempt in range(max_retries):
         try:
             df = ticker.history(start=start, end=end, interval=interval)
-            print(f"start {start} end {end}, interval {interval}, len(df) {len(df)} bars of {interval} data for {symbol} ({yf_symbol})")
+            logger.debug(f"Successfully fetched {len(df)} bars of {interval} data")
             if not df.empty:
                 break
         except Exception as e:
+            logger.error(f"Attempt {attempt + 1} failed: {str(e)}")
             if attempt == max_retries - 1:
                 logger.error(f"Failed to fetch data for {symbol} ({yf_symbol}): {str(e)}")
                 raise e
@@ -49,7 +55,7 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     # Ensure we have enough data
     min_required_bars = 700  # Minimum bars needed for weekly signals
     if len(df) < min_required_bars:
-        # Try fetching more data
+        logger.debug(f"Only {len(df)} bars found, fetching more data")
         start = end - timedelta(days=days + 2)
         df = ticker.history(start=start, end=end, interval=interval)
     

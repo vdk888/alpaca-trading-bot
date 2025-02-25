@@ -102,7 +102,7 @@ param_grid = {
 
 def find_best_params(symbol: str,
                      param_grid: dict,
-                     days: int = 5,
+                     days: int = default_backtest_interval,
                      output_file: str = "best_params.json") -> dict:
     """Find the best parameter set by running a backtest for each combination."""
     param_names = list(param_grid.keys())
