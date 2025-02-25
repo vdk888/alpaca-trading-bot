@@ -734,7 +734,7 @@ Price Changes:
                 
                 # Validate days
                 if days <= 0 or days > default_backtest_interval:
-                    await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
+                    await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
                     return
                 
                 status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")

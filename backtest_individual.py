@@ -188,6 +188,16 @@ def find_best_params(symbol: str,
 
     # Save best parameters and metrics to JSON
     if output_file:
+        if symbol in existing_data:
+            # Move existing best params to history
+            if 'history' not in existing_data[symbol]:
+                existing_data[symbol]['history'] = []
+            existing_data[symbol]['history'].append({
+                'params': existing_data[symbol]['best_params'],
+                'metrics': existing_data[symbol]['metrics'],
+                'date': existing_data[symbol]['date']
+            })
+
         existing_data[symbol] = {
             'best_params': best_params,
             'metrics': best_metrics,
@@ -273,7 +283,7 @@ def run_backtest(symbol: str,
 
     if is_simulating == False:
         if symbol in best_params_data:
-            # Use the best parameters for this symbol
+            # Use the latest best parameters for this symbol
             params = best_params_data[symbol]['best_params']
             print(f"Using best parameters for {symbol}: {params}")
         else:
