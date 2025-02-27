@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, per_symbol_capital
 import matplotlib
 matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt
@@ -103,7 +103,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     """Run backtest simulation for multiple symbols as a portfolio"""
     # Set much higher per-symbol capital to allow for greater exposure
     initial_capital = 100000  # Total portfolio capital
-    per_symbol_capital = initial_capital / len(symbols)*3  # Allow each symbol to potentially use full capital
+    per_symbol_capital = initial_capital / len(symbols) * 3
     
     # Run individual backtests
     individual_results = {}

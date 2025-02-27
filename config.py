@@ -343,3 +343,7 @@ param_grid = {
 
     ]
 }
+
+initial_capital = 100000
+symbols = list(TRADING_SYMBOLS.keys())
+per_symbol_capital = initial_capital / len(symbols) * 3  # Allow each symbol to potentially use full capital

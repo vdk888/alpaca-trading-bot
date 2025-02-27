@@ -68,11 +68,12 @@ class TradingExecutor:
                 current_position_value = 0
                 
             # Calculate remaining available capital (10% of equity - current position value)
-            max_total_position = equity * 0.10  # 10% of total capital
+            symbols = list(TRADING_SYMBOLS.keys())
+            max_total_position = equity / len(symbols) * 3  # 30% of total capital
             available_capital = max_total_position - current_position_value
             
             if available_capital <= 0:
-                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) (10% of capital)")
+                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) (30% of capital)")
                 return 0
             
             # Calculate quantity based on available capital and risk
