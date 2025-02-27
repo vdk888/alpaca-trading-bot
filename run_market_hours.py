@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import logging
 from telegram import Update, Bot
 from backtest_individual import find_best_params
-from config import TRADING_SYMBOLS, param_grid
+from config import TRADING_SYMBOLS, param_grid, lookback_days_param
 import json
 from backtest_individual import run_backtest, create_backtest_plot
 import io
@@ -246,7 +246,7 @@ Bar Time: {analysis['bar_time']}
             
         await trading_bot.stop()
 
-async def run_and_send_backtest(symbol: str, trading_bot, days: int = 5):
+async def run_and_send_backtest(symbol: str, trading_bot, days: int = lookback_days_param):
     """Run a backtest for the symbol and send the results through telegram"""
     try:
         # Run backtest

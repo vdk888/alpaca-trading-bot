@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
@@ -194,7 +195,37 @@ class TradingExecutor:
             
             # For buy orders, calculate new position size
             if action == "BUY":
-                new_qty = self.calculate_position_size(analysis['current_price'])
+                # Calculate performance ranking
+                rank = self.calculate_performance_ranking(analysis['current_price'])
+                
+                # Calculate buy percentage (linear function)
+                # rank 1 (best) = 50% buy
+                # rank 0 (worst) = 0% buy
+                def calculate_buy_percentage(rank: float) -> float:
+                    """
+                    Calculate buy percentage based on rank.
+                    rank: 1 is best performer, 0 is worst performer
+                    Returns: float between 0.0 and 0.5 representing buy percentage
+                    """
+                    # If in bottom third, buy 0%
+                    if rank < 0.33:
+                        return 0.0
+                    
+                    # For top two-thirds, use inverted wave function
+                    x = (rank - 0.33) / 0.67  # Normalize to 0-1 range for top two-thirds
+                    wave = 0.02 * np.sin(2 * np.pi * x)  # Small oscillation
+                    linear = 0.48 * x  # Linear increase from 0.0 to 0.48
+                    return max(0.0, min(0.5, linear + wave))  # Clamp between 0.0 and 0.5
+                
+                buy_percentage = calculate_buy_percentage(rank)
+                
+                # Calculate account equity
+                account = self.trading_client.get_account()
+                equity = float(account.equity)
+                
+                # Calculate position size based on buy percentage
+                max_position_size = self.calculate_position_size(analysis['current_price'])
+                new_qty = max_position_size * buy_percentage
                 
                 if new_qty <= 0:
                     message = f"Maximum position size reached or invalid size calculated for {get_display_symbol(self.symbol)} ({self.config['name']})"
@@ -203,9 +234,16 @@ class TradingExecutor:
                         await notify_callback(message)
                     return False
                 
-                # Calculate exposure
-                account = self.trading_client.get_account()
-                equity = float(account.equity)
+                # Round based on market type
+                if self.config['market'] == 'CRYPTO':
+                    new_qty = round(new_qty, 8)  # Round to 8 decimal places for crypto
+                else:
+                    new_qty = int(new_qty)  # Round down to whole number for stocks
+                
+                # Ensure minimum position size
+                min_qty = 1 if self.config['market'] != 'CRYPTO' else 0.0001
+                if new_qty < min_qty:
+                    new_qty = min_qty
                 
                 # Get total position value (existing + new)
                 try:
@@ -221,6 +259,8 @@ class TradingExecutor:
                 # Notify that order is being sent
                 notional_value = round(new_qty * analysis['current_price'], 2) if self.config['market'] == 'CRYPTO' else new_qty * analysis['current_price']
                 sending_message = f"""🔄 Sending BUY Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
+• Performance Rank: {rank:.2f}
+• Buy Percentage: {buy_percentage*100:.1f}%
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
 • Order Value: ${notional_value:.2f}
@@ -243,6 +283,8 @@ class TradingExecutor:
                 
                 # Create detailed order confirmation message
                 message = f"""✅ BUY Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
+• Performance Rank: {rank:.2f}
+• Buy Percentage: {buy_percentage*100:.1f}%
 • Quantity: {new_qty}
 • Price: ${analysis['current_price']:.2f}
 • Order Value: ${(new_qty * analysis['current_price']):.2f}
