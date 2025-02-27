@@ -101,9 +101,9 @@ def run_backtest(symbol: str, days: int = default_backtest_interval, initial_cap
 
 def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval, progress_callback=None) -> dict:
     """Run backtest simulation for multiple symbols as a portfolio"""
-    # Calculate per-symbol capital
+    # Set much higher per-symbol capital to allow for greater exposure
     initial_capital = 100000  # Total portfolio capital
-    per_symbol_capital = initial_capital / len(symbols)
+    per_symbol_capital = initial_capital / len(symbols)*3  # Allow each symbol to potentially use full capital
     
     # Run individual backtests
     individual_results = {}
@@ -142,7 +142,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
         
         # Add to portfolio totals
         portfolio_data['total_value'] += symbol_data['position_value']
-        portfolio_data['total_cash'] += symbol_data['cash']
+        portfolio_data['total_cash'] += symbol_data['cash'] - (per_symbol_capital - initial_capital / len(symbols))
     
     # Calculate portfolio metrics
     portfolio_data['portfolio_total'] = portfolio_data['total_value'] + portfolio_data['total_cash']
