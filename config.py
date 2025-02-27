@@ -251,17 +251,6 @@ TRADING_SYMBOLS = {
             'timezone': 'UTC'
         }
     },
-    'USDC/USD': {
-        'name': 'USD Coin',
-        'market': 'CRYPTO',
-        'yfinance': 'USDC-USD',
-        'interval': default_interval_yahoo,
-        'market_hours': {
-            'start': '00:00',
-            'end': '23:59',
-            'timezone': 'UTC'
-        }
-    },
     'XTZ/USD': {
         'name': 'Tezos',
         'market': 'CRYPTO',
