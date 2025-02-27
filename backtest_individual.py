@@ -188,16 +188,26 @@ def find_best_params(symbol: str,
 
     # Save best parameters and metrics to JSON
     if output_file:
+        # Create or update history
+        history = []
         if symbol in existing_data:
-            # Move existing best params to history
-            if 'history' not in existing_data[symbol]:
-                existing_data[symbol]['history'] = []
-            existing_data[symbol]['history'].append({
-                'params': existing_data[symbol]['best_params'],
-                'metrics': existing_data[symbol]['metrics'],
-                'date': existing_data[symbol]['date']
-            })
+            # Check if the symbol has all required fields before updating history
+            required_fields = ['best_params', 'metrics', 'date']
+            if all(field in existing_data[symbol] for field in required_fields):
+                # Get existing history or create new one
+                if 'history' in existing_data[symbol]:
+                    history = existing_data[symbol]['history']
+                
+                # Append current best params to history
+                history.append({
+                    'params': existing_data[symbol]['best_params'],
+                    'metrics': existing_data[symbol]['metrics'],
+                    'date': existing_data[symbol]['date']
+                })
+            else:
+                print(f"Warning: Symbol {symbol} exists but is missing required fields for history update.")
 
+        # Update the symbol data with new best params and include history
         existing_data[symbol] = {
             'best_params': best_params,
             'metrics': best_metrics,
@@ -206,7 +216,8 @@ def find_best_params(symbol: str,
                 'min_performance': min_performance,
                 'avg_performance': avg_performance,
             },
-            'date': datetime.now().strftime("%Y-%m-%d")  # Add current date
+            'date': datetime.now().strftime("%Y-%m-%d"),  # Add current date
+            'history': history  # Include the history
         }
 
         # Write updated data back to JSON
