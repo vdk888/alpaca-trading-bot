@@ -11,10 +11,10 @@ if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95
-DEFAULT_INTERVAL = '1h' # available intervals: 1T, 5T, 15T, 30T, 1h, 4h, 1d
+DEFAULT_INTERVAL = '30min' # available intervals: 1min, 5min, 15min, 30min, 1h, 4h, 1d
 DEFAULT_INTERVAL_WEEKLY = '4h'
 
-default_interval_yahoo = '1h' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
+default_interval_yahoo = '30m' # available intervals: 1m, 5m, 15m, 30m, 1h, 4h, 1d
 
 # Bars per day for each interval
 BARS_PER_DAY = {
