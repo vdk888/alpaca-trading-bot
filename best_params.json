@@ -656,7 +656,7 @@
             "min_performance": -14.093284258882756,
             "avg_performance": -7.386503687550898
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "ETH/USD": {
         "best_params": {
@@ -700,7 +700,7 @@
             "min_performance": -12.205417605634162,
             "avg_performance": -5.903564560664326
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "SOL/USD": {
         "best_params": {
@@ -744,7 +744,7 @@
             "min_performance": -12.889647265686659,
             "avg_performance": -8.331543343374273
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "AVAX/USD": {
         "best_params": {
@@ -788,7 +788,7 @@
             "min_performance": -16.841362697213675,
             "avg_performance": -5.979110437809974
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "DOT/USD": {
         "best_params": {
@@ -832,7 +832,7 @@
             "min_performance": -18.52130296516487,
             "avg_performance": -10.65819298596432
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "LINK/USD": {
         "best_params": {
@@ -876,7 +876,7 @@
             "min_performance": -15.09316483373641,
             "avg_performance": -6.7735157689426915
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "DOGE/USD": {
         "best_params": {
@@ -920,7 +920,7 @@
             "min_performance": -18.463163919861056,
             "avg_performance": -8.395289552326275
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "AAVE/USD": {
         "best_params": {
@@ -964,7 +964,7 @@
             "min_performance": -16.87097351928892,
             "avg_performance": -4.622695793724589
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "UNI/USD": {
         "best_params": {
@@ -1008,7 +1008,7 @@
             "min_performance": -21.102038152978217,
             "avg_performance": -9.258643266501917
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "LTC/USD": {
         "best_params": {
@@ -1137,7 +1137,7 @@
             "min_performance": -15.761844844142159,
             "avg_performance": -6.560114477253351
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "BAT/USD": {
         "best_params": {
@@ -1181,7 +1181,7 @@
             "min_performance": -19.035424678820608,
             "avg_performance": -8.379820984182963
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "BCH/USD": {
         "best_params": {
@@ -1225,7 +1225,7 @@
             "min_performance": -19.1817772044654,
             "avg_performance": -10.696692154836681
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "CRV/USD": {
         "best_params": {
@@ -1269,7 +1269,7 @@
             "min_performance": -21.54685977970921,
             "avg_performance": -10.12848604952756
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "GRT/USD": {
         "best_params": {
@@ -1313,7 +1313,7 @@
             "min_performance": -21.635167258257187,
             "avg_performance": -12.757006854381574
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "MKR/USD": {
         "best_params": {
@@ -1357,7 +1357,7 @@
             "min_performance": 8.555131606836913,
             "avg_performance": 19.45737107043331
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "SUSHI/USD": {
         "best_params": {
@@ -1401,7 +1401,7 @@
             "min_performance": -27.891844262114596,
             "avg_performance": -12.553161896693714
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "USDC/USD": {
         "best_params": {
@@ -1445,7 +1445,7 @@
             "min_performance": -57.23737421567563,
             "avg_performance": -44.421767446153346
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "XTZ/USD": {
         "best_params": {
@@ -1489,7 +1489,7 @@
             "min_performance": -28.96985426810209,
             "avg_performance": -11.601585783976667
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "YFI/USD": {
         "best_params": {
@@ -1533,7 +1533,7 @@
             "min_performance": -18.778175125890705,
             "avg_performance": -1.7457445338920472
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     },
     "XRP/USD": {
         "best_params": {
@@ -1577,6 +1577,6 @@
             "min_performance": -19.232881077016543,
             "avg_performance": -11.943174934605393
         },
-        "date": "2025-02-26"
+        "date": "2025-02-06"
     }
 }
