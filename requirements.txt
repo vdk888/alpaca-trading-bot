@@ -4,7 +4,7 @@ pandas==2.2.3
 python-dotenv==1.0.1
 python-telegram-bot==21.6
 pytz==2024.2
-yfinance==0.2.37
+yfinance==0.2.54
 plotly==5.19.0
 matplotlib==3.9.3
 flask
