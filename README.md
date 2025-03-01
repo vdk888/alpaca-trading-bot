@@ -26,7 +26,7 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 
 3. Run the bot:
 ```bash
-python trading.py
+python run_market_hours.py
 ```
 
 ## Components
