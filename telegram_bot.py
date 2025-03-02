@@ -976,15 +976,22 @@ Price Changes:
             logger.error(f"Error in portfolio_command: {str(e)}")
             await update.message.reply_text(f"Error getting portfolio history: {str(e)}")
 
+    # In telegram_bot.py, modify the button_callback method
     async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle button callbacks"""
         query = update.callback_query
         await query.answer()  # Answer the callback query to remove the loading state
-        
+
         if query.data.startswith('buy_backtest:'):
             # Extract backtest data from callback
             _, backtest_type, days = query.data.split(':')
-            
+
+            # Store the backtest info for later use
+            self._pending_backtest = {
+                'type': backtest_type,
+                'days': int(days)
+            }
+
             # Ask for investment amount
             await query.message.reply_text(
                 "💰 Enter the total amount to invest using the format:\n"
@@ -992,81 +999,84 @@ Price Changes:
                 "Example: /invest portfolio 5 1000"
             )
 
-    async def invest_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle investment based on backtest results"""
-        try:
-            if len(context.args) != 3:
-                await update.message.reply_text(
-                    "❌ Invalid format. Use:\n"
-                    "/invest <backtest_type> <days> <amount>\n"
-                    "Example: /invest portfolio 5 1000"
-                )
-                return
-                
-            backtest_type, days, amount = context.args
-            days = int(days)
-            amount = float(amount)
-            
-            # Run the backtest to get latest allocations
-            if backtest_type.lower() == 'portfolio':
-                result = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    lambda: run_portfolio_backtest(self.symbols, days)
-                )
-                
-                # Get final portfolio values for each symbol
-                individual_results = result['individual_results']
-                total_portfolio_value = 0
-                symbol_values = {}
-                
-                for symbol in self.symbols:
-                    if symbol in individual_results:
-                        symbol_data = individual_results[symbol]['data']
-                        if len(symbol_data) > 0:
-                            final_value = symbol_data['portfolio_value'].iloc[-1]
-                            symbol_values[symbol] = final_value
-                            total_portfolio_value += final_value
-                
-                # Calculate allocations based on final portfolio values
-                allocations = {
-                    symbol: value / total_portfolio_value 
-                    for symbol, value in symbol_values.items()
-                }
-                
-                # Get crypto symbols
-                crypto_symbols = [s for s in allocations.keys() if TRADING_SYMBOLS[s]['market'] == 'CRYPTO']
-                
-                if not crypto_symbols:
-                    await update.message.reply_text("❌ No crypto assets in the backtest portfolio")
+    
+        async def invest_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+            """Handle investment based on backtest results"""
+            try:
+                if len(context.args) != 3:
+                    await update.message.reply_text(
+                        "❌ Invalid format. Use:\n"
+                        "/invest <backtest_type> <days> <amount>\n"
+                        "Example: /invest portfolio 5 1000"
+                    )
                     return
-                
-                # Show planned allocations
-                allocation_msg = "📊 Planned allocations:\n"
-                for symbol in crypto_symbols:
-                    allocation_msg += f"{symbol}: ${amount * allocations[symbol]:.2f} ({allocations[symbol]*100:.1f}%)\n"
-                await update.message.reply_text(allocation_msg)
-                
-                # First close all existing crypto positions
-                for symbol in crypto_symbols:
-                    # Use close_command directly
-                    context.args = [symbol]  # Set the symbol as argument
-                    await self.close_command(update, context)
-                
-                # Now open new positions
-                status_message = await update.message.reply_text("🔄 Opening new positions...")
-                
-                for symbol in crypto_symbols:
-                    # Calculate amount for this symbol
-                    symbol_amount = amount * allocations[symbol]
-                    
-                    # Use open_command directly
-                    context.args = [symbol, str(symbol_amount)]  # Set symbol and amount as arguments
-                    await self.open_command(update, context)
-                
-                await status_message.edit_text("✅ Portfolio reallocation completed!")
-                    
-        except ValueError as e:
-            await update.message.reply_text(f"❌ Invalid input: {str(e)}")
-        except Exception as e:
-            logger.error(f"Error in invest command: {str(e)}")
-            await update.message.reply_text(f"❌ An error occurred: {str(e)}")
+
+                backtest_type, days, amount = context.args
+                days = int(days)
+                amount = float(amount)
+
+                # Run the backtest to get latest allocations
+                if backtest_type.lower() == 'portfolio':
+                    result = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: run_portfolio_backtest(self.symbols, days)
+                    )
+
+                    # Get the allocations directly from the result metrics
+                    # This is where the fix is - using the allocations calculated during backtest
+                    symbol_returns = result['metrics']['symbol_returns']
+
+                    # Extract allocations from the final portfolio data
+                    allocations = {}
+                    crypto_symbols = []
+
+                    # The allocations are in the result metrics - get them directly
+                    for symbol in self.symbols:
+                        if symbol in result['individual_results']:
+                            # Check if it's a crypto symbol
+                            if TRADING_SYMBOLS[symbol]['market'] == 'CRYPTO':
+                                crypto_symbols.append(symbol)
+
+                                # This is the KEY fix - get allocation from the result metrics
+                                # Check if the allocation is in the metrics
+                                final_portfolio = result['data']['portfolio_total'].iloc[-1]
+                                symbol_value = result['data'][f'{symbol}_value'].iloc[-1]
+                                allocation = symbol_value / final_portfolio
+                                allocations[symbol] = allocation
+
+                    if not crypto_symbols:
+                        await update.message.reply_text("❌ No crypto assets in the backtest portfolio")
+                        return
+
+                    # Show planned allocations
+                    allocation_msg = "📊 Planned allocations from backtest result:\n"
+                    for symbol in crypto_symbols:
+                        allocation = allocations[symbol]
+                        symbol_return = symbol_returns.get(symbol, 0)
+                        allocation_msg += f"{symbol}: ${amount * allocation:.2f} ({allocation*100:.1f}%) | Return: {symbol_return:.2f}%\n"
+                    await update.message.reply_text(allocation_msg)
+
+                    # First close all existing crypto positions
+                    for symbol in crypto_symbols:
+                        # Use close_command directly
+                        context.args = [symbol]  # Set the symbol as argument
+                        await self.close_command(update, context)
+
+                    # Now open new positions
+                    status_message = await update.message.reply_text("🔄 Opening new positions...")
+
+                    for symbol in crypto_symbols:
+                        # Calculate amount for this symbol
+                        symbol_amount = amount * allocations[symbol]
+
+                        # Use open_command directly
+                        context.args = [symbol, str(symbol_amount)]  # Set symbol and amount as arguments
+                        await self.open_command(update, context)
+
+                    await status_message.edit_text("✅ Portfolio reallocation completed!")
+
+            except ValueError as e:
+                await update.message.reply_text(f"❌ Invalid input: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error in invest command: {str(e)}")
+                await update.message.reply_text(f"❌ An error occurred: {str(e)}")
