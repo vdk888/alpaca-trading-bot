@@ -1173,3 +1173,44 @@ Price Changes:
         except Exception as e:
             logger.error(f"Error in invest command: {str(e)}", exc_info=True)
             await update.message.reply_text(f"❌ An error occurred: {str(e)}")
+
+    async def invest_confirm_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle investment confirmation from inline button"""
+        query = update.callback_query
+        await query.answer()
+
+        # Extract symbol from callback data
+        data = query.data.split(':')
+        if len(data) < 2:
+            await query.edit_message_text("Invalid investment confirmation")
+            return
+
+        amount = float(data[1])
+
+        # Execute the investment
+        try:
+            # Get allocation data
+            allocation_data = self._temp_allocation_data
+            if not allocation_data:
+                await query.edit_message_text("Invalid allocation data")
+                return
+            
+            # Get symbols and allocations
+            symbols = allocation_data['symbols']
+            allocations = allocation_data['allocations']
+            
+            # Confirm investment
+            await query.edit_message_text(f"✅ Investing ${amount:.2f} in the following assets:")
+            
+            # Execute trades for each symbol
+            for symbol in symbols:
+                alloc_amount = amount * allocations[symbol]
+                await self.executors[symbol].invest(alloc_amount, self.send_message)
+                await query.edit_message_text(f"✅ Investing ${alloc_amount:.2f} in {symbol}")
+            
+            # Remove allocation data
+            del self._temp_allocation_data
+            
+        except Exception as e:
+            logger.error(f"Failed to invest: {e}")
+            await query.edit_message_text(f"❌ Failed to invest: {str(e)}")
