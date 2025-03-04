@@ -773,26 +773,36 @@ Price Changes:
                                 )
                             )
                             
-                            # Calculate final allocations
+                            # Calculate final allocations based on position values at the end
+                            # This will be our definitive allocation used for both display and invest
                             individual_results = result['individual_results']
-                            total_portfolio_value = 0
-                            symbol_values = {}
+                            last_data_point = result['data'].iloc[-1]
+                            
+                            # Get position values for the crypto assets
+                            symbol_position_values = {}
+                            total_position_value = 0
                             
                             for symbol in self.symbols:
-                                if symbol in individual_results:
-                                    symbol_data = individual_results[symbol]['data']
-                                    if len(symbol_data) > 0:
-                                        final_value = symbol_data['portfolio_value'].iloc[-1]
-                                        symbol_values[symbol] = final_value
-                                        total_portfolio_value += final_value
+                                position_value_col = f'{symbol}_value'
+                                if position_value_col in last_data_point:
+                                    position_value = last_data_point[position_value_col]
+                                    symbol_position_values[symbol] = position_value
+                                    total_position_value += position_value
                             
-                            # Calculate allocations based on final portfolio values
-                            allocations = {
-                                symbol: value / total_portfolio_value 
-                                for symbol, value in symbol_values.items()
-                            }
+                            # Calculate allocations as a percentage of total positions
+                            # This is critical - this is the actual allocation used in the graph
+                            allocations = {}
+                            if total_position_value > 0:
+                                for symbol, value in symbol_position_values.items():
+                                    allocations[symbol] = value / total_position_value
                             
-                            # Create performance summary
+                            # Store this allocation in the result for future reference
+                            result['allocations'] = allocations
+                            
+                            # Get crypto symbols
+                            crypto_symbols = [s for s in self.symbols if TRADING_SYMBOLS[s]['market'] == 'CRYPTO']
+                            
+                            # Calculate metrics
                             metrics = result['metrics']
                             summary = (
                                 f"📊 Portfolio Backtest Results ({days} days)\n\n"
@@ -800,13 +810,28 @@ Price Changes:
                                 f"Final Value: ${metrics['final_value']:,.2f}\n"
                                 f"Total Return: {metrics['total_return']:.2f}%\n"
                                 f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n\n"
-                                "Individual Asset Returns:\n"
+                                "Individual Asset Returns and Allocations:\n"
                             )
                             
                             # Add returns and allocations for each asset
-                            for symbol, ret in metrics['symbol_returns'].items():
+                            for symbol in self.symbols:
+                                ret = metrics['symbol_returns'].get(symbol, 0)
+                                # Use our calculated allocations to ensure consistency with the graph
                                 alloc = allocations.get(symbol, 0) * 100
-                                summary += f"{symbol}: {ret:.2f}% (Allocation: {alloc:.1f}%)\n"
+                                # Only include assets with non-zero allocations
+                                if alloc > 0.01:  # Include anything above 0.01%
+                                    summary += f"{symbol}: {ret:.2f}% (Allocation: {alloc:.1f}%)\n"
+                            
+                            # Add allocation info for crypto assets specifically
+                            if crypto_symbols:
+                                summary += "\nCrypto Assets Allocation:\n"
+                                for symbol in crypto_symbols:
+                                    alloc = allocations.get(symbol, 0) * 100
+                                    if alloc > 0.01:  # Include anything above 0.01%
+                                        summary += f"{symbol}: {alloc:.1f}%\n"
+                            
+                            # Edit status message with completion
+                            await status_message.edit_text("✅ Portfolio backtest completed!")
                             
                             # Edit status message with completion
                             await status_message.edit_text("✅ Portfolio backtest completed!")
@@ -819,6 +844,13 @@ Price Changes:
                                 )
                             ]]
                             reply_markup = InlineKeyboardMarkup(keyboard)
+                            
+                            # Store the result so invest_command can access it later
+                            self._last_portfolio_backtest = {
+                                'result': result,
+                                'days': days,
+                                'allocations': allocations
+                            }
                             
                             # Send summary message with buy button
                             await update.message.reply_text(summary, reply_markup=reply_markup)
@@ -1007,64 +1039,53 @@ Price Changes:
             days = int(days)
             amount = float(amount)
             
-            # Run the backtest to get latest allocations
-            if backtest_type.lower() == 'portfolio':
-                result = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    lambda: run_portfolio_backtest(self.symbols, days)
-                )
+            # Check if we have cached results from the previous backtest
+            if backtest_type.lower() == 'portfolio' and hasattr(self, '_last_portfolio_backtest'):
+                cached_backtest = self._last_portfolio_backtest
                 
-                # Get final portfolio values for each symbol
-                individual_results = result['individual_results']
-                total_portfolio_value = 0
-                symbol_values = {}
-                
-                for symbol in self.symbols:
-                    if symbol in individual_results:
-                        symbol_data = individual_results[symbol]['data']
-                        if len(symbol_data) > 0:
-                            final_value = symbol_data['portfolio_value'].iloc[-1]
-                            symbol_values[symbol] = final_value
-                            total_portfolio_value += final_value
-                
-                # Calculate allocations based on final portfolio values
-                allocations = {
-                    symbol: value / total_portfolio_value 
-                    for symbol, value in symbol_values.items()
-                }
-                
-                # Get crypto symbols
-                crypto_symbols = [s for s in allocations.keys() if TRADING_SYMBOLS[s]['market'] == 'CRYPTO']
-                
-                if not crypto_symbols:
-                    await update.message.reply_text("❌ No crypto assets in the backtest portfolio")
+                # Verify days parameter matches
+                if cached_backtest['days'] == days:
+                    # Use the allocations directly from the cached result
+                    allocations = cached_backtest['allocations']
+                    
+                    # Get crypto symbols with their allocations
+                    crypto_symbols = [s for s in allocations.keys() 
+                                    if TRADING_SYMBOLS.get(s, {}).get('market') == 'CRYPTO' 
+                                    and allocations.get(s, 0) > 0]
+                    
+                    if not crypto_symbols:
+                        await update.message.reply_text("❌ No crypto assets with non-zero allocations in the backtest portfolio")
+                        return
+                    
+                    # Show planned allocations
+                    allocation_msg = "📊 Planned allocations:\n"
+                    for symbol in crypto_symbols:
+                        allocation_msg += f"{symbol}: ${amount * allocations[symbol]:.2f} ({allocations[symbol]*100:.1f}%)\n"
+                    await update.message.reply_text(allocation_msg)
+                    
+                    # First close all existing crypto positions
+                    for symbol in crypto_symbols:
+                        # Use close_command directly
+                        context.args = [symbol]  # Set the symbol as argument
+                        await self.close_command(update, context)
+                    
+                    # Now open new positions
+                    status_message = await update.message.reply_text("🔄 Opening new positions...")
+                    
+                    for symbol in crypto_symbols:
+                        # Calculate amount for this symbol
+                        symbol_amount = amount * allocations[symbol]
+                        
+                        # Use open_command directly
+                        context.args = [symbol, str(symbol_amount)]  # Set symbol and amount as arguments
+                        await self.open_command(update, context)
+                    
+                    await status_message.edit_text("✅ Portfolio reallocation completed!")
                     return
-                
-                # Show planned allocations
-                allocation_msg = "📊 Planned allocations:\n"
-                for symbol in crypto_symbols:
-                    allocation_msg += f"{symbol}: ${amount * allocations[symbol]:.2f} ({allocations[symbol]*100:.1f}%)\n"
-                await update.message.reply_text(allocation_msg)
-                
-                # First close all existing crypto positions
-                for symbol in crypto_symbols:
-                    # Use close_command directly
-                    context.args = [symbol]  # Set the symbol as argument
-                    await self.close_command(update, context)
-                
-                # Now open new positions
-                status_message = await update.message.reply_text("🔄 Opening new positions...")
-                
-                for symbol in crypto_symbols:
-                    # Calculate amount for this symbol
-                    symbol_amount = amount * allocations[symbol]
-                    
-                    # Use open_command directly
-                    context.args = [symbol, str(symbol_amount)]  # Set symbol and amount as arguments
-                    await self.open_command(update, context)
-                
-                await status_message.edit_text("✅ Portfolio reallocation completed!")
-                    
+            
+            # If no cached results or different days parameter, run a new backtest
+            await update.message.reply_text("No matching backtest data found. Please run /backtest portfolio first.")
+                        
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
