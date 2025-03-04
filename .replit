@@ -4,7 +4,12 @@ modules = ["python-3.12"]
 
 [deployment]
 run = ["sh", "-c", "python run_market_hours.py"]
-deploymentTarget = "vm-bg"
+deploymentTarget = "gce"
+ignorePorts = true
 
 [nix]
 channel = "stable-24_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
