@@ -71,12 +71,23 @@ async def run_bot():
         logger.warning(f"Could not load .env file: {e}")
     
     # Check for required environment variables
-    required_vars = ['ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'TELEGRAM_BOT_TOKEN', 'CHAT_ID']
+    required_vars = ['ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'TELEGRAM_BOT_TOKEN', 'CHAT_ID', 'BOT_PASSWORD', 'TRADE_HISTORY_FILE']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     
     if missing_vars:
-        error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+        error_msg = f"DEPLOYMENT ERROR: Missing required environment variables: {', '.join(missing_vars)}"
         logger.error(error_msg)
+        # Send emergency notification if possible before failing
+        try:
+            if 'TELEGRAM_BOT_TOKEN' not in missing_vars and 'CHAT_ID' not in missing_vars:
+                bot = Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
+                asyncio.create_task(bot.send_message(
+                    chat_id=os.getenv('CHAT_ID'),
+                    text=f"🚨 DEPLOYMENT ERROR: Missing environment variables: {', '.join(missing_vars)}"
+                ))
+        except Exception as e:
+            logger.error(f"Failed to send emergency notification: {e}")
+            
         raise ValueError(error_msg)
     
     # Initialize clients
@@ -305,6 +316,16 @@ async def send_stop_notification(reason: str):
             logger.error(f"Failed to send Telegram notification: {e}")
 
 if __name__ == "__main__":
+    # Check deployment environment first
+    try:
+        from check_deployment import check_deployment_environment
+        environment_ok = check_deployment_environment()
+        if not environment_ok:
+            logger.critical("Deployment environment check failed. Exiting.")
+            sys.exit(1)
+    except ImportError:
+        logger.warning("Deployment environment checker not found. Continuing without check.")
+    
     try:
         asyncio.run(run_bot())
     except KeyboardInterrupt:
