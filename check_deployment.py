@@ -53,3 +53,50 @@ if __name__ == "__main__":
     if not check_deployment_environment():
         sys.exit(1)
     print("\nDeployment environment is ready. Continuing with startup...\n")
+import os
+import logging
+import json
+
+logger = logging.getLogger(__name__)
+
+def check_deployment_environment():
+    """
+    Verify that all required environment variables are set in the deployment
+    environment and log their status
+    
+    Returns:
+        bool: True if all required variables are set, False otherwise
+    """
+    required_vars = [
+        'ALPACA_API_KEY', 
+        'ALPACA_SECRET_KEY', 
+        'TELEGRAM_BOT_TOKEN', 
+        'CHAT_ID', 
+        'BOT_PASSWORD',
+        'TRADE_HISTORY_FILE'
+    ]
+    
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    all_vars_present = len(missing_vars) == 0
+    
+    if all_vars_present:
+        logger.info("✅ All required environment variables are set")
+    else:
+        logger.critical(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+    
+    # Check if we're running in a deployment environment
+    if os.getenv('REPLIT_DEPLOYMENT') == '1':
+        logger.info("✅ Running in Replit Deployment environment")
+    else:
+        logger.info("ℹ️ Running in local development environment")
+    
+    return all_vars_present
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    
+    result = check_deployment_environment()
+    print(f"Environment check {'passed' if result else 'failed'}")

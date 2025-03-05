@@ -18,22 +18,7 @@ import io
 import matplotlib.pyplot as plt
 from indicators import get_default_params
 
-# Add Flask server for Replit deployment
-from flask import Flask
-import threading
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Trading Bot is running!"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=8080)
-
-# Start Flask server in a daemon thread
-flask_thread = threading.Thread(target=run_flask, daemon=True)
-flask_thread.start()
+# Flask server removed as it's not needed for background worker deployment
 
 
 # Set up logging
