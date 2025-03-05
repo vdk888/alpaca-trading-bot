@@ -12,6 +12,10 @@ from matplotlib.dates import HourLocator, num2date
 import json
 from itertools import product
 import logging
+import os
+import sys
+import asyncio
+from aiogram import Bot
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
