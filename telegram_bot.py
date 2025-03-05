@@ -833,9 +833,6 @@ Price Changes:
                             # Edit status message with completion
                             await status_message.edit_text("✅ Portfolio backtest completed!")
                             
-                            # Edit status message with completion
-                            await status_message.edit_text("✅ Portfolio backtest completed!")
-                            
                             # Create inline keyboard for buying option
                             keyboard = [[
                                 InlineKeyboardButton(
