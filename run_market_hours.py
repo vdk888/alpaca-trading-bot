@@ -18,7 +18,22 @@ import io
 import matplotlib.pyplot as plt
 from indicators import get_default_params
 
-# Flask server removed as it's not needed for background worker deployment
+# Add Flask server for Replit deployment
+from flask import Flask
+import threading
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Trading Bot is running!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+# Start Flask server in a daemon thread
+flask_thread = threading.Thread(target=run_flask, daemon=True)
+flask_thread.start()
 
 
 # Set up logging
@@ -34,10 +49,6 @@ logger = logging.getLogger(__name__)
 
 def is_market_hours():
     """Check if it's currently market hours (9:30 AM - 4:00 PM Eastern, Monday-Friday)"""
-    # Always return True in deployment to ensure the bot runs 24/7
-    if os.getenv('REPLIT_DEPLOYMENT') == '1':
-        return True
-        
     et_tz = pytz.timezone('US/Eastern')
     now = datetime.datetime.now(et_tz)
     
@@ -66,17 +77,6 @@ async def run_bot():
     if missing_vars:
         error_msg = f"DEPLOYMENT ERROR: Missing required environment variables: {', '.join(missing_vars)}"
         logger.error(error_msg)
-        
-        # Add more detailed instructions for Replit deployment
-        if os.getenv('REPLIT_DEPLOYMENT') == '1':
-            logger.error(
-                "To add secrets in Replit Deployment:\n"
-                "1. Go to the Deployments tab\n"
-                "2. Click on Configuration\n"
-                "3. Add each missing variable under Secrets\n"
-                "4. Re-deploy your application"
-            )
-            
         # Send emergency notification if possible before failing
         try:
             if 'TELEGRAM_BOT_TOKEN' not in missing_vars and 'CHAT_ID' not in missing_vars:
@@ -107,7 +107,22 @@ async def run_bot():
     # Start the Telegram bot
     logger.info("Starting Telegram bot...")
     await trading_bot.start()
-    
+
+    # Create mock Update object for /start command
+    class MockUpdate:
+        def __init__(self, bot):
+            self.message = MockMessage(bot)
+
+    class MockMessage:
+        def __init__(self, bot):
+            self.bot = bot
+
+        async def reply_text(self, text):
+            await self.bot.send_message(chat_id=os.getenv('CHAT_ID'), text=text)
+
+    # Send startup message with /start command
+    await trading_bot.start_command(MockUpdate(trading_bot.bot), None)
+
     async def backtest_loop():
         """Background task for running backtests"""
         while True:
@@ -316,6 +331,15 @@ async def send_stop_notification(reason: str):
             logger.error(f"Failed to send Telegram notification: {e}")
 
 if __name__ == "__main__":
+    # Check deployment environment first
+    try:
+        from check_deployment import check_deployment_environment
+        environment_ok = check_deployment_environment()
+        if not environment_ok:
+            logger.critical("Deployment environment check failed. Exiting.")
+            sys.exit(1)
+    except ImportError:
+        logger.warning("Deployment environment checker not found. Continuing without check.")
     
     try:
         asyncio.run(run_bot())
@@ -324,7 +348,7 @@ if __name__ == "__main__":
         asyncio.run(send_stop_notification("Stopped by user"))
     except Exception as e:
         error_msg = f"Bot stopped due to error: {str(e)}"
-        logger.error(error_msg, exc_info=True)  # Add exc_info for full traceback
+        logger.error(error_msg)
         asyncio.run(send_stop_notification(error_msg))
     else:
         asyncio.run(send_stop_notification("Normal termination"))

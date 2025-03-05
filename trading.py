@@ -106,7 +106,7 @@ class TradingExecutor:
             shares = int(shares)  # Round down to nearest whole share for stocks
         return shares
 
-    def calculate_performance_ranking(self, current_price: float, lookback_days: int = 5) -> float:
+    def calculate_performance_ranking(self, current_price: float, lookback_days: int = 5) -> tuple[float, float]:
         """Calculate performance ranking compared to other symbols."""
         try:
             logger.info(f"Calculating performance ranking for {self.symbol} at price {current_price:.2f} over {lookback_days} days")
@@ -130,7 +130,7 @@ class TradingExecutor:
                     data = ticker.history(
                         start=start_time,
                         end=end_time,
-                        interval=config.default_interval_yahoo,
+                        interval=config['interval'],
                         actions=True
                     )
 
@@ -155,17 +155,17 @@ class TradingExecutor:
                 if current_perf is not None:
                     rank = sum(p <= current_perf for p in performances) / len(performances)
                     logger.info(f"Performance rank for {self.symbol}: {rank:.2f} (based on {len(performances)} symbols)")
-                    return rank
+                    return rank, current_perf
                 else:
                     logger.warning(f"No performance data found for current symbol {self.symbol}")
             else:
                 logger.warning("No performance data available for any symbols")
 
-            return 0.0  # Default to worst rank if calculation fails
+            return 0.0, 0.0  # Default to worst rank if calculation fails
 
         except Exception as e:
             logger.error(f"Error in performance ranking calculation: {str(e)}", exc_info=True)
-            return 0.0
+            return 0.0, 0.0
 
     async def execute_trade(self, action: str, analysis: dict, notify_callback=None) -> bool:
         """
@@ -196,7 +196,7 @@ class TradingExecutor:
             # For buy orders, calculate new position size
             if action == "BUY":
                 # Calculate performance ranking
-                rank = self.calculate_performance_ranking(analysis['current_price'])
+                rank, performance = self.calculate_performance_ranking(analysis['current_price'])
                 
                 # Calculate buy percentage (linear function)
                 # rank 1 (best) = 50% buy
@@ -311,7 +311,7 @@ class TradingExecutor:
                     avg_entry_price = float(position.avg_entry_price)
                     
                     # Calculate performance ranking and sell percentage
-                    rank = self.calculate_performance_ranking(analysis['current_price'])
+                    rank, performance = self.calculate_performance_ranking(analysis['current_price'])
                     
                     # Calculate sell percentage (linear function)
                     # rank 1 (best) = 10% sell

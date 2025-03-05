@@ -70,6 +70,7 @@ class TradingBot:
         application.add_handler(CommandHandler("backtest", self.backtest_command))
         application.add_handler(CommandHandler("portfolio", self.portfolio_command))
         application.add_handler(CommandHandler("invest", self.invest_command))
+        application.add_handler(CommandHandler("rank", self.rank_command))
         
         # Add callback query handler for inline buttons
         application.add_handler(CallbackQueryHandler(self.button_callback))
@@ -150,16 +151,19 @@ class TradingBot:
 /position [symbol] - View current position details
 /balance - Check account balance
 /performance - View today's performance
+/rank - View performance ranking of all assets
 
 📈 Analysis Commands:
 /indicators [symbol] - View current indicator values
 /plot [symbol] [days] - Generate strategy visualization
 /signals - View latest signals for all symbols
 /backtest [symbol] [days] - Run backtest simulation (default: all symbols, 5 days)
+/backtest portfolio [days] - Run portfolio backtest (default: all symbols, 5 days)
 
-🔧 Trading Commands:
+💰 Trading Commands:
 /open <symbol> <amount> - Open a position with specified amount
 /close [symbol] - Close positions (all positions if no symbol specified)
+/invest [symbol] <amount> - Invest specified amount in the specified symbol
 
 ⚙️ Management Commands:
 /symbols - List all trading symbols
@@ -1004,6 +1008,35 @@ Price Changes:
         except Exception as e:
             logger.error(f"Error in portfolio_command: {str(e)}")
             await update.message.reply_text(f"Error getting portfolio history: {str(e)}")
+
+    async def rank_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Display performance ranking of all assets"""
+        try:
+            # Get performance data for all symbols
+            rankings = {}
+            performances = {}
+            for symbol in self.symbols:
+                executor = self.executors[symbol]
+                analysis = self.strategies[symbol].analyze()
+                if analysis and 'current_price' in analysis:
+                    rank, performance = executor.calculate_performance_ranking(analysis['current_price'])
+                    rankings[symbol] = rank
+                    performances[symbol] = performance
+
+            # Sort symbols by ranking (best to worst)
+            sorted_rankings = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
+
+            # Format message
+            message = "📊 Asset Performance Ranking:\n\n"
+            for i, (symbol, rank) in enumerate(sorted_rankings, 1):
+                perf = performances[symbol]
+                message += f"{i}. {get_display_symbol(symbol)}: {perf:.1f}% (Percentile: {rank*100:.1f}%)\n"
+
+            await update.message.reply_text(message)
+
+        except Exception as e:
+            logger.error(f"Error in /rank command: {e}")
+            await update.message.reply_text("❌ Error generating performance ranking. Please try again later.")
 
     async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle button callbacks"""
