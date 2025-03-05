@@ -226,13 +226,7 @@ class TradingExecutor:
                 # Calculate position size based on buy percentage
                 max_position_size = self.calculate_position_size(analysis['current_price'])
                 new_qty = max_position_size * buy_percentage
-                
-                if new_qty <= 0:
-                    message = f"Maximum position size reached or invalid size calculated for {get_display_symbol(self.symbol)} ({self.config['name']})"
-                    logger.info(message)
-                    if notify_callback:
-                        await notify_callback(message)
-                    return False
+              
                 
                 # Round based on market type
                 if self.config['market'] == 'CRYPTO':
@@ -270,6 +264,15 @@ class TradingExecutor:
                 if notify_callback:
                     await notify_callback(sending_message)
                 
+                # Check if new_qty is <= 0 after sending the message
+                if new_qty <= 0:
+                    error_message = f"❌ Maximum position size reached or invalid size calculated for {get_display_symbol(self.symbol)} ({self.config['name']})"
+                    logger.info(error_message)
+                    if notify_callback:
+                        await notify_callback(error_message)
+                    return False
+
+                # Submit buy order (only if new_qty is > 0)
                 # Submit buy order
                 order = MarketOrderRequest(
                     symbol=get_api_symbol(self.symbol),
