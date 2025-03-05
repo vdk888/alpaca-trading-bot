@@ -103,19 +103,7 @@ param_grid = {
 def find_best_params(symbol: str,
                      param_grid: dict,
                      days: int = default_backtest_interval,
-                     output_file: str = None) -> dict:
-    """Find the best parameter set by running a backtest for each combination."""
-    # Determine appropriate output file path based on environment
-    if output_file is None:
-        # Check if running on Replit
-        if 'REPL_ID' in os.environ:
-            # Get the Replit slug (project name)
-            repl_slug = os.environ.get('REPL_SLUG', '')
-            # Use Replit's persistent storage location
-            output_file = os.path.join('/home/runner', repl_slug, 'best_params.json')
-        else:
-            # Use current directory for local development
-            output_file = "best_params.json"
+                     output_file: str = "best_params.json") -> dict:
     """Find the best parameter set by running a backtest for each combination."""
     param_names = list(param_grid.keys())
     param_values = [param_grid[name] for name in param_names]
