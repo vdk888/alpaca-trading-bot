@@ -34,6 +34,10 @@ logger = logging.getLogger(__name__)
 
 def is_market_hours():
     """Check if it's currently market hours (9:30 AM - 4:00 PM Eastern, Monday-Friday)"""
+    # Always return True in deployment to ensure the bot runs 24/7
+    if os.getenv('REPLIT_DEPLOYMENT') == '1':
+        return True
+        
     et_tz = pytz.timezone('US/Eastern')
     now = datetime.datetime.now(et_tz)
     
@@ -62,6 +66,17 @@ async def run_bot():
     if missing_vars:
         error_msg = f"DEPLOYMENT ERROR: Missing required environment variables: {', '.join(missing_vars)}"
         logger.error(error_msg)
+        
+        # Add more detailed instructions for Replit deployment
+        if os.getenv('REPLIT_DEPLOYMENT') == '1':
+            logger.error(
+                "To add secrets in Replit Deployment:\n"
+                "1. Go to the Deployments tab\n"
+                "2. Click on Configuration\n"
+                "3. Add each missing variable under Secrets\n"
+                "4. Re-deploy your application"
+            )
+            
         # Send emergency notification if possible before failing
         try:
             if 'TELEGRAM_BOT_TOKEN' not in missing_vars and 'CHAT_ID' not in missing_vars:
@@ -303,10 +318,25 @@ async def send_stop_notification(reason: str):
 if __name__ == "__main__":
     # Check deployment environment first
     try:
+        import sys
         from check_deployment import check_deployment_environment
+        
+        # Log deployment status
+        if os.getenv('REPLIT_DEPLOYMENT') == '1':
+            logger.info("Running in Replit Deployment environment")
+        else:
+            logger.info("Running in local development environment")
+            
         environment_ok = check_deployment_environment()
         if not environment_ok:
-            logger.critical("Deployment environment check failed. Exiting.")
+            logger.critical("Deployment environment check failed. Missing required secrets.")
+            logger.critical(
+                "To add secrets in Replit Deployment:\n"
+                "1. Go to the Deployments tab\n"
+                "2. Click on Configuration\n"
+                "3. Add all required secrets under Secrets section\n"
+                "4. Re-deploy your application"
+            )
             sys.exit(1)
     except ImportError:
         logger.warning("Deployment environment checker not found. Continuing without check.")
@@ -318,7 +348,7 @@ if __name__ == "__main__":
         asyncio.run(send_stop_notification("Stopped by user"))
     except Exception as e:
         error_msg = f"Bot stopped due to error: {str(e)}"
-        logger.error(error_msg)
+        logger.error(error_msg, exc_info=True)  # Add exc_info for full traceback
         asyncio.run(send_stop_notification(error_msg))
     else:
         asyncio.run(send_stop_notification("Normal termination"))
