@@ -316,30 +316,6 @@ async def send_stop_notification(reason: str):
             logger.error(f"Failed to send Telegram notification: {e}")
 
 if __name__ == "__main__":
-    # Check deployment environment first
-    try:
-        import sys
-        from check_deployment import check_deployment_environment
-        
-        # Log deployment status
-        if os.getenv('REPLIT_DEPLOYMENT') == '1':
-            logger.info("Running in Replit Deployment environment")
-        else:
-            logger.info("Running in local development environment")
-            
-        environment_ok = check_deployment_environment()
-        if not environment_ok:
-            logger.critical("Deployment environment check failed. Missing required secrets.")
-            logger.critical(
-                "To add secrets in Replit Deployment:\n"
-                "1. Go to the Deployments tab\n"
-                "2. Click on Configuration\n"
-                "3. Add all required secrets under Secrets section\n"
-                "4. Re-deploy your application"
-            )
-            sys.exit(1)
-    except ImportError:
-        logger.warning("Deployment environment checker not found. Continuing without check.")
     
     try:
         asyncio.run(run_bot())
