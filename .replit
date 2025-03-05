@@ -5,6 +5,7 @@ modules = ["python-3.12", "nix"]
 [deployment]
 run = ["sh", "-c", "python run_market_hours.py"]
 deploymentTarget = "gce"
+workerType = "background"
 ignorePorts = true
 
 [nix]
