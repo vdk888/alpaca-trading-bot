@@ -4,7 +4,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
-from config import TRADING_SYMBOLS, default_interval_yahoo
+from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
@@ -68,13 +68,13 @@ class TradingExecutor:
             except Exception:
                 current_position_value = 0
                 
-            # Calculate remaining available capital (10% of equity - current position value)
+            # Calculate remaining available capital (PER_SYMBOL_CAPITAL_MULTIPLIER% of equity - current position value)
             symbols = list(TRADING_SYMBOLS.keys())
-            max_total_position = equity / len(symbols) * 3  # 30% of total capital
+            max_total_position = equity / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # PER_SYMBOL_CAPITAL_MULTIPLIER% of total capital
             available_capital = max_total_position - current_position_value
             
             if available_capital <= 0:
-                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) (30% of capital)")
+                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) ({PER_SYMBOL_CAPITAL_MULTIPLIER}% of capital)")
                 return 0
             
             # Calculate quantity based on available capital and risk
