@@ -182,7 +182,7 @@ def find_best_params(symbol: str,
         performances.append(performance)
 
         print(
-            f"Params: {params}, Target (Sharpe Ratio): {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%, Total Return: {total_return:.2f}%, Sharpe Ratio: {sharpe_ratio:.2f}"
+            f"Params: {params}, Target {performance:.2f}%, Win Rate: {win_rate:.2f}%, Max Drawdown: {max_drawdown:.2f}%, Total Return: {total_return:.2f}%, Sharpe Ratio: {sharpe_ratio:.2f}"
         )
 
         # Update best parameters if current is better
