@@ -340,9 +340,6 @@ param_grid = {
     ]
 }
 
-
-
-# Function to calculate dynamic capital multiplier based on asset performance
 def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
     """
     Calculate a dynamic capital multiplier based on asset performance.
@@ -351,11 +348,11 @@ def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
         lookback_days: Number of days to look back for performance calculation
         
     Returns:
-        float: Capital multiplier between 1.0 and 3.0
+        float: Capital multiplier between 0.5 and 3.0
     """
     try:
         # Default return if calculation fails
-        default_multiplier = 2.0
+        default_multiplier = 1.5
         
         # Get end and start dates
         end_date = datetime.now(pytz.UTC)
@@ -416,15 +413,14 @@ def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
         # Apply sigmoid function to get a value between 0 and 1
         sigmoid = 1 / (1 + np.exp(-normalized_diff))
         
-        # Scale to range [1, 3]
-        multiplier = 1.0 + 2.0 * sigmoid
+        # Scale to range [0.5, 3.0] instead of [1.0, 3.0]
+        multiplier = 0.5 + 2.5 * sigmoid
         
         return multiplier
         
     except Exception as e:
         print(f"Error calculating capital multiplier: {str(e)}")
         return default_multiplier
-
 
 # Set capital multiplier (computed once at module import)
 PER_SYMBOL_CAPITAL_MULTIPLIER = calculate_capital_multiplier(lookback_days_param/2)
