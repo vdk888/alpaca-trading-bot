@@ -813,9 +813,18 @@ Price Changes:
                                 f"Initial Capital: ${metrics['initial_capital']:,.2f}\n"
                                 f"Final Value: ${metrics['final_value']:,.2f}\n"
                                 f"Total Return: {metrics['total_return']:.2f}%\n"
-                                f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n\n"
-                                "Individual Asset Returns and Allocations:\n"
+                                f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n"
                             )
+                            
+                            turnover_msg = (
+                                f"\n🔄 Portfolio Turnover: {metrics['turnover']['turnover']:.1%}\n"
+                                f"📊 Trades: {metrics['turnover']['total_trades']} (Buy: {metrics['turnover']['buy_trades']}, Sell: {metrics['turnover']['sell_trades']})\n"
+                                f"💰 Total Buy Value: ${metrics['turnover']['total_buy_value']:,.2f}\n"
+                                f"💰 Total Sell Value: ${metrics['turnover']['total_sell_value']:,.2f}\n"
+                                f"📦 Avg Buy Size: ${metrics['turnover']['avg_buy_size']:,.2f}\n"
+                                f"📦 Avg Sell Size: ${metrics['turnover']['avg_sell_size']:,.2f}\n\n"
+                            )
+                            summary += turnover_msg
                             
                             # Add returns and allocations for each asset
                             for symbol in self.symbols:
@@ -935,6 +944,7 @@ Price Changes:
 • Win Rate: {stats['win_rate']:.1f}%
 • Max Drawdown: {stats['max_drawdown']:.2f}%
 • Sharpe Ratio: {stats['sharpe_ratio']:.2f}
+• 🔄 Portfolio Turnover: {stats.get('turnover', 0):.1%}
 {params_message}
                     """
                     

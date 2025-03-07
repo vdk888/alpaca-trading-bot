@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, per_symbol_capital, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, per_symbol_capital
 import matplotlib
 matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt
@@ -83,6 +83,17 @@ def run_backtest(symbol: str, days: int = default_backtest_interval, initial_cap
         scaled_trade['total_position'] = trade['total_position'] * scale_factor
         scaled_trades.append(scaled_trade)
     
+    # Calculate portfolio turnover
+    turnover = 0
+    if len(portfolio_values) > 1:
+        buys = sum(t['value'] for t in scaled_trades if data.loc[t['time'], 'signal'] == 1)
+        sells = sum(t['value'] for t in scaled_trades if data.loc[t['time'], 'signal'] == -1)
+        avg_portfolio_value = np.mean(portfolio_values)
+        turnover = min(buys, sells) / avg_portfolio_value
+    
+    # Add turnover to stats
+    result['stats']['turnover'] = turnover
+    
     # Format the result to match the original function's output format exactly
     return {
         'symbol': result['symbol'],
@@ -95,7 +106,8 @@ def run_backtest(symbol: str, days: int = default_backtest_interval, initial_cap
             'total_trades': result['stats']['total_trades'],
             'win_rate': result['stats']['win_rate'],
             'max_drawdown': result['stats']['max_drawdown'],
-            'sharpe_ratio': result['stats']['sharpe_ratio']
+            'sharpe_ratio': result['stats']['sharpe_ratio'],
+            'turnover': turnover
         }
     }
 
@@ -103,7 +115,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     """Run backtest simulation for multiple symbols as a portfolio"""
     # Set much higher per-symbol capital to allow for greater exposure
     initial_capital = 100000  # Total portfolio capital
-    per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER
+    per_symbol_capital = initial_capital / len(symbols) * 3
     
     # Run individual backtests
     individual_results = {}
@@ -171,6 +183,39 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
             }
         }
     }
+    
+    # Calculate portfolio turnover
+    portfolio_turnover = 0
+    if len(portfolio_data) > 1:
+        portfolio_trades = []
+        for symbol in symbols:
+            symbol_trades = individual_results[symbol]['trades']
+            portfolio_trades.extend(symbol_trades)
+        
+        # Calculate detailed turnover metrics
+        buy_trades = [t for t in portfolio_trades if individual_results[t.get('symbol', symbol)]['data'].loc[t['time'], 'signal'] == 1]
+        sell_trades = [t for t in portfolio_trades if individual_results[t.get('symbol', symbol)]['data'].loc[t['time'], 'signal'] == -1]
+        
+        total_trades = len(buy_trades) + len(sell_trades)
+        total_buy_value = sum(t['value'] for t in buy_trades)
+        total_sell_value = sum(t['value'] for t in sell_trades)
+        avg_buy_size = total_buy_value / len(buy_trades) if buy_trades else 0
+        avg_sell_size = total_sell_value / len(sell_trades) if sell_trades else 0
+        avg_portfolio_value = np.mean(portfolio_data['portfolio_total'])
+        turnover = min(total_buy_value, total_sell_value) / avg_portfolio_value
+        
+        turnover_metrics = {
+            'turnover': turnover,
+            'total_trades': total_trades,
+            'buy_trades': len(buy_trades),
+            'sell_trades': len(sell_trades),
+            'total_buy_value': total_buy_value,
+            'total_sell_value': total_sell_value,
+            'avg_buy_size': avg_buy_size,
+            'avg_sell_size': avg_sell_size
+        }
+        
+        result['metrics']['turnover'] = turnover_metrics
     
     return result
 
