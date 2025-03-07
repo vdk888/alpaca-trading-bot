@@ -948,6 +948,7 @@ Price Changes:
 • Sharpe Ratio: {stats['sharpe_ratio']:.2f}
 • 🔄 Portfolio Turnover: {stats.get('turnover', 0):.1%}
 • 💰 Trading Costs: ${stats.get('trading_costs', 0):.2f}
+{params_message}
                     """
                     
                     # Send plot and stats
