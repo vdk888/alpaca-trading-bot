@@ -674,7 +674,7 @@ def run_backtest(symbol: str,
 
 
 def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
-    """Calculate performance ranking of all symbols over the last 5 days."""
+    """Calculate performance ranking of all symbols over the last N days."""
     performance_dict = {}
     lookback_days = lookback_days_param
     lookback_time = current_time - pd.Timedelta(days=lookback_days)
@@ -683,9 +683,17 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
     print(f"Calculating rankings at {current_time}")
     print(f"Looking back to {lookback_time}")
     print(
-        f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12}"
+        f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12} {'Source':>10}"
     )
-    print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12}")
+    print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12} {'-'*10:>10}")
+
+    # Try to load best_params.json for strategy performance data
+    best_params_data = {}
+    try:
+        with open("best_params.json", "r") as f:
+            best_params_data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("Warning: Could not load best_params.json or file is invalid")
 
     for symbol, data in prices_dataset.items():
         try:
@@ -693,8 +701,7 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
             mask = (data.index <= current_time) & (data.index >= lookback_time)
             symbol_data = data[mask]
 
-            if len(symbol_data
-                   ) >= 2:  # Need at least 2 points to calculate performance
+            if len(symbol_data) >= 2:  # Need at least 2 points to calculate performance
                 # Make column names lowercase if they aren't already
                 symbol_data.columns = symbol_data.columns.str.lower()
 
@@ -704,13 +711,31 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                     )
                     continue
 
+                # Calculate standard performance from price data
                 start_price = symbol_data['close'].iloc[0]
                 end_price = symbol_data['close'].iloc[-1]
                 performance = ((end_price - start_price) / start_price) * 100
+                performance_source = "price"
+
+                # Check if we should use strategy performance instead
+                if symbol in best_params_data:
+                    symbol_entry = best_params_data[symbol]
+                    
+                    # Check if entry is recent (less than a week old)
+                    if 'date' in symbol_entry:
+                        entry_date = datetime.strptime(symbol_entry['date'], "%Y-%m-%d")
+                        is_recent = (datetime.now() - entry_date) < timedelta(weeks=1)
+                        
+                        # Use strategy performance if entry is recent and has performance data
+                        if is_recent and 'metrics' in symbol_entry and 'performance' in symbol_entry['metrics']:
+                            performance = symbol_entry['metrics']['performance']
+                            performance_source = "strategy"
+
+                # Store the final performance value
                 performance_dict[symbol] = performance
 
                 print(
-                    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}%"
+                    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}% {performance_source:>10}"
                 )
         except Exception as e:
             print(f"Error processing {symbol}: {str(e)}")

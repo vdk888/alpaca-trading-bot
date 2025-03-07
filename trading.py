@@ -4,7 +4,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
-from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER, calculate_capital_multiplier
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
@@ -70,11 +70,12 @@ class TradingExecutor:
                 
             # Calculate remaining available capital (PER_SYMBOL_CAPITAL_MULTIPLIER% of equity - current position value)
             symbols = list(TRADING_SYMBOLS.keys())
-            max_total_position = equity / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # PER_SYMBOL_CAPITAL_MULTIPLIER% of total capital
+            capital_multiplier = calculate_capital_multiplier(lookback_days_param/2)
+            max_total_position = equity / len(symbols) * capital_multiplier  # capital_multiplier% of total capital
             available_capital = max_total_position - current_position_value
             
             if available_capital <= 0:
-                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) ({PER_SYMBOL_CAPITAL_MULTIPLIER}% of capital)")
+                logger.info(f"Maximum position size reached for {get_display_symbol(self.symbol)} ({self.config['name']}) ({max_total_position/equity}% of capital)")
                 return 0
             
             # Calculate quantity based on available capital and risk
@@ -179,6 +180,7 @@ class TradingExecutor:
         Returns:
             bool: True if trade was executed successfully
         """
+        capital_multiplier = calculate_capital_multiplier(lookback_days_param/2)
         if not self.is_active:
             if notify_callback:
                 await notify_callback("Trading is currently paused. Use /resume to resume trading.")
@@ -255,7 +257,7 @@ class TradingExecutor:
                 sending_message = f"""🔄 Sending BUY Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
 • Buy Percentage: {buy_percentage*100:.1f}%
-• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
+• Capital Multiplier: {capital_multiplier:.2f}
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
 • Order Value: ${notional_value:.2f}
@@ -289,7 +291,7 @@ class TradingExecutor:
                 message = f"""✅ BUY Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
 • Buy Percentage: {buy_percentage*100:.1f}%
-• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
+• Capital Multiplier: {capital_multiplier:.2f}
 • Quantity: {new_qty}
 • Price: ${analysis['current_price']:.2f}
 • Order Value: ${(new_qty * analysis['current_price']):.2f}
@@ -337,7 +339,7 @@ class TradingExecutor:
                     # Notify that order is being sent
                     sending_message = f"""🔄 Sending SELL Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
-• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
+• Capital Multiplier: {capital_multiplier:.2f}
 • Sell Percentage: {sell_percentage*100:.1f}%
 • Quantity to Sell: {qty_to_sell} of {total_qty}
 • Target Price: ${analysis['current_price']:.2f}
@@ -359,7 +361,7 @@ class TradingExecutor:
                     # Create detailed order confirmation message
                     message = f"""✅ SELL Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
-• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
+• Capital Multiplier: {capital_multiplier:.2f}
 • Sell Percentage: {sell_percentage*100:.1f}%
 • Quantity Sold: {qty_to_sell} of {total_qty}
 • Price: ${analysis['current_price']:.2f}

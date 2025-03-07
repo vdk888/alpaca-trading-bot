@@ -358,8 +358,8 @@ def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
         end_date = datetime.now(pytz.UTC)
         start_date = end_date - timedelta(days=lookback_days * 2)  # Double lookback for MA calculation
         
-        # Collect performance data for all assets
-        performances = []
+        # Collect daily performance data for all assets
+        daily_performances = []
         
         for symbol, config in TRADING_SYMBOLS.items():
             try:
@@ -372,49 +372,72 @@ def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
                 ticker = yf.Ticker(yf_symbol)
                 data = ticker.history(start=start_date, end=end_date, interval=default_interval_yahoo)
                 
-                if len(data) >= 2:
-                    # Calculate performance as percent change
-                    start_price = data['Close'].iloc[0]
-                    end_price = data['Close'].iloc[-1]
-                    perf = ((end_price - start_price) / start_price) * 100
-                    performances.append(perf)
-            except Exception:
+                if len(data) >= 10:  # Need enough data for meaningful calculation
+                    # Calculate daily returns
+                    data['return'] = data['Close'].pct_change() * 100  # as percentage
+                    
+                    # Add to our collection, dropping NaN values
+                    returns = data['return'].dropna().values
+                    if len(returns) > 0:
+                        daily_performances.append(returns)
+            except Exception as e:
+                print(f"Error processing {symbol}: {str(e)}")
                 continue
         
-        if not performances:
+        if not daily_performances or len(daily_performances) < 3:
             return default_multiplier
         
-        # Convert to numpy array for calculations
-        performances = np.array(performances)
+        # Calculate average daily performance across all assets for each day
+        # Pad or truncate arrays to ensure they have the same length
+        min_length = min(len(perfs) for perfs in daily_performances)
+        if min_length < 10:  # Need enough data points
+            return default_multiplier
+            
+        aligned_performances = [perfs[-min_length:] for perfs in daily_performances]
+        daily_avg_performance = np.mean(aligned_performances, axis=0)
         
-        # Calculate average performance
-        avg_perf = np.mean(performances)
+        # Calculate moving average with a window of 7 days
+        window = min(7, len(daily_avg_performance)//2)
+        if window < 3:
+            return default_multiplier
+            
+        # Calculate moving average
+        ma = np.convolve(daily_avg_performance, np.ones(window)/window, mode='valid')
         
-        # Calculate moving average (simple approach for minimal code change)
-        # Use half the data points for the "previous" period
-        half_idx = len(performances) // 2
-        if half_idx > 0:
-            prev_avg = np.mean(performances[:half_idx])
-            # Calculate the standard deviation of the difference
-            std_diff = np.std([avg_perf, prev_avg])
-        else:
-            prev_avg = avg_perf
-            std_diff = 1.0  # Default if not enough data
+        if len(ma) < 2:
+            return default_multiplier
         
-        # Calculate difference between current average and moving average
-        diff = avg_perf - prev_avg
+        # Get current performance (average of last 3 days) and MA
+        current_perf = np.mean(daily_avg_performance[-3:])
+        current_ma = ma[-1]
         
-        # Normalize the difference by std_diff with bounds at -2std and 2std
-        if std_diff > 0:
-            normalized_diff = max(min(diff / (2 * std_diff), 2), -2)
-        else:
-            normalized_diff = 0
+        # Calculate differences between performance and MA over time
+        diffs = daily_avg_performance[-len(ma):] - ma
+        
+        # Calculate standard deviation of these differences
+        std_diff = np.std(diffs)
+        if std_diff == 0:
+            std_diff = 0.1  # Avoid division by zero
+        
+        # Calculate current difference
+        current_diff = current_perf - current_ma
+        
+        # Normalize the difference with bounds at -2std and 2std
+        normalized_diff = max(min(current_diff / (2 * std_diff), 2), -2)
         
         # Apply sigmoid function to get a value between 0 and 1
         sigmoid = 1 / (1 + np.exp(-normalized_diff))
         
-        # Scale to range [0.5, 3.0] instead of [1.0, 3.0]
+        # Scale to range [0.5, 3.0]
         multiplier = 0.5 + 2.5 * sigmoid
+        
+        print(f"Capital multiplier calculation:")
+        print(f"Current performance: {current_perf:.2f}%")
+        print(f"Moving average: {current_ma:.2f}%")
+        print(f"Difference: {current_diff:.2f}%")
+        print(f"Std of differences: {std_diff:.2f}")
+        print(f"Normalized diff: {normalized_diff:.2f}")
+        print(f"Final multiplier: {multiplier:.2f}x")
         
         return multiplier
         
@@ -422,6 +445,7 @@ def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
         print(f"Error calculating capital multiplier: {str(e)}")
         return default_multiplier
 
+        
 # Set capital multiplier (computed once at module import)
 PER_SYMBOL_CAPITAL_MULTIPLIER = calculate_capital_multiplier(lookback_days_param/2)
 
