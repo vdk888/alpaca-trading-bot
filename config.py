@@ -304,8 +304,8 @@ TRADING_COSTS = {
         'spread': 0.006,  # 0.6% spread (bid-ask)
     },
     'CRYPTO': {
-        'trading_fee': 0.001,  # 0.1% trading fee
-        'spread': 0.006,  # 0.6% spread (bid-ask)
+        'trading_fee': 0.003,  # 0.3% taker fee
+        'spread': 0.002,  # 0.2% maker fee
     },
     'STOCK': {
         'trading_fee': 0.0005,  # 0.05% trading fee
@@ -433,4 +433,3 @@ PER_SYMBOL_CAPITAL_MULTIPLIER = calculate_capital_multiplier(lookback_days_param
 initial_capital = 100000
 symbols = list(TRADING_SYMBOLS.keys())
 per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # Allow each symbol to potentially use full capital
-
