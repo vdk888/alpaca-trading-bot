@@ -61,6 +61,23 @@ lookback_days_param = default_backtest_interval/5
 #1-hour interval: Maximum of 730 days (2 years) of historical data.
 #Daily interval: No strict limit, can fetch data for the entire available history.
 
+
+PER_SYMBOL_CAPITAL_MULTIPLIER = 3
+initial_capital = 100000
+symbols = list(TRADING_SYMBOLS.keys())
+per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # Allow each symbol to potentially use full capital
+
+
+
+
+
+
+
+
+
+
+
+
 # Trading symbols configuration
 TRADING_SYMBOLS = {
     # Cryptocurrencies
@@ -332,8 +349,3 @@ param_grid = {
 
     ]
 }
-
-PER_SYMBOL_CAPITAL_MULTIPLIER = 3
-initial_capital = 100000
-symbols = list(TRADING_SYMBOLS.keys())
-per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # Allow each symbol to potentially use full capital
