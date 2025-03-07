@@ -4,7 +4,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
-from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER, calculate_capital_multiplier
+from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER, calculate_capital_multiplier, lookback_days_param
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
@@ -107,7 +107,7 @@ class TradingExecutor:
             shares = int(shares)  # Round down to nearest whole share for stocks
         return shares
 
-    def calculate_performance_ranking(self, current_price: float, lookback_days: int = 5) -> tuple[float, float]:
+    def calculate_performance_ranking(self, current_price: float, lookback_days: int = lookback_days_param) -> tuple[float, float]:
         """Calculate performance ranking compared to other symbols."""
         try:
             logger.info(f"Calculating performance ranking for {self.symbol} at price {current_price:.2f} over {lookback_days} days")

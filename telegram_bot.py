@@ -816,6 +816,7 @@ Price Changes:
                                 f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n"
                                 f"Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}\n"
                                 f"💰 Trading Costs: ${result['metrics']['trading_costs']:.2f}\n"
+                                f"💵 Cash Allocation: {last_data_point['total_cash'] / last_data_point['portfolio_total'] * 100:.1f}%\n"  # Add this line
                             )
                             
                             turnover_msg = (
