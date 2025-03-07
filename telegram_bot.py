@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
-from config import TRADING_SYMBOLS, default_backtest_interval
+from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -814,6 +814,8 @@ Price Changes:
                                 f"Final Value: ${metrics['final_value']:,.2f}\n"
                                 f"Total Return: {metrics['total_return']:.2f}%\n"
                                 f"Max Drawdown: {metrics['max_drawdown']:.2f}%\n"
+                                f"Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}\n"
+                                f"💰 Trading Costs: ${result['metrics']['trading_costs']:.2f}\n"
                             )
                             
                             turnover_msg = (
@@ -945,7 +947,7 @@ Price Changes:
 • Max Drawdown: {stats['max_drawdown']:.2f}%
 • Sharpe Ratio: {stats['sharpe_ratio']:.2f}
 • 🔄 Portfolio Turnover: {stats.get('turnover', 0):.1%}
-{params_message}
+• 💰 Trading Costs: ${stats.get('trading_costs', 0):.2f}
                     """
                     
                     # Send plot and stats

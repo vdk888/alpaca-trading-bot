@@ -255,6 +255,7 @@ class TradingExecutor:
                 sending_message = f"""🔄 Sending BUY Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
 • Buy Percentage: {buy_percentage*100:.1f}%
+• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
 • Quantity: {new_qty}
 • Target Price: ${analysis['current_price']:.2f}
 • Order Value: ${notional_value:.2f}
@@ -288,6 +289,7 @@ class TradingExecutor:
                 message = f"""✅ BUY Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
 • Buy Percentage: {buy_percentage*100:.1f}%
+• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
 • Quantity: {new_qty}
 • Price: ${analysis['current_price']:.2f}
 • Order Value: ${(new_qty * analysis['current_price']):.2f}
@@ -335,6 +337,7 @@ class TradingExecutor:
                     # Notify that order is being sent
                     sending_message = f"""🔄 Sending SELL Order for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
+• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
 • Sell Percentage: {sell_percentage*100:.1f}%
 • Quantity to Sell: {qty_to_sell} of {total_qty}
 • Target Price: ${analysis['current_price']:.2f}
@@ -356,6 +359,7 @@ class TradingExecutor:
                     # Create detailed order confirmation message
                     message = f"""✅ SELL Order Executed for {get_display_symbol(self.symbol)} ({self.config['name']}):
 • Performance Rank: {rank:.2f}
+• Capital Multiplier: {PER_SYMBOL_CAPITAL_MULTIPLIER:.2f}
 • Sell Percentage: {sell_percentage*100:.1f}%
 • Quantity Sold: {qty_to_sell} of {total_qty}
 • Price: ${analysis['current_price']:.2f}

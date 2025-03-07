@@ -1,6 +1,9 @@
-# config.py
-
 import os
+import numpy as np
+import pandas as pd
+from datetime import datetime, timedelta
+import pytz
+import yfinance as yf
 
 ALPACA_PAPER = True
 ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
@@ -52,7 +55,7 @@ INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_D
 
 # Default backtest interval based on DEFAULT_INTERVAL
 default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 0.4  # Default to 2 years if no limit
-lookback_days_param = default_backtest_interval/5
+lookback_days_param = default_backtest_interval/4
 
 #1-minute interval: Maximum of 7 days of historical data.
 #5-minute interval: Maximum of 60 days of historical data.
@@ -60,19 +63,6 @@ lookback_days_param = default_backtest_interval/5
 #30-minute interval: Maximum of 60 days of historical data.
 #1-hour interval: Maximum of 730 days (2 years) of historical data.
 #Daily interval: No strict limit, can fetch data for the entire available history.
-
-
-PER_SYMBOL_CAPITAL_MULTIPLIER = 3
-initial_capital = 100000
-symbols = list(TRADING_SYMBOLS.keys())
-per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # Allow each symbol to potentially use full capital
-
-
-
-
-
-
-
 
 
 
@@ -349,3 +339,98 @@ param_grid = {
 
     ]
 }
+
+
+
+# Function to calculate dynamic capital multiplier based on asset performance
+def calculate_capital_multiplier(lookback_days=default_backtest_interval/2):
+    """
+    Calculate a dynamic capital multiplier based on asset performance.
+    
+    Args:
+        lookback_days: Number of days to look back for performance calculation
+        
+    Returns:
+        float: Capital multiplier between 1.0 and 3.0
+    """
+    try:
+        # Default return if calculation fails
+        default_multiplier = 2.0
+        
+        # Get end and start dates
+        end_date = datetime.now(pytz.UTC)
+        start_date = end_date - timedelta(days=lookback_days * 2)  # Double lookback for MA calculation
+        
+        # Collect performance data for all assets
+        performances = []
+        
+        for symbol, config in TRADING_SYMBOLS.items():
+            try:
+                # Get the yfinance symbol
+                yf_symbol = config['yfinance']
+                if '/' in yf_symbol:
+                    yf_symbol = yf_symbol.replace('/', '-')
+                
+                # Fetch historical data
+                ticker = yf.Ticker(yf_symbol)
+                data = ticker.history(start=start_date, end=end_date, interval=default_interval_yahoo)
+                
+                if len(data) >= 2:
+                    # Calculate performance as percent change
+                    start_price = data['Close'].iloc[0]
+                    end_price = data['Close'].iloc[-1]
+                    perf = ((end_price - start_price) / start_price) * 100
+                    performances.append(perf)
+            except Exception:
+                continue
+        
+        if not performances:
+            return default_multiplier
+        
+        # Convert to numpy array for calculations
+        performances = np.array(performances)
+        
+        # Calculate average performance
+        avg_perf = np.mean(performances)
+        
+        # Calculate moving average (simple approach for minimal code change)
+        # Use half the data points for the "previous" period
+        half_idx = len(performances) // 2
+        if half_idx > 0:
+            prev_avg = np.mean(performances[:half_idx])
+            # Calculate the standard deviation of the difference
+            std_diff = np.std([avg_perf, prev_avg])
+        else:
+            prev_avg = avg_perf
+            std_diff = 1.0  # Default if not enough data
+        
+        # Calculate difference between current average and moving average
+        diff = avg_perf - prev_avg
+        
+        # Normalize the difference by std_diff with bounds at -2std and 2std
+        if std_diff > 0:
+            normalized_diff = max(min(diff / (2 * std_diff), 2), -2)
+        else:
+            normalized_diff = 0
+        
+        # Apply sigmoid function to get a value between 0 and 1
+        sigmoid = 1 / (1 + np.exp(-normalized_diff))
+        
+        # Scale to range [1, 3]
+        multiplier = 1.0 + 2.0 * sigmoid
+        
+        return multiplier
+        
+    except Exception as e:
+        print(f"Error calculating capital multiplier: {str(e)}")
+        return default_multiplier
+
+
+# Set capital multiplier (computed once at module import)
+PER_SYMBOL_CAPITAL_MULTIPLIER = calculate_capital_multiplier(lookback_days_param/2)
+
+
+initial_capital = 100000
+symbols = list(TRADING_SYMBOLS.keys())
+per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER  # Allow each symbol to potentially use full capital
+

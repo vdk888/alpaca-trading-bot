@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, per_symbol_capital, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, per_symbol_capital, PER_SYMBOL_CAPITAL_MULTIPLIER, TRADING_COSTS
 import matplotlib
 matplotlib.use('Agg')  # Use Agg backend - must be before importing pyplot
 import matplotlib.pyplot as plt
@@ -183,6 +183,20 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
             }
         }
     }
+    
+    # Calculate portfolio trading costs
+    total_trading_costs = 0
+    for symbol in symbols:
+        symbol_trades = individual_results[symbol]['trades']
+        market_type = TRADING_SYMBOLS[symbol]['market']
+        costs = TRADING_COSTS[market_type]
+        
+        for trade in symbol_trades:
+            total_trading_costs += trade['value'] * costs['trading_fee']
+            total_trading_costs += trade['value'] * costs['spread'] / 2
+
+    # Add trading costs to metrics
+    result['metrics']['trading_costs'] = total_trading_costs
     
     # Calculate portfolio turnover
     portfolio_turnover = 0
