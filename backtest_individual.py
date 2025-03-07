@@ -172,7 +172,7 @@ def find_best_params(symbol: str,
                               is_simulating=True,
                               lookback_days_param=lookback_days_param)
         performance = result['stats'][
-            'sharpe_ratio']  # Use total return as the performance metric
+            'total_return']  # Use total return as the performance metric
         win_rate = result['stats']['win_rate']  # Example metric
         max_drawdown = result['stats']['max_drawdown']  # Example metric
         total_return = result['stats']['total_return']  # Example metric
