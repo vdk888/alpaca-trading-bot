@@ -593,12 +593,25 @@ def run_backtest(symbol: str,
 
         # Update portfolio value and shares owned after processing any trades
         current_value = cash + (position * current_price)
-        portfolio_value.append(current_value)
+        # Ensure we're tracking the actual portfolio value properly
+        if i < len(portfolio_value) - 1:
+            portfolio_value[i+1] = current_value
+        else:
+            portfolio_value.append(current_value)
         shares.append(position)
 
     # Calculate final portfolio value
-    final_value = cash + (position * data['close'].iloc[-1])
+    current_price = data['close'].iloc[-1]
+    final_value = cash + (position * current_price)
     total_return = ((final_value - initial_capital) / initial_capital) * 100
+    
+    # Debug info for return calculation
+    print(f"\nReturn calculation details:")
+    print(f"Initial capital: ${initial_capital:.2f}")
+    print(f"Final cash: ${cash:.2f}")
+    print(f"Final position: {position:.8f} shares at ${current_price:.2f} = ${position * current_price:.2f}")
+    print(f"Final portfolio value: ${final_value:.2f}")
+    print(f"Total return: {total_return:.2f}%")
 
     # Calculate performance metrics
     if trades:
