@@ -71,6 +71,7 @@ class TradingBot:
         application.add_handler(CommandHandler("portfolio", self.portfolio_command))
         application.add_handler(CommandHandler("invest", self.invest_command))
         application.add_handler(CommandHandler("rank", self.rank_command))
+        application.add_handler(CommandHandler("bestparams", self.best_params_command))
         
         # Add callback query handler for inline buttons
         application.add_handler(CallbackQueryHandler(self.button_callback))
@@ -159,6 +160,7 @@ class TradingBot:
 /signals - View latest signals for all symbols
 /backtest [symbol] [days] - Run backtest simulation (default: all symbols, 5 days)
 /backtest portfolio [days] - Run portfolio backtest (default: all symbols, 5 days)
+/bestparams [symbol] - Get best parameters (all symbols if none specified)
 
 💰 Trading Commands:
 /open <symbol> <amount> - Open a position with specified amount
@@ -1135,3 +1137,88 @@ Price Changes:
         except Exception as e:
             logger.error(f"Error in invest command: {str(e)}")
             await update.message.reply_text(f"❌ An error occurred: {str(e)}")
+
+    async def best_params_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Get best parameters for a symbol or all symbols"""
+        try:
+            # Check if a specific symbol was requested
+            symbol = context.args[0].upper() if context.args else None
+            
+            if symbol and symbol not in self.symbols:
+                await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
+                return
+                
+            try:
+                with open("best_params.json", "r") as f:
+                    best_params_data = json.load(f)
+            except FileNotFoundError:
+                await update.message.reply_text("❌ Best parameters file not found. Run backtest optimization first.")
+                return
+                
+            if symbol:
+                # Get best parameters for a specific symbol
+                if symbol in best_params_data:
+                    params = best_params_data[symbol]['best_params']
+                    metrics = best_params_data[symbol].get('metrics', {})
+                    date = best_params_data[symbol].get('date', 'Unknown')
+                    
+                    # Format the parameters
+                    params_text = f"📊 Best Parameters for {symbol} (Updated: {date}):\n\n"
+                    
+                    # Add metrics if available
+                    if metrics:
+                        params_text += "Performance Metrics:\n"
+                        params_text += f"• Performance: {metrics.get('performance', 'N/A'):.2f}%\n"
+                        params_text += f"• Win Rate: {metrics.get('win_rate', 'N/A'):.2f}%\n"
+                        params_text += f"• Max Drawdown: {metrics.get('max_drawdown', 'N/A'):.2f}%\n\n"
+                    
+                    params_text += "Parameters:\n"
+                    # Format fractal_lags as a list if it's a list
+                    for key, value in params.items():
+                        if key == 'weights':
+                            params_text += f"• {key}:\n"
+                            for weight_key, weight_value in value.items():
+                                params_text += f"  - {weight_key}: {weight_value}\n"
+                        elif key == 'fractal_lags' and isinstance(value, list):
+                            params_text += f"• {key}: {', '.join(map(str, value))}\n"
+                        else:
+                            params_text += f"• {key}: {value}\n"
+                    
+                    await update.message.reply_text(params_text)
+                else:
+                    await update.message.reply_text(f"❌ No best parameters found for {symbol}")
+            else:
+                # Get best parameters for all symbols
+                symbols_text = "📊 Best Parameters Summary for All Symbols:\n\n"
+                
+                for sym in self.symbols:
+                    if sym in best_params_data:
+                        date = best_params_data[sym].get('date', 'Unknown')
+                        metrics = best_params_data[sym].get('metrics', {})
+                        
+                        symbols_text += f"🔹 {sym} (Updated: {date}):\n"
+                        
+                        # Add key metrics
+                        if metrics:
+                            symbols_text += f"  • Performance: {metrics.get('performance', 'N/A'):.2f}%\n"
+                            symbols_text += f"  • Win Rate: {metrics.get('win_rate', 'N/A'):.2f}%\n"
+                            symbols_text += f"  • Max Drawdown: {metrics.get('max_drawdown', 'N/A'):.2f}%\n"
+                        
+                        # Add key parameters (only a subset for readability)
+                        params = best_params_data[sym]['best_params']
+                        symbols_text += "  • Key Parameters:\n"
+                        key_params = ['fractal_window', 'reactivity']
+                        for key in key_params:
+                            if key in params:
+                                symbols_text += f"    - {key}: {params[key]}\n"
+                        
+                        symbols_text += "\n"
+                    else:
+                        symbols_text += f"🔹 {sym}: No parameters available\n\n"
+                
+                symbols_text += "\nUse /bestparams <symbol> to see detailed parameters for a specific symbol."
+                await update.message.reply_text(symbols_text)
+                
+        except Exception as e:
+            logger.error(f"Error in best_params_command: {e}")
+            await update.message.reply_text(f"❌ Error retrieving best parameters: {str(e)}")
