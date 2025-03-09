@@ -93,7 +93,7 @@ class TradingStrategy:
                 client = Client()
                 
                 try:
-                    json_content = client.download_from_text("best_params.json")
+                    json_content = client.download_as_text("best_params.json")
                     best_params_data = json.loads(json_content)
                     if self.symbol in best_params_data:
                         params = best_params_data[self.symbol]['best_params']

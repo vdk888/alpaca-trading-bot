@@ -139,7 +139,7 @@ async def run_bot():
                             
                             # Try to get parameters from Object Storage
                             try:
-                                json_content = client.download_from_text("best_params.json")
+                                json_content = client.download_as_text("best_params.json")
                                 best_params_data = json.loads(json_content)
                                 if symbol in best_params_data:
                                     last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
@@ -226,7 +226,7 @@ async def run_bot():
                             
                             # Try to get parameters from Object Storage
                             try:
-                                json_content = client.download_from_text("best_params.json")
+                                json_content = client.download_as_text("best_params.json")
                                 best_params_data = json.loads(json_content)
                                 print("Successfully loaded best parameters from Object Storage")
                                 if symbol in best_params_data:

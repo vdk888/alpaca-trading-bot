@@ -118,7 +118,7 @@ def find_best_params(symbol: str,
     existing_data = {}
     try:
         # Try to get the file from Object Storage
-        json_content = client.download_from_text(output_file)
+        json_content = client.download_as_text(output_file)
         existing_data = json.loads(json_content)
         print(f"Successfully loaded {output_file} from Object Storage")
     except Exception as e:
@@ -321,7 +321,7 @@ def run_backtest(symbol: str,
     
     try:
         # Try to get parameters from Object Storage
-        json_content = client.download_from_text(best_params_file)
+        json_content = client.download_as_text(best_params_file)
         best_params_data = json.loads(json_content)
         print(f"Successfully loaded best parameters from Object Storage")
     except Exception as e:
