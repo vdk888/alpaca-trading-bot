@@ -11,3 +11,7 @@ ignorePorts = true
 
 [nix]
 channel = "stable-24_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
