@@ -44,7 +44,7 @@ def create_from_local(client, filename):
 def view_file(client, filename):
     """View a file from Object Storage"""
     try:
-        content = client.download_from_text(filename)
+        content = client.download_as_text(filename)
         
         # If content is JSON, pretty print it
         if filename.endswith('.json'):
