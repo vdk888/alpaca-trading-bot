@@ -299,10 +299,15 @@ async def run_and_send_backtest(symbol: str, trading_bot, days: int = lookback_d
         # Create plot and get stats
         plot_buffer, stats = create_backtest_plot(backtest_result)
         
+        # Debug info for return calculation
+        initial_capital = backtest_result['stats']['initial_capital']
+        final_value = backtest_result['stats']['final_value']
+        total_return = backtest_result['stats']['total_return']
+        
         # Send stats message
         stats_message = f"""
 📊 Backtest Results for {symbol} (Last {days} days):
-Total Return: {stats['total_return']:.2f}%
+Total Return: {total_return:.2f}%
 Total Trades: {stats['total_trades']}
 Win Rate: {stats['win_rate']:.2f}%
 Sharpe Ratio: {stats['sharpe_ratio']:.2f}
