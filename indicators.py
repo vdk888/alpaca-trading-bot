@@ -318,17 +318,42 @@ if __name__ == "__main__":
         "Volume": np.random.randint(1000, 5000, 100)
     }, index=pd.date_range(start="2023-01-01", periods=100))
     
+    # Example symbol for testing
+    symbol = "BTC/USD"
+    
     try:
-        with open("best_params.json", "r") as f:
-            best_params_data = json.load(f)
-            if self.symbol in best_params_data:
-                params = best_params_data[self.symbol]['best_params']
-                print(f"Using best parameters for {self.symbol}: {params}")
+        # Try to get parameters from Object Storage
+        from replit.object_storage import Client
+        
+        # Initialize Object Storage client
+        client = Client()
+        
+        try:
+            json_content = client.download_from_text("best_params.json")
+            best_params_data = json.loads(json_content)
+            if symbol in best_params_data:
+                params = best_params_data[symbol]['best_params']
+                print(f"Using best parameters for {symbol}: {params}")
             else:
-                print(f"No best parameters found for {self.symbol}. Using default parameters.")
+                print(f"No best parameters found for {symbol}. Using default parameters.")
                 params = get_default_params()
-    except FileNotFoundError:
-        print("Best parameters file not found. Using default parameters.")
+        except Exception as e:
+            print(f"Could not read from Object Storage: {e}")
+            # Try local file as fallback
+            try:
+                with open("best_params.json", "r") as f:
+                    best_params_data = json.load(f)
+                    if symbol in best_params_data:
+                        params = best_params_data[symbol]['best_params']
+                        print(f"Using best parameters for {symbol}: {params}")
+                    else:
+                        print(f"No best parameters found for {symbol}. Using default parameters.")
+                        params = get_default_params()
+            except FileNotFoundError:
+                print("Best parameters file not found. Using default parameters.")
+                params = get_default_params()
+    except Exception as e:
+        print(f"Error loading parameters: {e}")
         params = get_default_params()        
 
     

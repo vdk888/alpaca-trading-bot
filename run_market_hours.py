@@ -148,13 +148,17 @@ async def run_bot():
                             except Exception as e:
                                 logger.warning(f"Could not read from Object Storage: {str(e)}")
                                 # Try local file as fallback
-                                with open("best_params.json", "r") as f:
-                                    best_params_data = json.load(f)
-                                    if symbol in best_params_data:
-                                        last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
-                                        days_since_update = (datetime.datetime.now() - last_update).days
-                                        needs_update = days_since_update >= 7  # Update weekly
-                        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+                                try:
+                                    with open("best_params.json", "r") as f:
+                                        best_params_data = json.load(f)
+                                        if symbol in best_params_data:
+                                            last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
+                                            days_since_update = (datetime.datetime.now() - last_update).days
+                                            needs_update = days_since_update >= 7  # Update weekly
+                                except FileNotFoundError:
+                                    logger.warning(f"Local best_params.json not found for {symbol}")
+                                    needs_update = True
+                        except (json.JSONDecodeError, KeyError) as e:
                             logger.warning(f"Could not read best_params.json for {symbol}: {str(e)}")
                             needs_update = True
                             

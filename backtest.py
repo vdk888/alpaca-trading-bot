@@ -31,18 +31,40 @@ def is_market_hours(timestamp, market_hours):
 
 def run_backtest(symbol: str, days: int = default_backtest_interval, initial_capital: float = 100000) -> dict:
     """Run backtest simulation for a symbol over specified number of days"""
-    # Load the best parameters from JSON based on the symbol
+    # Load the best parameters from Object Storage based on the symbol
     try:
-        with open("best_params.json", "r") as f:
-            best_params_data = json.load(f)
+        from replit.object_storage import Client
+        
+        # Initialize Object Storage client
+        client = Client()
+        
+        # Try to get parameters from Object Storage
+        try:
+            json_content = client.download_from_text("best_params.json")
+            best_params_data = json.loads(json_content)
             if symbol in best_params_data:
                 params = best_params_data[symbol]['best_params']
                 print(f"Using best parameters for {symbol}: {params}")
             else:
                 print(f"No best parameters found for {symbol}. Using default parameters.")
                 params = get_default_params()
-    except FileNotFoundError:
-        print("Best parameters file not found. Using default parameters.")
+        except Exception as e:
+            print(f"Could not read from Object Storage: {e}")
+            # Try local file as fallback
+            try:
+                with open("best_params.json", "r") as f:
+                    best_params_data = json.load(f)
+                    if symbol in best_params_data:
+                        params = best_params_data[symbol]['best_params']
+                        print(f"Using best parameters for {symbol}: {params}")
+                    else:
+                        print(f"No best parameters found for {symbol}. Using default parameters.")
+                        params = get_default_params()
+            except FileNotFoundError:
+                print("Best parameters file not found. Using default parameters.")
+                params = get_default_params()
+    except Exception as e:
+        print(f"Error loading parameters: {e}")
         params = get_default_params()
 
     # Call the individual backtest with our parameters
