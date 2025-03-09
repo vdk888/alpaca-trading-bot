@@ -105,29 +105,32 @@ param_grid = {
 def find_best_params(symbol: str,
                      param_grid: dict,
                      days: int = default_backtest_interval,
-                     output_file: str = None) -> dict:
+                     output_file: str = "best_params.json") -> dict:
     """Find the best parameter set by running a backtest for each combination."""
-    # Determine appropriate output file path based on environment
-    if output_file is None:
-        # Check if running on Replit
-        if 'REPL_ID' in os.environ:
-            # Get the Replit slug (project name)
-            repl_slug = os.environ.get('REPL_SLUG', '')
-            # Use Replit's persistent storage location
-            output_file = os.path.join('/home/runner', repl_slug, 'best_params.json')
-        else:
-            # Use current directory for local development
-            output_file = "best_params.json"
-    """Find the best parameter set by running a backtest for each combination."""
+    from replit.object_storage import Client
+    
+    # Initialize Object Storage client
+    client = Client()
     param_names = list(param_grid.keys())
     param_values = [param_grid[name] for name in param_names]
 
     # Load existing data to check the last update date
+    existing_data = {}
     try:
-        with open(output_file, "r") as f:
-            existing_data = json.load(f)
-    except FileNotFoundError:
-        existing_data = {}
+        # Try to get the file from Object Storage
+        json_content = client.download_from_text(output_file)
+        existing_data = json.loads(json_content)
+        print(f"Successfully loaded {output_file} from Object Storage")
+    except Exception as e:
+        print(f"File not found in Object Storage or error reading: {e}")
+        # Try local file as fallback
+        try:
+            with open(output_file, "r") as f:
+                existing_data = json.load(f)
+                print(f"Loaded {output_file} from local filesystem")
+        except FileNotFoundError:
+            print(f"Creating new {output_file} as it doesn't exist")
+            existing_data = {}
 
     # Check if the current symbol exists in the JSON data
     last_update_date = None
@@ -202,6 +205,11 @@ def find_best_params(symbol: str,
 
     # Save best parameters and metrics to JSON
     if output_file:
+        from replit.object_storage import Client
+        
+        # Initialize Object Storage client
+        client = Client()
+        
         # Create or update history
         history = []
         if symbol in existing_data:
@@ -234,11 +242,17 @@ def find_best_params(symbol: str,
             'history': history  # Include the history
         }
 
-        # Write updated data back to JSON
-        with open(output_file, "w") as f:
-            json.dump(existing_data, f, indent=4)
+        # Write updated data to Object Storage
+        client.upload_from_text(output_file, json.dumps(existing_data, indent=4))
+        
+        # Also save to local file as a backup
+        try:
+            with open(output_file, "w") as f:
+                json.dump(existing_data, f, indent=4)
+        except Exception as e:
+            print(f"Warning: Could not save to local file: {e}")
 
-    print(f"Best params and metrics for {symbol} saved to {output_file}")
+    print(f"Best params and metrics for {symbol} saved to Object Storage and local file")
     return best_params
 
 
@@ -298,13 +312,28 @@ def run_backtest(symbol: str,
 
         prices_dataset[sym] = market_hours_data
 
-    # Load the best parameters from JSON based on the symbol
+    # Load the best parameters from Object Storage based on the symbol
+    from replit.object_storage import Client
+    
+    # Initialize Object Storage client
+    client = Client()
+    best_params_file = "best_params.json"
+    
     try:
-        with open("best_params.json", "r") as f:
-            best_params_data = json.load(f)
-    except FileNotFoundError:
-        print("Best parameters file not found. Using default parameters.")
-        best_params_data = {}
+        # Try to get parameters from Object Storage
+        json_content = client.download_from_text(best_params_file)
+        best_params_data = json.loads(json_content)
+        print(f"Successfully loaded best parameters from Object Storage")
+    except Exception as e:
+        print(f"Could not read from Object Storage: {e}")
+        # Try local file as fallback
+        try:
+            with open(best_params_file, "r") as f:
+                best_params_data = json.load(f)
+                print("Loaded best parameters from local file")
+        except FileNotFoundError:
+            print("Best parameters file not found. Using default parameters.")
+            best_params_data = {}
 
     if is_simulating == False:
         if symbol in best_params_data:

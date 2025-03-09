@@ -41,16 +41,33 @@ class TradingBot:
         self.setup_handlers(self.application)
             
     def get_best_params(self, symbol):
-            """Get best parameters for a symbol from JSON file"""
+            """Get best parameters for a symbol from Object Storage"""
             try:
-                with open("best_params.json", "r") as f:
-                    best_params_data = json.load(f)
+                from replit.object_storage import Client
+                
+                # Initialize Object Storage client
+                client = Client()
+                
+                # Try to get parameters from Object Storage
+                json_content = client.download_from_text("best_params.json")
+                best_params_data = json.loads(json_content)
+                
                 if symbol in best_params_data:
                     return best_params_data[symbol]['best_params']
                 else:
                     return "Using default parameters"
-            except FileNotFoundError:
-                return "Using default parameters"
+            except Exception as e:
+                logger.error(f"Error reading from Object Storage: {e}")
+                # Try local file as fallback
+                try:
+                    with open("best_params.json", "r") as f:
+                        best_params_data = json.load(f)
+                    if symbol in best_params_data:
+                        return best_params_data[symbol]['best_params']
+                    else:
+                        return "Using default parameters"
+                except FileNotFoundError:
+                    return "Using default parameters"
 
     def setup_handlers(self, application: Application):
         """Setup all command handlers"""
@@ -1149,10 +1166,25 @@ Price Changes:
                 return
                 
             try:
-                with open("best_params.json", "r") as f:
-                    best_params_data = json.load(f)
-            except FileNotFoundError:
+                from replit.object_storage import Client
+                
+                # Initialize Object Storage client
+                client = Client()
+                
+                # Try to get parameters from Object Storage
+                try:
+                    json_content = client.download_from_text("best_params.json")
+                    best_params_data = json.loads(json_content)
+                    logger.info("Successfully loaded best parameters from Object Storage")
+                except Exception as e:
+                    logger.error(f"Error reading from Object Storage: {e}")
+                    # Try local file as fallback
+                    with open("best_params.json", "r") as f:
+                        best_params_data = json.load(f)
+                        logger.info("Loaded best parameters from local file")
+            except Exception as e:
                 await update.message.reply_text("❌ Best parameters file not found. Run backtest optimization first.")
+                logger.error(f"Failed to read best_params.json: {e}")
                 return
                 
             if symbol:
