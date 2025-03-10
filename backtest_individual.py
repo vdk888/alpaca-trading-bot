@@ -688,10 +688,23 @@ def run_backtest(symbol: str,
                                                    excess_returns.std())
         else:
             sharpe_ratio = 0
+            
+        # Calculate portfolio turnover
+        turnover = 0
+        if len(portfolio_value) > 1:
+            buys = sum(t['value'] for t in trades if t['type'] == 'buy')
+            sells = sum(t.get('value', t.get('gross_value', 0)) for t in trades if t['type'] == 'sell')
+            avg_portfolio_value = np.mean(portfolio_value)
+            turnover = min(buys, sells) / avg_portfolio_value if avg_portfolio_value > 0 else 0
+            
+        # Calculate total trading costs
+        total_trading_costs = sum(t.get('trading_costs', 0) for t in trades)
     else:
         win_rate = 0
         max_drawdown = 0
         sharpe_ratio = 0
+        turnover = 0
+        total_trading_costs = 0
 
     return {
         'symbol': symbol,
@@ -710,6 +723,8 @@ def run_backtest(symbol: str,
             'win_rate': win_rate,
             'max_drawdown': max_drawdown,
             'sharpe_ratio': sharpe_ratio,
+            'turnover': turnover,
+            'trading_costs': total_trading_costs,
             'params_used': params
         }
     }

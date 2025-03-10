@@ -113,8 +113,12 @@ def run_backtest(symbol: str, days: int = default_backtest_interval, initial_cap
         avg_portfolio_value = np.mean(portfolio_values)
         turnover = min(buys, sells) / avg_portfolio_value
     
-    # Add turnover to stats
+    # Calculate total trading costs
+    total_trading_costs = sum(t.get('trading_costs', 0) for t in scaled_trades)
+    
+    # Add turnover and trading costs to stats
     result['stats']['turnover'] = turnover
+    result['stats']['trading_costs'] = total_trading_costs
     
     # Format the result to match the original function's output format exactly
     return {
@@ -129,7 +133,8 @@ def run_backtest(symbol: str, days: int = default_backtest_interval, initial_cap
             'win_rate': result['stats']['win_rate'],
             'max_drawdown': result['stats']['max_drawdown'],
             'sharpe_ratio': result['stats']['sharpe_ratio'],
-            'turnover': turnover
+            'turnover': turnover,
+            'trading_costs': total_trading_costs
         }
     }
 
@@ -211,11 +216,19 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     for symbol in symbols:
         symbol_trades = individual_results[symbol]['trades']
         market_type = TRADING_SYMBOLS[symbol]['market']
-        costs = TRADING_COSTS[market_type]
+        costs = TRADING_COSTS.get(market_type, TRADING_COSTS['DEFAULT'])
         
         for trade in symbol_trades:
-            total_trading_costs += trade['value'] * costs['trading_fee']
-            total_trading_costs += trade['value'] * costs['spread'] / 2
+            # Use the trading_costs field if available, otherwise calculate it
+            if 'trading_costs' in trade:
+                total_trading_costs += trade['trading_costs']
+            else:
+                if trade['type'] == 'buy':
+                    # For buys: full spread + fee
+                    total_trading_costs += trade['value'] * (costs['trading_fee'] + costs['spread'])
+                else:
+                    # For sells: half spread + fee
+                    total_trading_costs += trade['value'] * (costs['trading_fee'] + costs['spread'] / 2)
 
     # Add trading costs to metrics
     result['metrics']['trading_costs'] = total_trading_costs
@@ -226,11 +239,15 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
         portfolio_trades = []
         for symbol in symbols:
             symbol_trades = individual_results[symbol]['trades']
-            portfolio_trades.extend(symbol_trades)
+            # Add symbol reference to each trade for proper signal lookup
+            for trade in symbol_trades:
+                trade_copy = trade.copy()
+                trade_copy['symbol'] = symbol
+                portfolio_trades.append(trade_copy)
         
         # Calculate detailed turnover metrics
-        buy_trades = [t for t in portfolio_trades if individual_results[t.get('symbol', symbol)]['data'].loc[t['time'], 'signal'] == 1]
-        sell_trades = [t for t in portfolio_trades if individual_results[t.get('symbol', symbol)]['data'].loc[t['time'], 'signal'] == -1]
+        buy_trades = [t for t in portfolio_trades if individual_results[t['symbol']]['data'].loc[t['time'], 'signal'] == 1]
+        sell_trades = [t for t in portfolio_trades if individual_results[t['symbol']]['data'].loc[t['time'], 'signal'] == -1]
         
         total_trades = len(buy_trades) + len(sell_trades)
         total_buy_value = sum(t['value'] for t in buy_trades)
@@ -238,7 +255,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
         avg_buy_size = total_buy_value / len(buy_trades) if buy_trades else 0
         avg_sell_size = total_sell_value / len(sell_trades) if sell_trades else 0
         avg_portfolio_value = np.mean(portfolio_data['portfolio_total'])
-        turnover = min(total_buy_value, total_sell_value) / avg_portfolio_value
+        turnover = min(total_buy_value, total_sell_value) / avg_portfolio_value if avg_portfolio_value > 0 else 0
         
         turnover_metrics = {
             'turnover': turnover,
