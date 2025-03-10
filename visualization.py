@@ -364,6 +364,12 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
             ax2.plot(session_data.index, session_data['daily_down_lim'], '--', 
                     label='Lower Limit' if session_data is sessions_signals[0] else "", 
                     color='red')
+            ax2.plot(session_data.index, session_data['daily_up_lim_2std'], ':', 
+                    label='Upper 2 STD' if session_data is sessions_signals[0] else "", 
+                    color='green', alpha=0.7)
+            ax2.plot(session_data.index, session_data['daily_down_lim_2std'], ':', 
+                    label='Lower 2 STD' if session_data is sessions_signals[0] else "", 
+                    color='red', alpha=0.7)
             
             last_timestamp = session_data.index[-1]
         
@@ -399,6 +405,12 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
             ax3.plot(session_data.index, session_data['weekly_down_lim'], '--', 
                     label='Lower Limit' if session_data is sessions_signals[0] else "", 
                     color='red')
+            ax3.plot(session_data.index, session_data['weekly_up_lim_2std'], ':', 
+                    label='Upper 2 STD' if session_data is sessions_signals[0] else "", 
+                    color='green', alpha=0.7)
+            ax3.plot(session_data.index, session_data['weekly_down_lim_2std'], ':', 
+                    label='Lower 2 STD' if session_data is sessions_signals[0] else "", 
+                    color='red', alpha=0.7)
             
             last_timestamp = session_data.index[-1]
         

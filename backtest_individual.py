@@ -947,6 +947,18 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
              color='red',
              alpha=0.6,
              label='Lower Limit')
+    ax2.plot(daily_data.index,
+             daily_data['Up_Lim_2STD'],
+             ':',
+             color='green',
+             alpha=0.7,
+             label='Upper 2 STD')
+    ax2.plot(daily_data.index,
+             daily_data['Down_Lim_2STD'],
+             ':',
+             color='red',
+             alpha=0.7,
+             label='Lower 2 STD')
     ax2.fill_between(daily_data.index,
                      daily_data['Up_Lim'],
                      daily_data['Down_Lim'],
@@ -979,6 +991,18 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
              color='red',
              alpha=0.6,
              label='Lower Limit')
+    ax3.plot(weekly_data.index,
+             weekly_data['Up_Lim_2STD'],
+             ':',
+             color='green',
+             alpha=0.7,
+             label='Upper 2 STD')
+    ax3.plot(weekly_data.index,
+             weekly_data['Down_Lim_2STD'],
+             ':',
+             color='red',
+             alpha=0.7,
+             label='Lower 2 STD')
     ax3.fill_between(weekly_data.index,
                      weekly_data['Up_Lim'],
                      weekly_data['Down_Lim'],

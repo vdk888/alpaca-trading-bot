@@ -244,6 +244,8 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
         daily_composite=daily_data['Composite'],
         daily_down_lim=daily_data['Down_Lim'],
         daily_up_lim=daily_data['Up_Lim'],
+        daily_down_lim_2std=daily_data['Down_Lim_2STD'],
+        daily_up_lim_2std=daily_data['Up_Lim_2STD'],
         weekly_composite=weekly_resampled['Composite'],
         weekly_down_lim=weekly_resampled['Down_Lim'],
         weekly_up_lim=weekly_resampled['Up_Lim'],
@@ -254,8 +256,8 @@ def generate_signals(data: pd.DataFrame, params: Dict[str, Union[float, int]], r
     # Generate buy signals (daily crossing above upper limit or crossing above -2std)
     buy_mask = ((daily_data['Composite'] > daily_data['Up_Lim']) & 
                (daily_data['Composite'].shift(1) <= daily_data['Up_Lim'].shift(1))) | \
-              ((daily_data['Composite'] > daily_data['Down_Lim_2STD']) & 
-               (daily_data['Composite'].shift(1) <= daily_data['Down_Lim_2STD'].shift(1)))
+              ((daily_data['Composite'] > daily_data['Up_Lim_2STD']) & 
+               (daily_data['Composite'].shift(1) <= daily_data['Up_Lim_2STD'].shift(1)))
     signals.loc[buy_mask, 'signal'] = 1
     
     # Generate sell signals (weekly crossing below either upper or lower limit, or crossing below ±2std)
