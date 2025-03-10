@@ -840,12 +840,24 @@ Price Changes:
                             
                             turnover_msg = (
                                 f"\n🔄 Portfolio Turnover: {metrics['turnover']['turnover']:.1%}\n"
-                                f"📊 Trades: {metrics['turnover']['total_trades']} (Buy: {metrics['turnover']['buy_trades']}, Sell: {metrics['turnover']['sell_trades']})\n"
-                                f"💰 Total Buy Value: ${metrics['turnover']['total_buy_value']:,.2f}\n"
-                                f"💰 Total Sell Value: ${metrics['turnover']['total_sell_value']:,.2f}\n"
-                                f"📦 Avg Buy Size: ${metrics['turnover']['avg_buy_size']:,.2f}\n"
-                                f"📦 Avg Sell Size: ${metrics['turnover']['avg_sell_size']:,.2f}\n\n"
                             )
+                            
+                            # Check which turnover metrics structure we have
+                            if 'total_trades' in metrics['turnover']:
+                                # Old structure
+                                turnover_msg += (
+                                    f"📊 Trades: {metrics['turnover']['total_trades']} (Buy: {metrics['turnover']['buy_trades']}, Sell: {metrics['turnover']['sell_trades']})\n"
+                                    f"💰 Total Buy Value: ${metrics['turnover']['total_buy_value']:,.2f}\n"
+                                    f"💰 Total Sell Value: ${metrics['turnover']['total_sell_value']:,.2f}\n"
+                                    f"📦 Avg Buy Size: ${metrics['turnover']['avg_buy_size']:,.2f}\n"
+                                    f"📦 Avg Sell Size: ${metrics['turnover']['avg_sell_size']:,.2f}\n\n"
+                                )
+                            else:
+                                # New structure
+                                turnover_msg += (
+                                    f"💰 Total Position Changes: ${metrics['turnover']['total_position_changes']:,.2f}\n"
+                                    f"📦 Avg Portfolio Value: ${metrics['turnover']['avg_portfolio_value']:,.2f}\n\n"
+                                )
                             summary += turnover_msg
                             
                             # Add returns and allocations for each asset
