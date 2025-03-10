@@ -213,59 +213,75 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     
     # Calculate portfolio trading costs
     total_trading_costs = 0
+    
+    # Calculate actual allocation percentages for each symbol over time
+    symbol_allocations = {}
+    for symbol in symbols:
+        symbol_values = portfolio_data[f'{symbol}_value']
+        total_portfolio = portfolio_data['portfolio_total']
+        symbol_allocations[symbol] = symbol_values / total_portfolio
+    
+    # Calculate scaled trading costs based on actual portfolio allocation
     for symbol in symbols:
         symbol_trades = individual_results[symbol]['trades']
         market_type = TRADING_SYMBOLS[symbol]['market']
         costs = TRADING_COSTS.get(market_type, TRADING_COSTS['DEFAULT'])
         
         for trade in symbol_trades:
-            # Use the trading_costs field if available, otherwise calculate it
+            # Get the allocation percentage at the time of the trade
+            trade_time = trade['time']
+            if trade_time in symbol_allocations[symbol].index:
+                allocation_pct = symbol_allocations[symbol].loc[trade_time]
+                # If allocation is zero, use the next available value
+                if pd.isna(allocation_pct) or allocation_pct == 0:
+                    allocation_pct = symbol_allocations[symbol].loc[trade_time:].dropna().iloc[0] if not symbol_allocations[symbol].loc[trade_time:].dropna().empty else 0
+            else:
+                # If time not found, use the closest previous time
+                prev_times = symbol_allocations[symbol].index[symbol_allocations[symbol].index <= trade_time]
+                allocation_pct = symbol_allocations[symbol].loc[prev_times[-1]] if len(prev_times) > 0 else 0
+            
+            # Scale the trading costs by the actual allocation percentage
             if 'trading_costs' in trade:
-                total_trading_costs += trade['trading_costs']
+                scaled_cost = trade['trading_costs'] * (allocation_pct if allocation_pct > 0 else 1/len(symbols))
             else:
                 if trade['type'] == 'buy':
                     # For buys: full spread + fee
-                    total_trading_costs += trade['value'] * (costs['trading_fee'] + costs['spread'])
+                    cost = trade['value'] * (costs['trading_fee'] + costs['spread'])
                 else:
                     # For sells: half spread + fee
-                    total_trading_costs += trade['value'] * (costs['trading_fee'] + costs['spread'] / 2)
+                    cost = trade['value'] * (costs['trading_fee'] + costs['spread'] / 2)
+                scaled_cost = cost * (allocation_pct if allocation_pct > 0 else 1/len(symbols))
+            
+            total_trading_costs += scaled_cost
 
     # Add trading costs to metrics
     result['metrics']['trading_costs'] = total_trading_costs
     
-    # Calculate portfolio turnover
-    portfolio_turnover = 0
+    # Calculate portfolio turnover based on actual portfolio changes
     if len(portfolio_data) > 1:
-        portfolio_trades = []
+        # Calculate the sum of actual position changes (not individual trades)
+        position_values = {}
         for symbol in symbols:
-            symbol_trades = individual_results[symbol]['trades']
-            # Add symbol reference to each trade for proper signal lookup
-            for trade in symbol_trades:
-                trade_copy = trade.copy()
-                trade_copy['symbol'] = symbol
-                portfolio_trades.append(trade_copy)
+            position_values[symbol] = portfolio_data[f'{symbol}_value']
         
-        # Calculate detailed turnover metrics
-        buy_trades = [t for t in portfolio_trades if individual_results[t['symbol']]['data'].loc[t['time'], 'signal'] == 1]
-        sell_trades = [t for t in portfolio_trades if individual_results[t['symbol']]['data'].loc[t['time'], 'signal'] == -1]
+        # Calculate daily position changes
+        daily_changes = pd.DataFrame(index=portfolio_data.index)
+        for symbol in symbols:
+            daily_changes[symbol] = position_values[symbol].diff().abs()
         
-        total_trades = len(buy_trades) + len(sell_trades)
-        total_buy_value = sum(t['value'] for t in buy_trades)
-        total_sell_value = sum(t['value'] for t in sell_trades)
-        avg_buy_size = total_buy_value / len(buy_trades) if buy_trades else 0
-        avg_sell_size = total_sell_value / len(sell_trades) if sell_trades else 0
-        avg_portfolio_value = np.mean(portfolio_data['portfolio_total'])
-        turnover = min(total_buy_value, total_sell_value) / avg_portfolio_value if avg_portfolio_value > 0 else 0
+        # Sum up all absolute changes
+        total_position_changes = daily_changes.sum().sum() / 2  # Divide by 2 to count only buys or sells
+        
+        # Calculate average portfolio value
+        avg_portfolio_value = portfolio_data['portfolio_total'].mean()
+        
+        # Calculate turnover as total changes divided by average portfolio value
+        turnover = total_position_changes / avg_portfolio_value if avg_portfolio_value > 0 else 0
         
         turnover_metrics = {
             'turnover': turnover,
-            'total_trades': total_trades,
-            'buy_trades': len(buy_trades),
-            'sell_trades': len(sell_trades),
-            'total_buy_value': total_buy_value,
-            'total_sell_value': total_sell_value,
-            'avg_buy_size': avg_buy_size,
-            'avg_sell_size': avg_sell_size
+            'total_position_changes': total_position_changes,
+            'avg_portfolio_value': avg_portfolio_value
         }
         
         result['metrics']['turnover'] = turnover_metrics
