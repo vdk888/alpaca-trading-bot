@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pytz
 import yfinance as yf
 
-ALPACA_PAPER = True
+ALPACA_PAPER = False
 ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
 ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
 
