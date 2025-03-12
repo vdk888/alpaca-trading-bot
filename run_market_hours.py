@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import logging
 from telegram import Update, Bot
 from backtest_individual import find_best_params
-from config import TRADING_SYMBOLS, param_grid, lookback_days_param
+from config import TRADING_SYMBOLS, param_grid, lookback_days_param, ALPACA_PAPER
 import json
 from backtest_individual import run_backtest, create_backtest_plot
 import io
@@ -93,7 +93,8 @@ async def run_bot():
     # Initialize clients
     trading_client = TradingClient(
         os.getenv('ALPACA_API_KEY'),
-        os.getenv('ALPACA_SECRET_KEY')
+        os.getenv('ALPACA_SECRET_KEY'),
+        paper=ALPACA_PAPER
     )
     
     # Initialize strategies for each symbol
