@@ -299,8 +299,6 @@ Quantity: {position.qty}
 Entry Price: ${float(position.avg_entry_price):.2f}
 Current Price: ${float(position.current_price):.2f}
 Market Value: ${market_value:.2f}
-Cash Balance: ${float(account.cash):.2f}
-Total Portfolio Value: ${float(account.portfolio_value):.2f}
 Account Exposure: {exposure_percentage:.2f}%
 Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized_plpc)*100:.2f}%)"""
                     except Exception as e:
@@ -357,6 +355,8 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
 💼 Portfolio Summary:
 Total Position Value: ${total_market_value:.2f}
 Total Account Exposure: {total_exposure:.2f}%
+Cash Balance: ${float(account.cash):.2f}
+Total Portfolio Value: ${float(account.portfolio_value):.2f}
 Total Unrealized P&L: ${total_pnl:.2f}
 
 Open Positions:
