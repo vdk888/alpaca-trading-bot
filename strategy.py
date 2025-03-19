@@ -6,6 +6,8 @@ import logging
 import pytz
 import json
 import config
+from config import lookback_days_param
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ class TradingStrategy:
         """Initialize historical data for the strategy"""
         try:
             # Fetch 3 days of historical data
-            self.data = fetch_historical_data(self.symbol, self.interval, days=30)
+            self.data = fetch_historical_data(self.symbol, self.interval, days=int(lookback_days_param))
             self.last_update = pd.Timestamp.now(tz=pytz.UTC)
             logger.info(f"Initialized data for {self.symbol}: {len(self.data)} bars")
         except Exception as e:
