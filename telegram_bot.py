@@ -89,6 +89,7 @@ class TradingBot:
         application.add_handler(CommandHandler("invest", self.invest_command))
         application.add_handler(CommandHandler("rank", self.rank_command))
         application.add_handler(CommandHandler("bestparams", self.best_params_command))
+        application.add_handler(CommandHandler("orders", self.orders_command))
         
         # Add callback query handler for inline buttons
         application.add_handler(CallbackQueryHandler(self.button_callback))
@@ -170,6 +171,7 @@ class TradingBot:
 /balance - Check account balance
 /performance - View today's performance
 /rank - View performance ranking of all assets
+/orders [symbol] [limit] - View past orders (all orders if no symbol specified)
 
 📈 Analysis Commands:
 /indicators [symbol] - View current indicator values
@@ -1268,3 +1270,266 @@ Price Changes:
         except Exception as e:
             logger.error(f"Error in best_params_command: {e}")
             await update.message.reply_text(f"❌ Error retrieving best parameters: {str(e)}")
+
+    async def orders_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """View past orders from Alpaca account.
+        
+        Usage:
+        /orders - Get 20 most recent orders
+        /orders all - Get all orders
+        /orders <symbol> [limit] - Get orders for a specific symbol with optional limit
+        """
+        try:
+            from helpers.alpaca_service import AlpacaService
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            import pandas as pd
+            import io
+            import yfinance as yf
+            from datetime import datetime, timedelta
+            import pytz
+            from config import TRADING_SYMBOLS
+            from utils import get_api_symbol, get_display_symbol
+            
+            # Initialize AlpacaService with trading client credentials
+            alpaca_service = AlpacaService(
+                api_key=self.trading_client._api_key,
+                secret_key=self.trading_client._secret_key
+            )
+            
+            # Parse arguments
+            args = context.args
+            
+            # Default values
+            limit = 20
+            symbol = None
+            get_all = False
+            
+            # Parse command arguments
+            if args:
+                if args[0].lower() == 'all':
+                    get_all = True
+                    limit = 500  # Set a reasonable upper limit
+                elif args[0].upper() in self.symbols or args[0].upper() in [get_api_symbol(s) for s in self.symbols]:
+                    # Handle symbol argument
+                    symbol = args[0].upper()
+                    # Check if symbol needs to be converted from display to API format
+                    if symbol in self.symbols:
+                        api_symbol = get_api_symbol(symbol)
+                    else:
+                        api_symbol = symbol
+                        symbol = get_display_symbol(api_symbol)
+                    
+                    # Check for limit argument
+                    if len(args) > 1:
+                        if args[1].lower() == 'all':
+                            limit = 500  # Set a reasonable upper limit
+                        else:
+                            try:
+                                limit = int(args[1])
+                                if limit <= 0:
+                                    await update.message.reply_text("❌ Limit must be a positive number")
+                                    return
+                            except ValueError:
+                                await update.message.reply_text("❌ Invalid limit. Please provide a number or 'all'")
+                                return
+                else:
+                    try:
+                        # Try to parse as a limit
+                        limit = int(args[0])
+                        if limit <= 0:
+                            await update.message.reply_text("❌ Limit must be a positive number")
+                            return
+                    except ValueError:
+                        await update.message.reply_text(f"❌ Invalid argument: {args[0]}. Use /orders, /orders all, or /orders <symbol> [limit]")
+                        return
+            
+            # Get orders from Alpaca
+            orders = alpaca_service.get_recent_trades(limit=limit)
+            
+            # Filter by symbol if specified
+            if symbol:
+                orders = [order for order in orders if order['symbol'] == api_symbol]
+                
+                if not orders:
+                    await update.message.reply_text(f"❌ No orders found for {symbol}")
+                    return
+            
+            # Format orders for display
+            if orders:
+                # Group orders by symbol for better readability
+                orders_by_symbol = {}
+                for order in orders:
+                    sym = order['symbol']
+                    display_sym = get_display_symbol(sym)
+                    if display_sym not in orders_by_symbol:
+                        orders_by_symbol[display_sym] = []
+                    orders_by_symbol[display_sym].append(order)
+                
+                # Create message with orders grouped by symbol
+                message = f"📋 Past Orders ({len(orders)} total):\n\n"
+                
+                for sym, sym_orders in orders_by_symbol.items():
+                    message += f"🔹 {sym} ({len(sym_orders)} orders):\n"
+                    
+                    for i, order in enumerate(sym_orders[:10]):  # Show max 10 orders per symbol in text
+                        # Format dates
+                        submitted_at = order['submitted_at']
+                        if isinstance(submitted_at, str):
+                            submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+                        
+                        filled_at = order['filled_at']
+                        if filled_at and isinstance(filled_at, str):
+                            filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
+                            filled_time = filled_at.strftime('%Y-%m-%d %H:%M:%S')
+                        else:
+                            filled_time = "Not filled"
+                        
+                        # Format order details
+                        side_emoji = "🟢" if order['side'] == 'BUY' else "🔴"
+                        price = f"${order['filled_avg_price']:.2f}" if order['filled_avg_price'] else "N/A"
+                        
+                        message += f"  {i+1}. {side_emoji} {order['side']} {order['filled_qty']} @ {price} - {filled_time} - {order['status']}\n"
+                    
+                    if len(sym_orders) > 10:
+                        message += f"  ... and {len(sym_orders) - 10} more orders\n"
+                    
+                    message += "\n"
+                
+                # Send the message
+                await update.message.reply_text(message)
+                
+                # If a specific symbol was requested with a limit, generate a chart
+                if symbol and limit > 0:
+                    await update.message.reply_text(f"Generating chart for {symbol} with last {len(orders)} orders...")
+                    
+                    try:
+                        # Get the correct Yahoo Finance symbol
+                        symbol_config = TRADING_SYMBOLS.get(symbol)
+                        if not symbol_config:
+                            await update.message.reply_text(f"❌ Symbol configuration not found for {symbol}")
+                            return
+                            
+                        yf_symbol = symbol_config['yfinance']
+                        
+                        # Get the earliest order date to determine chart start date
+                        earliest_order_date = None
+                        for order in orders:
+                            submitted_at = order['submitted_at']
+                            if isinstance(submitted_at, str):
+                                submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+                            
+                            if earliest_order_date is None or submitted_at < earliest_order_date:
+                                earliest_order_date = submitted_at
+                        
+                        # Add buffer days before earliest order
+                        if earliest_order_date:
+                            start_date = earliest_order_date - timedelta(days=5)
+                        else:
+                            start_date = datetime.now(pytz.UTC) - timedelta(days=30)
+                            
+                        end_date = datetime.now(pytz.UTC)
+                        
+                        # Fetch historical data
+                        ticker = yf.Ticker(yf_symbol)
+                        data = ticker.history(
+                            start=start_date,
+                            end=end_date,
+                            interval='1h'  # Use hourly data for better visualization
+                        )
+                        
+                        if len(data) == 0:
+                            await update.message.reply_text(f"❌ No price data available for {symbol}")
+                            return
+                        
+                        # Ensure index is timezone-aware
+                        if data.index.tz is None:
+                            data.index = data.index.tz_localize('UTC')
+                        
+                        # Create the plot
+                        plt.figure(figsize=(12, 6))
+                        
+                        # Plot price data
+                        plt.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
+                        
+                        # Plot buy orders
+                        buy_orders = [order for order in orders if order['side'] == 'BUY' and order['filled_at']]
+                        for order in buy_orders:
+                            filled_at = order['filled_at']
+                            if isinstance(filled_at, str):
+                                filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
+                            
+                            # Find the closest price data point
+                            closest_idx = data.index[data.index.get_indexer([filled_at], method='nearest')[0]]
+                            price = order['filled_avg_price']
+                            
+                            plt.scatter(filled_at, price, marker='^', color='green', s=100, zorder=5)
+                            plt.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
+                                        (filled_at, price),
+                                        xytext=(0, 10),
+                                        textcoords='offset points',
+                                        ha='center',
+                                        va='bottom',
+                                        fontsize=8,
+                                        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                        
+                        # Plot sell orders
+                        sell_orders = [order for order in orders if order['side'] == 'SELL' and order['filled_at']]
+                        for order in sell_orders:
+                            filled_at = order['filled_at']
+                            if isinstance(filled_at, str):
+                                filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
+                            
+                            # Find the closest price data point
+                            closest_idx = data.index[data.index.get_indexer([filled_at], method='nearest')[0]]
+                            price = order['filled_avg_price']
+                            
+                            plt.scatter(filled_at, price, marker='v', color='red', s=100, zorder=5)
+                            plt.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
+                                        (filled_at, price),
+                                        xytext=(0, -10),
+                                        textcoords='offset points',
+                                        ha='center',
+                                        va='top',
+                                        fontsize=8,
+                                        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                        
+                        # Format the plot
+                        plt.title(f"{symbol} Price with Order History")
+                        plt.xlabel('Date')
+                        plt.ylabel('Price')
+                        plt.grid(True, alpha=0.3)
+                        
+                        # Format x-axis dates
+                        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                        plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
+                        plt.gcf().autofmt_xdate()
+                        
+                        # Add legend
+                        buy_patch = plt.Line2D([], [], marker='^', color='green', linestyle='None', 
+                                            markersize=10, label='Buy Orders')
+                        sell_patch = plt.Line2D([], [], marker='v', color='red', linestyle='None', 
+                                            markersize=10, label='Sell Orders')
+                        price_line = plt.Line2D([], [], color='blue', label='Price')
+                        plt.legend(handles=[price_line, buy_patch, sell_patch])
+                        
+                        # Save to buffer
+                        buf = io.BytesIO()
+                        plt.tight_layout()
+                        plt.savefig(buf, format='png', dpi=150)
+                        buf.seek(0)
+                        plt.close()
+                        
+                        # Send the chart
+                        await update.message.reply_document(
+                            document=buf,
+                            filename=f"{symbol}_orders.png",
+                            caption=f"📊 {symbol} price chart with {len(orders)} recent orders"
+                        )
+                    except Exception as e:
+                        await update.message.reply_text(f"❌ Error generating chart: {str(e)}")
+            else:
+                await update.message.reply_text("❌ No orders found")
+                
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error retrieving orders: {str(e)}")
