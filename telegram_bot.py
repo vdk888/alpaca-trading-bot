@@ -1291,18 +1291,8 @@ Price Changes:
             from config import TRADING_SYMBOLS
             from utils import get_api_symbol, get_display_symbol
             
-            # Initialize AlpacaService with environment variables
-            api_key = os.getenv('ALPACA_API_KEY')
-            secret_key = os.getenv('ALPACA_SECRET_KEY')
-            
-            if not api_key or not secret_key:
-                await update.message.reply_text("❌ Alpaca API credentials not found in environment variables")
-                return
-                
-            alpaca_service = AlpacaService(
-                api_key=api_key,
-                secret_key=secret_key
-            )
+            # Initialize AlpacaService
+            alpaca_service = AlpacaService()
             
             # Parse arguments
             args = context.args

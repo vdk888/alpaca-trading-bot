@@ -16,15 +16,16 @@ import requests
 
 class AlpacaService:
     def __init__(self, api_key=None, secret_key=None):
-        self.api_key = api_key
-        self.secret_key = secret_key
+        # Try to get credentials from environment variables if not provided
+        self.api_key = api_key or os.getenv('ALPACA_API_KEY')
+        self.secret_key = secret_key or os.getenv('ALPACA_SECRET_KEY')
         self._client = None
         self._data_client = None
 
     @property
     def client(self):
         if not self.api_key or not self.secret_key:
-            raise ValueError("Alpaca credentials not set. Please configure them in your account settings.")
+            raise ValueError("Alpaca credentials not found. Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables or provide them directly.")
         
         if self._client is None:
             self._client = TradingClient(self.api_key, self.secret_key, paper=True)
@@ -33,7 +34,7 @@ class AlpacaService:
     @property
     def data_client(self):
         if not self.api_key or not self.secret_key:
-            raise ValueError("Alpaca credentials not set. Please configure them in your account settings.")
+            raise ValueError("Alpaca credentials not found. Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables or provide them directly.")
         
         if self._data_client is None:
             self._data_client = StockHistoricalDataClient(self.api_key, self.secret_key)
