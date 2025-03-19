@@ -111,6 +111,7 @@ class AlpacaService:
             print(f"Fetching orders with params: {request_params}")
             orders = self.client.get_orders(filter=request_params)
             print(f"Got {len(orders)} orders")
+            print("Unique symbols in orders:", set(order.symbol for order in orders))  # Debug: show all unique symbols
             trades = []
             
             for order in orders:

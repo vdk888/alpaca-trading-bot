@@ -1346,7 +1346,8 @@ Price Changes:
             
             # Filter by symbol if specified
             if symbol:
-                orders = [order for order in orders if order['symbol'] == api_symbol]
+                # Try both API and display formats
+                orders = [order for order in orders if order['symbol'] in [api_symbol, symbol]]
                 
                 if not orders:
                     await update.message.reply_text(f"❌ No orders found for {symbol}")
