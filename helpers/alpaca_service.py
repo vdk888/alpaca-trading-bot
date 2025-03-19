@@ -102,28 +102,35 @@ class AlpacaService:
 
     def get_recent_trades(self, limit: int = 10) -> List[Dict]:
         """Get recent trades/orders."""
-        request_params = GetOrdersRequest(
-            status=QueryOrderStatus.ALL,
-            limit=limit,
-            nested=True  # Include nested objects for more order details
-        )
-        print("ok")
-        orders = self.client.get_orders(filter=request_params)
-        trades = []
-        
-        for order in orders:
-            trades.append({
-                'symbol': order.symbol,
-                'side': order.side.value,
-                'qty': float(order.qty) if order.qty is not None else 0,
-                'filled_qty': float(order.filled_qty) if order.filled_qty is not None else 0,
-                'type': order.type.value,
-                'status': order.status.value,
-                'submitted_at': order.submitted_at,
-                'filled_at': order.filled_at,
-                'filled_avg_price': float(order.filled_avg_price) if order.filled_avg_price is not None else 0,
-            })
-        return trades
+        try:
+            request_params = GetOrdersRequest(
+                status=QueryOrderStatus.ALL,
+                limit=limit,
+                nested=True  # Include nested objects for more order details
+            )
+            print(f"Fetching orders with params: {request_params}")
+            orders = self.client.get_orders(filter=request_params)
+            print(f"Got {len(orders)} orders")
+            trades = []
+            
+            for order in orders:
+                print(f"Processing order: {order.symbol} - {order.side.value} - {order.status.value}")
+                trades.append({
+                    'symbol': order.symbol,
+                    'side': order.side.value,
+                    'qty': float(order.qty) if order.qty is not None else 0,
+                    'filled_qty': float(order.filled_qty) if order.filled_qty is not None else 0,
+                    'type': order.type.value,
+                    'status': order.status.value,
+                    'submitted_at': order.submitted_at,
+                    'filled_at': order.filled_at,
+                    'filled_avg_price': float(order.filled_avg_price) if order.filled_avg_price is not None else 0,
+                })
+            print(f"Returning {len(trades)} trades")
+            return trades
+        except Exception as e:
+            print(f"Error in get_recent_trades: {str(e)}")
+            raise
 
     def calculate_asset_allocation(self, positions: List[Dict]) -> Dict:
         """Calculate asset allocation percentages."""
