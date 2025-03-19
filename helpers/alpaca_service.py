@@ -13,6 +13,7 @@ import io
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import requests
+from config import ALPACA_PAPER
 
 class AlpacaService:
     def __init__(self, api_key=None, secret_key=None):
@@ -28,7 +29,7 @@ class AlpacaService:
             raise ValueError("Alpaca credentials not found. Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables or provide them directly.")
         
         if self._client is None:
-            self._client = TradingClient(self.api_key, self.secret_key, paper=True)
+            self._client = TradingClient(self.api_key, self.secret_key, paper=ALPACA_PAPER)
         return self._client
 
     @property
