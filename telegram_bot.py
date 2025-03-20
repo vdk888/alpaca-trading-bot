@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot, generate_signals, get_default_params
-from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, lookback_days_param, PER_SYMBOL_CAPITAL_MULTIPLIER
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -183,8 +183,8 @@ class TradingBot:
 /indicators [symbol] - View current indicator values
 /plot [symbol] [days] - Generate strategy visualization
 /signals - View latest signals for all symbols
-/backtest [symbol] [days] - Run backtest simulation (default: all symbols, 5 days)
-/backtest portfolio [days] - Run portfolio backtest (default: all symbols, 5 days)
+/backtest [symbol] [days] - Run backtest simulation (default: all symbols, 30 days)
+/backtest portfolio [days] - Run portfolio backtest (default: all symbols, 30 days)
 /bestparams [symbol] - Get best parameters (all symbols if none specified)
 
 💰 Trading Commands:
@@ -471,7 +471,7 @@ Price Changes:
             args = context.args if context.args else []
             
             # Default values
-            days = 5
+            days = lookback_days_param
             symbols_to_plot = self.symbols
             
             if len(args) >= 1:
@@ -494,8 +494,8 @@ Price Changes:
                         await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
                         return
             
-            if days <= 0 or days > default_backtest_interval:
-                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
+            if days <= 0 or days > lookback_days_param:
+                await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}")
                 return
             
             await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
@@ -744,7 +744,7 @@ Price Changes:
             args = context.args if context.args else []
             
             # Default values
-            days = 5
+            days = lookback_days_param
             
             if not args:
                 await update.message.reply_text(
@@ -765,8 +765,8 @@ Price Changes:
                         return
                 
                 # Validate days
-                if days <= 0 or days > default_backtest_interval:
-                    await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
+                if days <= 0 or days > lookback_days_param:
+                    await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}, currently {days}")
                     return
                 
                 status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")
@@ -952,8 +952,8 @@ Price Changes:
                 return
             
             # Validate days
-            if days <= 0 or days > default_backtest_interval:
-                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
+            if days <= 0 or days > lookback_days_param:
+                await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}, currently {days}")
                 return
             
             symbols_to_test = [symbol] if symbol else self.symbols

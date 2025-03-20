@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import logging
 from telegram import Update, Bot
 from backtest_individual import find_best_params
-from config import TRADING_SYMBOLS, param_grid, lookback_days_param, ALPACA_PAPER
+from config import TRADING_SYMBOLS, param_grid, lookback_days_param, ALPACA_PAPER, get_update_interval, DEFAULT_INTERVAL
 import json
 from backtest_individual import run_backtest, create_backtest_plot
 import io
@@ -175,7 +175,7 @@ async def run_bot():
                                     find_best_params,
                                     symbol,
                                     param_grid,
-                                    30
+                                    lookback_days_param
                                 )
                                 
                                 if best_params:
@@ -213,9 +213,12 @@ async def run_bot():
                 
                 for symbol in symbols:
                     try:
-                        # Check if 5 minutes have passed since last check for this symbol
+                        # Get update interval based on timeframe
+                        update_interval = get_update_interval(DEFAULT_INTERVAL)
+                        
+                        # Check if enough time has passed since last check for this symbol
                         if (symbol_last_check[symbol] is not None and 
-                            (current_time - symbol_last_check[symbol]).total_seconds() < 300):
+                            (current_time - symbol_last_check[symbol]).total_seconds() < update_interval):
                             continue
                             
                         # Generate signals

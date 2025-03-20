@@ -30,6 +30,22 @@ BARS_PER_DAY = {
     '1d': 1
 }
 
+# Update intervals in seconds for each timeframe
+UPDATE_INTERVALS = {
+    '1m': 60,    # Check every minute
+    '5m': 300,   # Check every 5 minutes
+    '15m': 900,  # Check every 15 minutes
+    '30m': 1800, # Check every 30 minutes
+    '60m': 3600, # Check every hour
+    '1h': 3600,  # Check every hour
+    '1d': 86400  # Check every day
+}
+
+# Get update interval based on timeframe
+def get_update_interval(timeframe: str) -> int:
+    """Get the appropriate update interval in seconds for a given timeframe"""
+    return UPDATE_INTERVALS.get(timeframe, 3600)  # Default to 1 hour if timeframe not found
+
 # Maximum data points per request
 MAX_DATA_POINTS = 2000
 

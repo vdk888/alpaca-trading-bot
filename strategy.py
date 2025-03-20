@@ -6,8 +6,7 @@ import logging
 import pytz
 import json
 import config
-from config import lookback_days_param
-
+from config import lookback_days_param, get_update_interval
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +35,11 @@ class TradingStrategy:
         """Update data if needed"""
         now = pd.Timestamp.now(tz=pytz.UTC)
         
-        # If no data or last update was more than 5 minutes ago
-        if self.data is None or (now - self.last_update).total_seconds() > 300:
+        # Get update interval based on timeframe
+        update_interval = get_update_interval(self.interval)
+        
+        # If no data or last update was more than the update interval ago
+        if self.data is None or (now - self.last_update).total_seconds() > update_interval:
             try:
                 # Get latest data
                 new_data = get_latest_data(self.symbol, self.interval)
