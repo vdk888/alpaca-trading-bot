@@ -494,8 +494,8 @@ Price Changes:
                         await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
                         return
             
-            if days <= 0 or days > default_backtest_days:
-                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_days}")
+            if days <= 0 or days > default_backtest_interval:
+                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
                 return
             
             await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
@@ -765,8 +765,8 @@ Price Changes:
                         return
                 
                 # Validate days
-                if days <= 0 or days > lookback_days_param:
-                    await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}, currently {days}")
+                if days <= 0 or days > default_backtest_interval:
+                    await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
                     return
                 
                 status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")
@@ -952,8 +952,8 @@ Price Changes:
                 return
             
             # Validate days
-            if days <= 0 or days > lookback_days_param:
-                await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}, currently {days}")
+            if days <= 0 or days > default_backtest_interval:
+                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
                 return
             
             symbols_to_test = [symbol] if symbol else self.symbols
