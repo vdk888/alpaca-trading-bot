@@ -1100,8 +1100,25 @@ def run_backtest_with_export(symbol: str,
         data['signal'] = backtest_result['signals']['signal']
     else:
         data['signal'] = backtest_result['signals']
-    data['position'] = pd.Series(backtest_result['shares'], index=data.index)
-    data['equity'] = pd.Series(backtest_result['portfolio_value'], index=data.index)
+        
+    # Ensure shares and portfolio_value lengths match data
+    shares = backtest_result['shares']
+    portfolio_value = backtest_result['portfolio_value']
+    
+    # Trim if longer than data
+    if len(shares) > len(data):
+        shares = shares[:len(data)]
+    if len(portfolio_value) > len(data):
+        portfolio_value = portfolio_value[:len(data)]
+        
+    # Add missing values if shorter than data
+    if len(shares) < len(data):
+        shares = shares + [shares[-1]] * (len(data) - len(shares))
+    if len(portfolio_value) < len(data):
+        portfolio_value = portfolio_value + [portfolio_value[-1]] * (len(data) - len(portfolio_value))
+        
+    data['position'] = pd.Series(shares, index=data.index)
+    data['equity'] = pd.Series(portfolio_value, index=data.index)
     data['returns'] = data['equity'].pct_change()
     if 'daily_composite' in backtest_result:
         data['daily_composite'] = backtest_result['daily_data']
