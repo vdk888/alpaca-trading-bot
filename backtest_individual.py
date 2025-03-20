@@ -1131,8 +1131,8 @@ def run_backtest_with_export(symbol: str,
     # Save plot
     if fig is not None:
         plot_path = os.path.join(backtest_dir, 'backtest_plot.png')
-        fig[0].savefig(plot_path, bbox_inches='tight')
-        plt.close(fig[0])
+        with open(plot_path, 'wb') as f:
+            f.write(fig.getbuffer())
 
     print(f"\nBacktest results saved to {backtest_dir}/")
     print(f"Data: {csv_path}")
