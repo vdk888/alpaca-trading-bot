@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot, generate_signals, get_default_params
-from config import TRADING_SYMBOLS, lookback_days_param, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, lookback_days_param, PER_SYMBOL_CAPITAL_MULTIPLIER, default_backtest_interval
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
