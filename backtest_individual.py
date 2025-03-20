@@ -1095,14 +1095,17 @@ def run_backtest_with_export(symbol: str,
     os.makedirs(backtest_dir, exist_ok=True)
 
     # Save complete data to CSV
-    data = backtest_result['data']
-    data['signal'] = backtest_result['signals']
-    data['position'] = backtest_result['shares']
-    data['equity'] = backtest_result['portfolio_value']
-    data['returns'] = pd.Series(backtest_result['portfolio_value']).pct_change().dropna()
-    if 'daily_composite' in data.columns:
+    data = backtest_result['data'].copy()
+    if isinstance(backtest_result['signals'], pd.DataFrame):
+        data['signal'] = backtest_result['signals']['signal']
+    else:
+        data['signal'] = backtest_result['signals']
+    data['position'] = pd.Series(backtest_result['shares'], index=data.index)
+    data['equity'] = pd.Series(backtest_result['portfolio_value'], index=data.index)
+    data['returns'] = data['equity'].pct_change()
+    if 'daily_composite' in backtest_result:
         data['daily_composite'] = backtest_result['daily_data']
-    if 'weekly_composite' in data.columns:
+    if 'weekly_composite' in backtest_result:
         data['weekly_composite'] = backtest_result['weekly_data']
 
     csv_path = os.path.join(backtest_dir, 'backtest_data.csv')
