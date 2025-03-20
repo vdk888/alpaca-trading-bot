@@ -108,7 +108,7 @@ def find_best_params(symbol: str,
                      output_file: str = "best_params.json") -> dict:
     """Find the best parameter set by running a backtest for each combination."""
     from replit.object_storage import Client
-    
+
     # Initialize Object Storage client
     client = Client()
     param_names = list(param_grid.keys())
@@ -206,10 +206,10 @@ def find_best_params(symbol: str,
     # Save best parameters and metrics to JSON
     if output_file:
         from replit.object_storage import Client
-        
+
         # Initialize Object Storage client
         client = Client()
-        
+
         # Create or update history
         history = []
         if symbol in existing_data:
@@ -219,7 +219,7 @@ def find_best_params(symbol: str,
                 # Get existing history or create new one
                 if 'history' in existing_data[symbol]:
                     history = existing_data[symbol]['history']
-                
+
                 # Append current best params to history
                 history.append({
                     'params': existing_data[symbol]['best_params'],
@@ -244,7 +244,7 @@ def find_best_params(symbol: str,
 
         # Write updated data to Object Storage
         client.upload_from_text(output_file, json.dumps(existing_data, indent=4))
-        
+
         # Also save to local file as a backup
         try:
             with open(output_file, "w") as f:
@@ -314,11 +314,11 @@ def run_backtest(symbol: str,
 
     # Load the best parameters from Object Storage based on the symbol
     from replit.object_storage import Client
-    
+
     # Initialize Object Storage client
     client = Client()
     best_params_file = "best_params.json"
-    
+
     try:
         # Try to get parameters from Object Storage
         json_content = client.download_as_text(best_params_file)
@@ -633,7 +633,7 @@ def run_backtest(symbol: str,
     current_price = data['close'].iloc[-1]
     final_value = cash + (position * current_price)
     total_return = ((final_value - initial_capital) / initial_capital) * 100
-    
+
     # Debug info for return calculation
     print(f"\nReturn calculation details:")
     print(f"Initial capital: ${initial_capital:.2f}")
@@ -688,7 +688,7 @@ def run_backtest(symbol: str,
                                                    excess_returns.std())
         else:
             sharpe_ratio = 0
-            
+
         # Calculate portfolio turnover
         turnover = 0
         if len(portfolio_value) > 1:
@@ -696,7 +696,7 @@ def run_backtest(symbol: str,
             sells = sum(t.get('value', t.get('gross_value', 0)) for t in trades if t['type'] == 'sell')
             avg_portfolio_value = np.mean(portfolio_value)
             turnover = min(buys, sells) / avg_portfolio_value if avg_portfolio_value > 0 else 0
-            
+
         # Calculate total trading costs
         total_trading_costs = sum(t.get('trading_costs', 0) for t in trades)
     else:
@@ -766,9 +766,7 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                     print(
                         f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}"
                     )
-                    continue
-
-                # Calculate standard performance from price data
+                    continue                # Calculate standard performance from price data
                 start_price = symbol_data['close'].iloc[0]
                 end_price = symbol_data['close'].iloc[-1]
                 performance = ((end_price - start_price) / start_price) * 100
@@ -777,12 +775,12 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                 # Check if we should use strategy performance instead
                 if symbol in best_params_data:
                     symbol_entry = best_params_data[symbol]
-                    
+
                     # Check if entry is recent (less than a week old)
                     if 'date' in symbol_entry:
                         entry_date = datetime.strptime(symbol_entry['date'], "%Y-%m-%d")
                         is_recent = (datetime.now() - entry_date) < timedelta(weeks=1)
-                        
+
                         # Use strategy performance if entry is recent and has performance data
                         if is_recent and 'metrics' in symbol_entry and 'performance' in symbol_entry['metrics']:
                             performance = symbol_entry['metrics']['performance']
@@ -854,7 +852,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Plot 1: Price and Signals
     ax1 = plt.subplot(gs[0])
     ax1_volume = ax1.twinx()
-    
+
     # Plot price data directly without splitting into sessions
     logger.info(f"Plotting price data: {len(data)} points")
     logger.info(f"First price: {data['close'].iloc[0]}, Last price: {data['close'].iloc[-1]}")
@@ -864,14 +862,14 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                          alpha=0.7,
                          linewidth=2,
                          label='Price')
-    
+
     # Plot volume
     volume_data = data['volume'].rolling(window=5).mean()
     ax1_volume.fill_between(data.index,
                             volume_data,
                             color='gray',
                             alpha=0.3)
-    
+
     # Create timestamp mapping for signals
     original_to_shifted = {}
     for orig_time in signals.index:
@@ -944,7 +942,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
 
     # Plot 2: Daily Composite
     ax2 = plt.subplot(gs[1])
-    
+
     # Plot daily composite
     ax2.plot(daily_data.index,
              daily_data['Composite'],
@@ -979,16 +977,16 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                      daily_data['Down_Lim'],
                      color='gray',
                      alpha=0.1)
-    
+
     ax2.set_title('Daily Composite Indicator')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     ax2.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
-    
+
     # Plot 3: Weekly Composite
     ax3 = plt.subplot(gs[2])
-    
+
     # Plot weekly composite
     ax3.plot(weekly_data.index,
              weekly_data['Composite'],
@@ -1023,7 +1021,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                      weekly_data['Down_Lim'],
                      color='gray',
                      alpha=0.1)
-    
+
     ax3.set_title('Weekly Composite Indicator')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
@@ -1033,13 +1031,13 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Plot 4: Portfolio Value and Shares Owned
     ax4 = plt.subplot(gs[3])
     ax4_shares = ax4.twinx()
-    
+
     # Ensure portfolio values match data length
     if len(portfolio_value) > len(data.index):
         portfolio_value = portfolio_value[:len(data.index)]
     elif len(portfolio_value) < len(data.index):
         portfolio_value = np.append(portfolio_value, [portfolio_value[-1]] * (len(data.index) - len(portfolio_value)))
-    
+
     # Create DataFrame with both portfolio and shares data
     portfolio_df = pd.DataFrame(
         {
@@ -1047,20 +1045,20 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
             'shares': shares[:len(portfolio_value)]
         },
         index=data.index)
-    
+
     # Plot portfolio value
     ax4.plot(portfolio_df.index,
              portfolio_df['value'],
              color='green',
              label='Portfolio Value')
-    
+
     # Plot shares
     ax4_shares.plot(portfolio_df.index,
                     portfolio_df['shares'],
                     color='blue',
                     alpha=0.5,
                     label='Shares')
-    
+
     ax4.set_title('Portfolio Value and Position Size')
     ax4.set_ylabel('Portfolio Value ($)')
     ax4_shares.set_ylabel('Shares Owned')
@@ -1089,13 +1087,13 @@ def run_backtest_with_export(symbol: str,
 
     # Create and save the plot
     plt.close('all')
-    fig = create_backtest_plot(backtest_result)
-    
+    fig, stats = create_backtest_plot(backtest_result)
+
     # Save backtest data to CSV
     timestamp = datetime.now(pytz.UTC).strftime('%Y-%m-%d_%H-%M-%S')
     backtest_dir = os.path.join('backtests', symbol, timestamp)
     os.makedirs(backtest_dir, exist_ok=True)
-    
+
     # Save complete data to CSV
     data = backtest_result['data']
     data['signal'] = backtest_result['signals']
@@ -1106,20 +1104,20 @@ def run_backtest_with_export(symbol: str,
         data['daily_composite'] = backtest_result['daily_data']
     if 'weekly_composite' in data.columns:
         data['weekly_composite'] = backtest_result['weekly_data']
-    
+
     csv_path = os.path.join(backtest_dir, 'backtest_data.csv')
     data.to_csv(csv_path)
-    
+
     # Save plot
     if fig is not None:
         plot_path = os.path.join(backtest_dir, 'backtest_plot.png')
-        fig.savefig(plot_path, bbox_inches='tight')
-        plt.close(fig)
-    
+        fig[0].savefig(plot_path, bbox_inches='tight')
+        plt.close(fig[0])
+
     print(f"\nBacktest results saved to {backtest_dir}/")
     print(f"Data: {csv_path}")
     print(f"Plot: {plot_path}")
-    
+
     return backtest_result
 
 
