@@ -494,8 +494,8 @@ Price Changes:
                         await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
                         return
             
-            if days <= 0 or days > lookback_days_param:
-                await update.message.reply_text(f"❌ Days must be between 1 and {lookback_days_param}")
+            if days <= 0 or days > default_backtest_days:
+                await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_days}")
                 return
             
             await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
