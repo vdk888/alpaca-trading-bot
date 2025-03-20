@@ -5,7 +5,7 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
-from visualization import create_strategy_plot, create_multi_symbol_plot
+from visualization import create_strategy_plot, create_multi_symbol_plot, generate_signals, get_default_params
 from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
@@ -16,6 +16,12 @@ import pytz
 from utils import get_api_symbol, get_display_symbol
 import asyncio
 import json
+import indicators
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import io
+import yfinance as yf
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +216,6 @@ class TradingBot:
                 return
                 
             symbols_to_check = [symbol] if symbol else self.symbols
-            has_data = False
             
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
@@ -1523,6 +1528,300 @@ Price Changes:
                             filename=f"{symbol}_orders.png",
                             caption=f"📊 {symbol} price chart with {len(orders)} recent orders"
                         )
+                    except Exception as e:
+                        await update.message.reply_text(f"❌ Error generating chart: {str(e)}")
+            else:
+                await update.message.reply_text("❌ No orders found")
+                
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error retrieving orders: {str(e)}")
+
+    async def orders_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """View past orders from Alpaca account.
+        
+        Usage:
+        /orders - Get 20 most recent orders
+        /orders all - Get all orders
+        /orders <symbol> [limit] - Get orders for a specific symbol with optional limit
+        """
+        try:
+            from helpers.alpaca_service import AlpacaService
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            import pandas as pd
+            import io
+            import yfinance as yf
+            from datetime import datetime, timedelta
+            import pytz
+            from config import TRADING_SYMBOLS
+            from utils import get_api_symbol, get_display_symbol
+            
+            # Initialize AlpacaService
+            alpaca_service = AlpacaService()
+            
+            # Parse arguments
+            args = context.args
+            
+            # Default values
+            limit = 20
+            symbol = None
+            get_all = False
+            
+            # Parse command arguments
+            if args:
+                if args[0].lower() == 'all':
+                    get_all = True
+                    limit = 500  # Set a reasonable upper limit
+                elif args[0].upper() in self.symbols or args[0].upper() in [get_api_symbol(s) for s in self.symbols]:
+                    # Handle symbol argument
+                    symbol = args[0].upper()
+                    # Check if symbol needs to be converted from display to API format
+                    if symbol in self.symbols:
+                        api_symbol = get_api_symbol(symbol)
+                    else:
+                        api_symbol = symbol
+                        symbol = get_display_symbol(api_symbol)
+                    
+                    # Check for limit argument
+                    if len(args) > 1:
+                        if args[1].lower() == 'all':
+                            limit = 500  # Set a reasonable upper limit
+                        else:
+                            try:
+                                limit = int(args[1])
+                                if limit <= 0:
+                                    await update.message.reply_text("❌ Limit must be a positive number")
+                                    return
+                            except ValueError:
+                                await update.message.reply_text("❌ Invalid limit. Please provide a number or 'all'")
+                                return
+                else:
+                    try:
+                        # Try to parse as a limit
+                        limit = int(args[0])
+                        if limit <= 0:
+                            await update.message.reply_text("❌ Limit must be a positive number")
+                            return
+                    except ValueError:
+                        await update.message.reply_text(f"❌ Invalid argument: {args[0]}. Use /orders, /orders all, or /orders <symbol> [limit]")
+                        return
+            
+            # Get orders from Alpaca
+            orders = alpaca_service.get_recent_trades(limit=limit)
+            
+            # Filter by symbol if specified
+            if symbol:
+                # Try both API and display formats
+                orders = [order for order in orders if order['symbol'].lower() == api_symbol.lower() or order['symbol'].lower() == symbol.lower()]
+                
+                if not orders:
+                    await update.message.reply_text(f"❌ No orders found for {symbol}")
+                    return
+            
+            # Format orders for display
+            if orders:
+                # Group orders by symbol for better readability
+                orders_by_symbol = {}
+                for order in orders:
+                    sym = order['symbol']
+                    display_sym = get_display_symbol(sym)
+                    if display_sym not in orders_by_symbol:
+                        orders_by_symbol[display_sym] = []
+                    orders_by_symbol[display_sym].append(order)
+                
+                # Create message with orders grouped by symbol
+                message = f"📋 Past Orders ({len(orders)} total):\n\n"
+                
+                for sym, sym_orders in orders_by_symbol.items():
+                    message += f"🔹 {sym} ({len(sym_orders)} orders):\n"
+                    
+                    for i, order in enumerate(sym_orders[:10]):  # Show max 10 orders per symbol in text
+                        # Format dates
+                        submitted_at = order['submitted_at']
+                        if isinstance(submitted_at, str):
+                            submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+                        date_str = submitted_at.strftime('%Y/%m/%d %H:%M:%S')
+                        
+                        status = order['status']
+                        
+                        # Format order details
+                        side = order['side'].lower()
+                        side_emoji = "🟢" if side == 'buy' else "🔴"
+                        price = f"${order['filled_avg_price']:.2f}" if order['filled_avg_price'] else "N/A"
+                        
+                        message += f"  {i+1}. {side_emoji} {side} {order['filled_qty']} @ {price} - {status} ({date_str})\n"
+                    
+                    if len(sym_orders) > 10:
+                        message += f"  ... and {len(sym_orders) - 10} more orders\n"
+                    
+                    message += "\n"
+                
+                # Send the message
+                await update.message.reply_text(message)
+                
+                # If a specific symbol was requested with a limit, generate a chart
+                if symbol and limit > 0:
+                    await update.message.reply_text(f"Generating chart for {symbol} with last {len(orders)} orders...")
+                    
+                    try:
+                        # Get the correct Yahoo Finance symbol
+                        symbol_config = TRADING_SYMBOLS.get(symbol)
+                        if not symbol_config:
+                            await update.message.reply_text(f"❌ Symbol configuration not found for {symbol}")
+                            return
+                            
+                        yf_symbol = symbol_config['yfinance']
+                        
+                        # Get the earliest order date to determine chart start date
+                        earliest_order_date = None
+                        for order in orders:
+                            submitted_at = order['submitted_at']
+                            if isinstance(submitted_at, str):
+                                submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+                            
+                            if earliest_order_date is None or submitted_at < earliest_order_date:
+                                earliest_order_date = submitted_at
+                        
+                        # Add buffer days before earliest order
+                        if earliest_order_date:
+                            start_date = earliest_order_date - timedelta(days=5)
+                        else:
+                            start_date = datetime.now(pytz.UTC) - timedelta(days=30)
+                            
+                        end_date = datetime.now(pytz.UTC)
+                        
+                        # Fetch historical data
+                        ticker = yf.Ticker(yf_symbol)
+                        data = ticker.history(
+                            start=start_date,
+                            end=end_date,
+                            interval='1h'  # Use hourly data for better visualization
+                        )
+                        
+                        if len(data) == 0:
+                            await update.message.reply_text(f"❌ No price data available for {symbol}")
+                            return
+                        
+                        # Ensure index is timezone-aware
+                        if data.index.tz is None:
+                            data.index = data.index.tz_localize('UTC')
+                        
+                        # Create the plot
+                        plt.figure(figsize=(12, 10))
+                        
+                        # Price and orders plot (50% height)
+                        ax1 = plt.subplot(3, 1, 1)
+                        
+                        # Plot price data
+                        ax1.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
+                        
+                        # Plot buy orders
+                        buy_orders = [order for order in orders if order['side'].lower() == 'buy' and order['status'] == 'filled']
+                        for order in buy_orders:
+                            order_time = order['filled_at'] or order['submitted_at']
+                            if isinstance(order_time, str):
+                                order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
+                            
+                            price = order['filled_avg_price']
+                            if not price:  # Skip if no price available
+                                continue
+                            
+                            ax1.scatter(order_time, price, marker='^', color='green', s=100, zorder=5)
+                            ax1.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
+                                    (order_time, price),
+                                    xytext=(0, 10),
+                                    textcoords='offset points',
+                                    ha='center',
+                                    va='bottom',
+                                    fontsize=8,
+                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                        
+                        # Plot sell orders
+                        sell_orders = [order for order in orders if order['side'].lower() == 'sell' and order['status'] == 'filled']
+                        for order in sell_orders:
+                            order_time = order['filled_at'] or order['submitted_at']
+                            if isinstance(order_time, str):
+                                order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
+                            
+                            price = order['filled_avg_price']
+                            if not price:  # Skip if no price available
+                                continue
+                            
+                            ax1.scatter(order_time, price, marker='v', color='red', s=100, zorder=5)
+                            ax1.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
+                                    (order_time, price),
+                                    xytext=(0, -10),
+                                    textcoords='offset points',
+                                    ha='center',
+                                    va='top',
+                                    fontsize=8,
+                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                        
+                        ax1.set_title(f"{symbol} Price with Order History")
+                        ax1.grid(True, alpha=0.3)
+                        ax1.legend()
+                        
+                        # Prepare data for indicators
+                        ohlcv_data = pd.DataFrame({
+                            'open': data['Open'],
+                            'high': data['High'],
+                            'low': data['Low'],
+                            'close': data['Close'],
+                            'volume': data['Volume']
+                        })
+                        
+                        # Get strategy parameters
+                        try:
+                            with open("best_params.json", "r") as f:
+                                best_params_data = json.load(f)
+                                if symbol in best_params_data:
+                                    params = best_params_data[symbol]['best_params']
+                                else:
+                                    params = get_default_params()
+                        except FileNotFoundError:
+                            params = get_default_params()
+                        
+                        # Generate signals with indicators
+                        signals, daily_data, weekly_data = generate_signals(ohlcv_data, params)
+                        
+                        # Plot daily composite (25% height)
+                        ax2 = plt.subplot(3, 1, 2, sharex=ax1)
+                        ax2.plot(signals.index, signals['daily_composite'], label='Daily Composite', color='blue')
+                        ax2.plot(signals.index, signals['daily_up_lim'], '--', label='Upper Limit', color='green')
+                        ax2.plot(signals.index, signals['daily_down_lim'], '--', label='Lower Limit', color='red')
+                        ax2.plot(signals.index, signals['daily_up_lim_2std'], ':', label='Upper 2 STD', color='green', alpha=0.7)
+                        ax2.plot(signals.index, signals['daily_down_lim_2std'], ':', label='Lower 2 STD', color='red', alpha=0.7)
+                        
+                        ax2.set_title('Daily Composite Indicator')
+                        ax2.legend()
+                        ax2.grid(True, alpha=0.3)
+                        
+                        # Plot weekly composite (25% height)
+                        ax3 = plt.subplot(3, 1, 3, sharex=ax1)
+                        ax3.plot(signals.index, signals['weekly_composite'], label='Weekly Composite', color='blue')
+                        ax3.plot(signals.index, signals['weekly_up_lim'], '--', label='Upper Limit', color='green')
+                        ax3.plot(signals.index, signals['weekly_down_lim'], '--', label='Lower Limit', color='red')
+                        ax3.plot(signals.index, signals['weekly_up_lim_2std'], ':', label='Upper 2 STD', color='green', alpha=0.7)
+                        ax3.plot(signals.index, signals['weekly_down_lim_2std'], ':', label='Lower 2 STD', color='red', alpha=0.7)
+                        
+                        ax3.set_title('Weekly Composite Indicator')
+                        ax3.legend()
+                        ax3.grid(True, alpha=0.3)
+                        
+                        # Format x-axis
+                        plt.gcf().autofmt_xdate()  # Angle and align the tick labels so they look better
+                        
+                        # Adjust layout to prevent overlapping
+                        plt.tight_layout()
+                        
+                        # Save to buffer
+                        buf = io.BytesIO()
+                        plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+                        buf.seek(0)
+                        plt.close()
+                        
+                        # Send the plot
+                        await update.message.reply_photo(buf)
                     except Exception as e:
                         await update.message.reply_text(f"❌ Error generating chart: {str(e)}")
             else:
