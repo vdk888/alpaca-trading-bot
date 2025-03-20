@@ -1347,7 +1347,7 @@ Price Changes:
             # Filter by symbol if specified
             if symbol:
                 # Try both API and display formats
-                orders = [order for order in orders if order['symbol'] in [api_symbol, symbol]]
+                orders = [order for order in orders if order['symbol'].lower() == api_symbol.lower() or order['symbol'].lower() == symbol.lower()]
                 
                 if not orders:
                     await update.message.reply_text(f"❌ No orders found for {symbol}")
@@ -1375,19 +1375,16 @@ Price Changes:
                         submitted_at = order['submitted_at']
                         if isinstance(submitted_at, str):
                             submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+                        date_str = submitted_at.strftime('%Y/%m/%d %H:%M:%S')
                         
-                        filled_at = order['filled_at']
-                        if filled_at and isinstance(filled_at, str):
-                            filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
-                            filled_time = filled_at.strftime('%Y-%m-%d %H:%M:%S')
-                        else:
-                            filled_time = "Not filled"
+                        status = order['status']
                         
                         # Format order details
-                        side_emoji = "🟢" if order['side'] == 'BUY' else "🔴"
+                        side = order['side'].lower()
+                        side_emoji = "🟢" if side == 'buy' else "🔴"
                         price = f"${order['filled_avg_price']:.2f}" if order['filled_avg_price'] else "N/A"
                         
-                        message += f"  {i+1}. {side_emoji} {order['side']} {order['filled_qty']} @ {price} - {filled_time} - {order['status']}\n"
+                        message += f"  {i+1}. {side_emoji} {side} {order['filled_qty']} @ {price} - {status} ({date_str})\n"
                     
                     if len(sym_orders) > 10:
                         message += f"  ... and {len(sym_orders) - 10} more orders\n"
@@ -1451,46 +1448,48 @@ Price Changes:
                         plt.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
                         
                         # Plot buy orders
-                        buy_orders = [order for order in orders if order['side'] == 'BUY' and order['filled_at']]
+                        buy_orders = [order for order in orders if order['side'].lower() == 'buy' and order['status'] == 'filled']
                         for order in buy_orders:
-                            filled_at = order['filled_at']
-                            if isinstance(filled_at, str):
-                                filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
+                            # Use submitted_at if filled_at is not available
+                            order_time = order['filled_at'] or order['submitted_at']
+                            if isinstance(order_time, str):
+                                order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
                             
-                            # Find the closest price data point
-                            closest_idx = data.index[data.index.get_indexer([filled_at], method='nearest')[0]]
                             price = order['filled_avg_price']
+                            if not price:  # Skip if no price available
+                                continue
                             
-                            plt.scatter(filled_at, price, marker='^', color='green', s=100, zorder=5)
+                            plt.scatter(order_time, price, marker='^', color='green', s=100, zorder=5)
                             plt.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
-                                        (filled_at, price),
-                                        xytext=(0, 10),
-                                        textcoords='offset points',
-                                        ha='center',
-                                        va='bottom',
-                                        fontsize=8,
-                                        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                                    (order_time, price),
+                                    xytext=(0, 10),
+                                    textcoords='offset points',
+                                    ha='center',
+                                    va='bottom',
+                                    fontsize=8,
+                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
                         
                         # Plot sell orders
-                        sell_orders = [order for order in orders if order['side'] == 'SELL' and order['filled_at']]
+                        sell_orders = [order for order in orders if order['side'].lower() == 'sell' and order['status'] == 'filled']
                         for order in sell_orders:
-                            filled_at = order['filled_at']
-                            if isinstance(filled_at, str):
-                                filled_at = datetime.fromisoformat(filled_at.replace('Z', '+00:00'))
+                            # Use submitted_at if filled_at is not available
+                            order_time = order['filled_at'] or order['submitted_at']
+                            if isinstance(order_time, str):
+                                order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
                             
-                            # Find the closest price data point
-                            closest_idx = data.index[data.index.get_indexer([filled_at], method='nearest')[0]]
                             price = order['filled_avg_price']
+                            if not price:  # Skip if no price available
+                                continue
                             
-                            plt.scatter(filled_at, price, marker='v', color='red', s=100, zorder=5)
+                            plt.scatter(order_time, price, marker='v', color='red', s=100, zorder=5)
                             plt.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
-                                        (filled_at, price),
-                                        xytext=(0, -10),
-                                        textcoords='offset points',
-                                        ha='center',
-                                        va='top',
-                                        fontsize=8,
-                                        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                                    (order_time, price),
+                                    xytext=(0, -10),
+                                    textcoords='offset points',
+                                    ha='center',
+                                    va='top',
+                                    fontsize=8,
+                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
                         
                         # Format the plot
                         plt.title(f"{symbol} Price with Order History")

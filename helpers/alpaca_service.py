@@ -116,6 +116,8 @@ class AlpacaService:
             
             for order in orders:
                 print(f"Processing order: {order.symbol} - {order.side.value} - {order.status.value}")
+                print(f"  Timestamps: submitted={order.submitted_at}, filled={order.filled_at}")
+                print(f"  Prices: filled_avg_price={order.filled_avg_price}")
                 trades.append({
                     'symbol': order.symbol,
                     'side': order.side.value,
