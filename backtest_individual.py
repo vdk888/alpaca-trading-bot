@@ -1079,6 +1079,50 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     return buf, backtest_result['stats']
 
 
+def run_backtest_with_export(symbol: str,
+                             days: int = 5,
+                             params: dict = None,
+                             is_simulating: bool = False,
+                             lookback_days_param: int = 5) -> dict:
+    """Run a single backtest simulation for a given symbol and parameter set."""
+    backtest_result = run_backtest(symbol, days, params, is_simulating, lookback_days_param)
+
+    # Create and save the plot
+    plt.close('all')
+    fig = create_backtest_plot(backtest_result)
+    
+    # Save backtest data to CSV
+    timestamp = datetime.now(pytz.UTC).strftime('%Y-%m-%d_%H-%M-%S')
+    backtest_dir = os.path.join('backtests', symbol, timestamp)
+    os.makedirs(backtest_dir, exist_ok=True)
+    
+    # Save complete data to CSV
+    data = backtest_result['data']
+    data['signal'] = backtest_result['signals']
+    data['position'] = backtest_result['shares']
+    data['equity'] = backtest_result['portfolio_value']
+    data['returns'] = pd.Series(backtest_result['portfolio_value']).pct_change().dropna()
+    if 'daily_composite' in data.columns:
+        data['daily_composite'] = backtest_result['daily_data']
+    if 'weekly_composite' in data.columns:
+        data['weekly_composite'] = backtest_result['weekly_data']
+    
+    csv_path = os.path.join(backtest_dir, 'backtest_data.csv')
+    data.to_csv(csv_path)
+    
+    # Save plot
+    if fig is not None:
+        plot_path = os.path.join(backtest_dir, 'backtest_plot.png')
+        fig.savefig(plot_path, bbox_inches='tight')
+        plt.close(fig)
+    
+    print(f"\nBacktest results saved to {backtest_dir}/")
+    print(f"Data: {csv_path}")
+    print(f"Plot: {plot_path}")
+    
+    return backtest_result
+
+
 if __name__ == "__main__":
     # Define the parameter grid
 
@@ -1149,9 +1193,9 @@ if __name__ == "__main__":
     print(f"Optimal Parameters: {best_params}")
 
     # Run the final backtest with the best parameters
-    final_result = run_backtest(symbol="SPY",
-                                days=10,
-                                params=best_params,
-                                is_simulating=False,
-                                lookback_days_param=lookback_days_param)
+    final_result = run_backtest_with_export(symbol="SPY",
+                                            days=10,
+                                            params=best_params,
+                                            is_simulating=False,
+                                            lookback_days_param=lookback_days_param)
     print(f"Final Backtest Results: {final_result}")

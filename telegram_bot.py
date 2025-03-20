@@ -9,7 +9,7 @@ from visualization import create_strategy_plot, create_multi_symbol_plot, genera
 from config import TRADING_SYMBOLS, lookback_days_param, PER_SYMBOL_CAPITAL_MULTIPLIER, default_backtest_interval
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
-from backtest_individual import run_backtest, create_backtest_plot
+from backtest_individual import run_backtest_with_export, create_backtest_plot
 from portfolio import get_portfolio_history, create_portfolio_plot
 import pandas as pd
 import pytz
@@ -970,7 +970,7 @@ Price Changes:
                     # Run backtest simulation asynchronously
                     result = await asyncio.get_event_loop().run_in_executor(
                         None,
-                        lambda: run_backtest(sym, days)
+                        lambda: run_backtest_with_export(sym, days)
                     )
                     
                     # Generate plot in executor
