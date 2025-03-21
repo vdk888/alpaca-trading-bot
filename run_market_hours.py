@@ -17,24 +17,10 @@ from backtest_individual import run_backtest, create_backtest_plot
 import io
 import matplotlib.pyplot as plt
 from indicators import get_default_params
-
-# Add Flask server for Replit deployment
-from flask import Flask
 import threading
 
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Trading Bot is running!"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=8080)
-
-# Start Flask server in a daemon thread
-flask_thread = threading.Thread(target=run_flask, daemon=True)
-flask_thread.start()
-
+# Import Flask dashboard components
+from dashboard_flask import app, data_store, run_flask_server
 
 # Set up logging
 logging.basicConfig(
@@ -124,6 +110,29 @@ async def run_bot():
     # Send startup message with /start command
     await trading_bot.start_command(MockUpdate(trading_bot.bot), None)
 
+    # Update portfolio data for dashboard
+    async def update_portfolio_data():
+        """Update portfolio data for the dashboard"""
+        while True:
+            try:
+                account = trading_client.get_account()
+                
+                # Get portfolio data
+                portfolio_data = {
+                    'total_value': float(account.portfolio_value),
+                    'cash': float(account.cash),
+                    'buying_power': float(account.buying_power),
+                    'today_pnl': float(account.equity) - float(account.last_equity)
+                }
+                
+                # Update dashboard data
+                data_store.update_portfolio(portfolio_data)
+                
+            except Exception as e:
+                logger.error(f"Error updating portfolio data: {str(e)}")
+            
+            await asyncio.sleep(60)  # Update every minute
+
     async def backtest_loop():
         """Background task for running backtests"""
         while True:
@@ -190,7 +199,6 @@ async def run_bot():
                                 error_msg = f"Failed to optimize {symbol}: {str(e)}"
                                 logger.error(f"Full optimization error for {symbol}: {str(e)}", exc_info=True)
                                 await trading_bot.send_message(f"❌ {error_msg}")
-                                input("Press Enter to continue...")
                             # Small delay between symbols to prevent overload
                             await asyncio.sleep(1)
                     except Exception as e:
@@ -261,9 +269,31 @@ async def run_bot():
                         
                         try:
                             analysis = strategies[symbol].analyze()
-                            if analysis and analysis['signal'] != 0:  # If there's a trading signal
-                                signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
-                                message = f"""
+                            
+                            # Update dashboard data
+                            if analysis:
+                                # Convert analysis to a serializable dict
+                                analysis_data = {
+                                    'symbol': symbol,
+                                    'current_price': analysis['current_price'],
+                                    'daily_composite': analysis['daily_composite'],
+                                    'daily_upper_limit': analysis['daily_upper_limit'],
+                                    'daily_lower_limit': analysis['daily_lower_limit'],
+                                    'weekly_composite': analysis['weekly_composite'],
+                                    'weekly_upper_limit': analysis['weekly_upper_limit'],
+                                    'weekly_lower_limit': analysis['weekly_lower_limit'],
+                                    'timestamp': analysis['timestamp'].isoformat() if hasattr(analysis['timestamp'], 'isoformat') else str(analysis['timestamp']),
+                                    'price_change_5m': analysis['price_change_5m'],
+                                    'price_change_1h': analysis['price_change_1h'],
+                                    'position': analysis['position']
+                                }
+                                
+                                # Update dashboard data store
+                                data_store.update_price_data(symbol, analysis_data)
+                                
+                                if analysis['signal'] != 0:  # If there's a trading signal
+                                    signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
+                                    message = f"""
 🔔 Trading Signal for {symbol}:
 Signal: {signal_type}
 Price: ${analysis['current_price']:.2f}
@@ -271,19 +301,35 @@ Daily Score: {analysis['daily_composite']:.4f}
 Weekly Score: {analysis['weekly_composite']:.4f}
 Parameters: {params}
 Bar Time: {analysis['bar_time']}
-                                """
-                                await trading_bot.send_message(message)
+                                    """
+                                    await trading_bot.send_message(message)
+                                    
+                                    # Add signal to dashboard
+                                    signal_data = {
+                                        'symbol': symbol,
+                                        'signal': analysis['signal'],
+                                        'price': analysis['current_price'],
+                                        'daily_composite': analysis['daily_composite'],
+                                        'weekly_composite': analysis['weekly_composite'],
+                                        'executed': False  # Will be updated when trade executes
+                                    }
+                                    data_store.add_trading_signal(signal_data)
                            
-                                # Execute trade with notifications through telegram bot
-                                action = "BUY" if analysis['signal'] == 1 else "SELL"
-                                await trading_executors[symbol].execute_trade(
-                                    action=action,
-                                    analysis=analysis,
-                                    notify_callback=trading_bot.send_message
-                                )
-                                
-                                # Run and send backtest results
-                                await run_and_send_backtest(symbol, trading_bot)
+                                    # Execute trade with notifications through telegram bot
+                                    action = "BUY" if analysis['signal'] == 1 else "SELL"
+                                    trade_executed = await trading_executors[symbol].execute_trade(
+                                        action=action,
+                                        analysis=analysis,
+                                        notify_callback=trading_bot.send_message
+                                    )
+                                    
+                                    # Update signal as executed if trade was successful
+                                    if trade_executed:
+                                        signal_data['executed'] = True
+                                        data_store.add_trading_signal(signal_data)
+                                    
+                                    # Run and send backtest results
+                                    await run_and_send_backtest(symbol, trading_bot)
                                 
                         except Exception as e:
                             logger.error(f"Error analyzing {symbol}: {str(e)}")
@@ -311,9 +357,15 @@ Bar Time: {analysis['bar_time']}
     logger.info(f"Bot started, monitoring symbols: {', '.join(symbols)}")
     
     try:
+        # Start the Flask server in a separate thread
+        flask_thread = threading.Thread(target=run_flask_server, daemon=True)
+        flask_thread.start()
+        logger.info("Dashboard server started at http://localhost:8080")
+        
         # Start both the trading and backtest loops
         trading_task = asyncio.create_task(trading_loop())
         backtest_task = asyncio.create_task(backtest_loop())
+        portfolio_task = asyncio.create_task(update_portfolio_data())
         
         # Keep the main task running
         while True:
@@ -328,6 +380,8 @@ Bar Time: {analysis['bar_time']}
             tasks_to_cancel.append(trading_task)
         if 'backtest_task' in locals():
             tasks_to_cancel.append(backtest_task)
+        if 'portfolio_task' in locals():
+            tasks_to_cancel.append(portfolio_task)
             
         for task in tasks_to_cancel:
             task.cancel()
@@ -390,9 +444,14 @@ if __name__ == "__main__":
         environment_ok = check_deployment_environment()
         if not environment_ok:
             logger.critical("Deployment environment check failed. Exiting.")
+            import sys
             sys.exit(1)
     except ImportError:
         logger.warning("Deployment environment checker not found. Continuing without check.")
+    
+    # Create necessary directories
+    os.makedirs('templates', exist_ok=True)
+    os.makedirs('static', exist_ok=True)
     
     try:
         asyncio.run(run_bot())

@@ -1,0 +1,12 @@
+Debug Log for Trading Bot Dashboard
+
+[2025-03-21 15:24:20] Initial debugging session started
+[2025-03-21 15:24:20] Issue: Dashboard not displaying at localhost:8080
+[2025-03-21 15:24:20] Action: Checked environment variables - found missing Alpaca API credentials
+[2025-03-21 15:24:20] Action: Modified config.py to use placeholder API keys instead of raising an error
+[2025-03-21 15:24:20] Action: Checked dashboard_flask.py - found Flask server running on port 8080
+[2025-03-21 15:24:20] Action: Found dashboard.html in wrong location (templates/static/ instead of templates/)
+[2025-03-21 15:24:20] Action: Copied dashboard.html to correct location (templates/)
+[2025-03-21 15:24:20] Action: Changed Flask server port from 8080 to 8081 to avoid potential conflicts
+[2025-03-21 15:24:20] Action: Restarted the application
+[2025-03-21 15:24:20] Next step: Try accessing dashboard at http://localhost:8081
