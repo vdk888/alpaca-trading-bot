@@ -22,3 +22,15 @@ externalPort = 81
 
 [objectStorage]
 defaultBucketID = "replit-objstore-2927bac7-9a77-4731-9fd7-61c199e7357c"
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 38614217
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_market_hours.py"
