@@ -13,6 +13,10 @@ ignorePorts = true
 channel = "stable-24_05"
 
 [[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
 localPort = 8081
 externalPort = 81
 
