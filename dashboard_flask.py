@@ -203,14 +203,30 @@ def get_symbols():
 def get_symbol_data(symbol):
     """Return data for a specific symbol"""
     try:
-        if symbol not in TRADING_SYMBOLS:
-            return jsonify({'error': 'Symbol not found'}), 404
-        data = data_store.get_symbol_data(symbol)
+        # Clean up symbol format
+        clean_symbol = symbol.replace('-', '/').upper()
+        if clean_symbol not in TRADING_SYMBOLS:
+            return jsonify({'error': 'Symbol not found', 'symbol': clean_symbol}), 404
+            
+        data = data_store.get_symbol_data(clean_symbol)
         if not data:
-            return jsonify({'error': 'No data available'}), 404
+            # Return empty structure with default values
+            return jsonify({
+                'symbol': clean_symbol,
+                'current_price': 0,
+                'daily_composite': 0,
+                'daily_upper_limit': 0,
+                'daily_lower_limit': 0,
+                'weekly_composite': 0,
+                'weekly_upper_limit': 0,
+                'weekly_lower_limit': 0,
+                'last_update': None
+            })
+            
         return jsonify(data)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error getting data for {symbol}: {str(e)}")
+        return jsonify({'error': str(e), 'symbol': symbol}), 500
 
 @app.route('/api/debug/price_history/<symbol>')
 def debug_price_history(symbol):

@@ -8,6 +8,62 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script>
+        // Wait for jQuery to load
+        window.onload = function() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery failed to load');
+                return;
+            }
+
+            function updatePrices() {
+                $.getJSON('/api/prices')
+                    .done(function(data) {
+                        Object.entries(data).forEach(([symbol, price]) => {
+                            const priceElement = $(`#price-${symbol}`);
+                            const oldPrice = parseFloat(priceElement.data('price') || 0);
+                            const newPrice = parseFloat(price);
+
+                            priceElement
+                                .text(`$${newPrice.toFixed(2)}`)
+                                .data('price', newPrice)
+                                .removeClass('price-up price-down')
+                                .addClass(newPrice > oldPrice ? 'price-up' : newPrice < oldPrice ? 'price-down' : '');
+                        });
+                    })
+                    .fail(function(error) {
+                        console.error('Error loading prices:', error);
+                    });
+            }
+
+            function loadSymbolData(symbol) {
+                $.getJSON(`/api/data/${symbol}`)
+                    .done(function(data) {
+                        if (data.current_price) {
+                            $(`#price-${symbol}`).text(`$${data.current_price.toFixed(2)}`);
+                            $('#dailyComposite').text(data.daily_composite?.toFixed(4) || '-');
+                            $('#dailyUpperLimit').text(data.daily_upper_limit?.toFixed(4) || '-');
+                            $('#dailyLowerLimit').text(data.daily_lower_limit?.toFixed(4) || '-');
+                            $('#weeklyComposite').text(data.weekly_composite?.toFixed(4) || '-');
+                            $('#weeklyUpperLimit').text(data.weekly_upper_limit?.toFixed(4) || '-');
+                            $('#weeklyLowerLimit').text(data.weekly_lower_limit?.toFixed(4) || '-');
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error(`Error loading data for ${symbol}:`, error);
+                    });
+            }
+
+            // Initial load
+            {% for symbol in active_symbols %}
+            loadSymbolData("{{ symbol }}");
+            {% endfor %}
+
+            // Update prices every 5 seconds
+            setInterval(updatePrices, 5000);
+            updatePrices();
+        };
+    </script>
     <style>
         body {
             padding-top: 20px;
