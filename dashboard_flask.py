@@ -1,281 +1,474 @@
-from flask import Flask, render_template, jsonify
-import threading
 import os
+import io
 import json
-from datetime import datetime
-import logging
-import time
-from queue import Queue
-import pandas as pd
-from dotenv import load_dotenv
+from flask import Flask, render_template, jsonify, request, send_file
+from alpaca.trading.client import TradingClient
+from strategy import TradingStrategy
 from config import TRADING_SYMBOLS
-
-# Load environment variables
-load_dotenv()
+from telegram_bot import TradingBot
+from utils import get_api_symbol, get_display_symbol
+from visualization import create_strategy_plot, create_multi_symbol_plot, generate_signals
+from portfolio import get_portfolio_history, create_portfolio_plot
+from backtest import run_portfolio_backtest, create_portfolio_backtest_plot
+from backtest_individual import run_backtest, create_backtest_plot
+import pandas as pd
+import base64
+from datetime import datetime, timedelta
 
 # Initialize Flask app
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__)
 
-# In-memory storage for data
-class DataStore:
-    def __init__(self):
-        self.data = {}
-        self.trading_signals = []
-        self.portfolio_history = []
-        self.last_update = {}
-        self.last_prices = {}
-        self.active_symbols = set(TRADING_SYMBOLS.keys())
-        self.price_history = {}  # Store price history for each symbol
-        
-        # Create data directory and symbol subdirectories if they don't exist
-        os.makedirs('data', exist_ok=True)
-        for symbol in TRADING_SYMBOLS:
-            os.makedirs(f'data/{symbol.replace("/", "_")}', exist_ok=True)
+# Initialize Alpaca client
+trading_client = TradingClient(
+    api_key=os.getenv('ALPACA_API_KEY'),
+    secret_key=os.getenv('ALPACA_SECRET_KEY'),
+    paper=True  # Set to False for live trading
+)
 
-    def update_price_data(self, symbol, data_dict):
-        """Update price data for a symbol"""
-        self.last_update[symbol] = datetime.now().isoformat()
-        
-        # Initialize data structures if they don't exist
-        if symbol not in self.price_history:
-            self.price_history[symbol] = []
-        
-        # Update current price and create price point
-        current_price = float(data_dict.get('current_price', 0))
-        if current_price > 0:
-            self.last_prices[symbol] = current_price
-            
-            # Create timestamp
-            timestamp = data_dict.get('timestamp', datetime.now().isoformat())
-            if isinstance(timestamp, datetime):
-                timestamp = timestamp.isoformat()
-            
-            # Check if there's a signal for this price point
-            signal = None
-            # Check for signal in data_dict
-            if 'signal' in data_dict and data_dict['signal'] in ['buy', 'sell']:
-                signal = data_dict['signal']
-            # Also check for signal in TradingStrategy format (1 for buy, -1 for sell)
-            elif 'signal' in data_dict:
-                if data_dict['signal'] == 1:
-                    signal = 'buy'
-                elif data_dict['signal'] == -1:
-                    signal = 'sell'
-            
-            # Add to price history
-            price_point = {
-                'timestamp': timestamp,
-                'price': float(current_price),
-                'signal': signal
-            }
-            
-            # Only add if it's a new timestamp or has a signal
-            add_point = True
-            if self.price_history[symbol] and self.price_history[symbol][-1]['timestamp'] == timestamp:
-                # If same timestamp, only update if this one has a signal
-                if not signal:
-                    add_point = False
-                else:
-                    # Replace the last point with this one that has a signal
-                    self.price_history[symbol][-1] = price_point
-                    add_point = False
-            
-            if add_point:
-                self.price_history[symbol].append(price_point)
-            
-            # Keep only the last 100 price points
-            if len(self.price_history[symbol]) > 100:
-                self.price_history[symbol] = self.price_history[symbol][-100:]
-            
-            # Add price history to data_dict
-            data_dict['price_history'] = self.price_history[symbol]
-            
-            # Log price history for debugging
-            print(f"Price history for {symbol}: {len(self.price_history[symbol])} points")
-            if self.price_history[symbol]:
-                print(f"Latest price point: {self.price_history[symbol][-1]}")
-        
-        self.data[symbol] = data_dict
-        self.last_prices[symbol] = current_price
-        self.active_symbols.add(symbol)
-        
-        # Save data to disk for persistence
-        symbol_dir = symbol.replace("/", "_")
-        with open(f'data/{symbol_dir}/latest.json', 'w') as f:
-            json.dump(data_dict, f)
-        
-        # Save price history separately
-        with open(f'data/{symbol_dir}/history.json', 'w') as f:
-            json.dump(self.price_history[symbol], f)
-    
-    def add_trading_signal(self, signal_data):
-        """Add a new trading signal to the history"""
-        signal_data['timestamp'] = datetime.now().isoformat()
-        self.trading_signals.append(signal_data)
-        if len(self.trading_signals) > 100:  # Keep only the last 100 signals
-            self.trading_signals = self.trading_signals[-100:]
-            
-        # Save signals to disk
-        with open('data/trading_signals.json', 'w') as f:
-            json.dump(self.trading_signals, f)
-    
-    def update_portfolio(self, portfolio_data):
-        """Update portfolio history"""
-        portfolio_data['timestamp'] = datetime.now().isoformat()
-        self.portfolio_history.append(portfolio_data)
-        if len(self.portfolio_history) > 1000:  # Keep a reasonable history
-            self.portfolio_history = self.portfolio_history[-1000:]
-            
-        # Save portfolio data to disk
-        with open('data/portfolio_history.json', 'w') as f:
-            json.dump(self.portfolio_history, f)
-    
-    def get_symbol_data(self, symbol):
-        """Get data for a specific symbol"""
-        data = self.data.get(symbol, {})
-        
-        # Make sure price history is included in the response
-        if symbol in self.price_history:
-            data['price_history'] = self.price_history[symbol]
-        
-        return data
-    
-    def get_latest_prices(self):
-        """Get latest prices for all symbols"""
-        return self.last_prices
-    
-    def get_active_symbols(self):
-        """Get list of active symbols"""
-        return list(self.active_symbols)
-    
-    def load_from_disk(self):
-        """Load persistent data from disk on startup"""
-        try:
-            # Load trading signals
-            if os.path.exists('data/trading_signals.json'):
-                with open('data/trading_signals.json', 'r') as f:
-                    self.trading_signals = json.load(f)
-            
-            # Load portfolio history
-            if os.path.exists('data/portfolio_history.json'):
-                with open('data/portfolio_history.json', 'r') as f:
-                    self.portfolio_history = json.load(f)
-            
-            # Load latest symbol data
-            for filename in os.listdir('data'):
-                if filename.endswith('_latest.json'):
-                    symbol = filename.split('_')[0]
-                    with open(f'data/{filename}', 'r') as f:
-                        self.data[symbol] = json.load(f)
-                    self.active_symbols.add(symbol)
-                    
-                    if 'current_price' in self.data[symbol]:
-                        self.last_prices[symbol] = self.data[symbol]['current_price']
-                
-                # Load price history
-                elif filename.endswith('_history.json'):
-                    symbol = filename.split('_')[0]
-                    with open(f'data/{filename}', 'r') as f:
-                        self.price_history[symbol] = json.load(f)
-        except Exception as e:
-            logging.error(f"Error loading data from disk: {e}")
+# Initialize trading strategies for all symbols
+symbols = list(TRADING_SYMBOLS.keys())
+strategies = {symbol: TradingStrategy(symbol) for symbol in symbols}
 
-# Create data store instance
-data_store = DataStore()
-data_store.load_from_disk()
+# Initialize TradingBot (reusing the existing class)
+trading_bot = TradingBot(trading_client, strategies, symbols)
 
 @app.route('/')
-def index():
-    """Serve the main dashboard page"""
-    return render_template('dashboard.html', 
-                          active_symbols=data_store.get_active_symbols(),
-                          last_update=data_store.last_update)
+def dashboard():
+    """Render the main dashboard page"""
+    return render_template('dashboard.html', symbols=symbols)
 
-@app.route('/api/symbols')
-def get_symbols():
-    """Return list of active symbols"""
-    return jsonify({
-        'symbols': data_store.get_active_symbols(),
-        'last_update': data_store.last_update
-    })
-
-@app.route('/api/data/<symbol>')
-def get_symbol_data(symbol):
-    """Return data for a specific symbol"""
-    try:
-        # Clean up symbol format
-        clean_symbol = symbol.replace('-', '/').upper()
-        if clean_symbol not in TRADING_SYMBOLS:
-            return jsonify({'error': 'Symbol not found', 'symbol': clean_symbol}), 404
+@app.route('/api/status', methods=['GET'])
+def get_status():
+    """Get current trading status for all symbols or a specific symbol"""
+    symbol = request.args.get('symbol')
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+        
+    symbols_to_check = [symbol] if symbol else symbols
+    status_data = []
+    
+    for sym in symbols_to_check:
+        try:
+            analysis = strategies[sym].analyze()
+            if not analysis:
+                status_data.append({"symbol": sym, "error": "No data available"})
+                continue
+                
+            position = "LONG" if strategies[sym].current_position == 1 else "SHORT" if strategies[sym].current_position == -1 else "NEUTRAL"
             
-        data = data_store.get_symbol_data(clean_symbol)
-        if not data:
-            # Return empty structure with default values
-            return jsonify({
-                'symbol': clean_symbol,
-                'current_price': 0,
-                'daily_composite': 0,
-                'daily_upper_limit': 0,
-                'daily_lower_limit': 0,
-                'weekly_composite': 0,
-                'weekly_upper_limit': 0,
-                'weekly_lower_limit': 0,
-                'last_update': None
+            # Get best parameters
+            params = trading_bot.get_best_params(sym)
+            
+            # Get position details if any
+            try:
+                pos = trading_client.get_open_position(get_api_symbol(sym))
+                pos_pnl = {"value": float(pos.unrealized_pl), "percent": float(pos.unrealized_plpc)*100}
+            except:
+                pos_pnl = {"value": 0, "percent": 0}
+            
+            status_data.append({
+                "symbol": sym,
+                "name": TRADING_SYMBOLS[sym]['name'],
+                "position": position,
+                "current_price": analysis['current_price'],
+                "pos_pnl": pos_pnl,
+                "indicators": {
+                    "daily_composite": analysis['daily_composite'],
+                    "daily_upper_limit": analysis['daily_upper_limit'],
+                    "daily_lower_limit": analysis['daily_lower_limit'],
+                    "weekly_composite": analysis['weekly_composite'],
+                    "weekly_upper_limit": analysis['weekly_upper_limit'],
+                    "weekly_lower_limit": analysis['weekly_lower_limit']
+                },
+                "price_changes": {
+                    "5min": analysis['price_change_5m']*100,
+                    "1hr": analysis['price_change_1h']*100
+                },
+                "params": params
             })
-            
-        return jsonify(data)
+        except Exception as e:
+            status_data.append({"symbol": sym, "error": str(e)})
+    
+    return jsonify(status_data)
+
+@app.route('/api/balance', methods=['GET'])
+def get_balance():
+    """Get account balance information"""
+    try:
+        account = trading_client.get_account()
+        today_pl = float(account.equity) - float(account.last_equity)
+        today_pl_pct = (today_pl / float(account.last_equity)) * 100
+        
+        return jsonify({
+            "cash": float(account.cash),
+            "portfolio_value": float(account.portfolio_value),
+            "buying_power": float(account.buying_power),
+            "today_pl": today_pl,
+            "today_pl_pct": today_pl_pct,
+            "last_equity": float(account.last_equity),
+            "equity": float(account.equity)
+        })
     except Exception as e:
-        logger.error(f"Error getting data for {symbol}: {str(e)}")
-        return jsonify({'error': str(e), 'symbol': symbol}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/debug/price_history/<symbol>')
-def debug_price_history(symbol):
-    """Debug endpoint to check price history for a symbol"""
-    if symbol in data_store.price_history:
+@app.route('/api/positions', methods=['GET'])
+def get_positions():
+    """Get current position details for all symbols or a specific symbol"""
+    symbol = request.args.get('symbol')
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+        
+    symbols_to_check = [symbol] if symbol else symbols
+    positions_data = []
+    
+    for sym in symbols_to_check:
+        try:
+            position = trading_client.get_open_position(get_api_symbol(sym))
+            account = trading_client.get_account()
+            equity = float(account.equity)
+            market_value = float(position.market_value)
+            exposure_percentage = (market_value / equity) * 100
+            
+            positions_data.append({
+                "symbol": sym,
+                "name": TRADING_SYMBOLS[sym]['name'],
+                "side": position.side.upper(),
+                "qty": position.qty,
+                "entry_price": float(position.avg_entry_price),
+                "current_price": float(position.current_price),
+                "market_value": market_value,
+                "exposure_percentage": exposure_percentage,
+                "unrealized_pl": float(position.unrealized_pl),
+                "unrealized_plpc": float(position.unrealized_plpc)*100
+            })
+        except Exception as e:
+            # No position for this symbol
+            pass
+    
+    # Add summary if no specific symbol was requested
+    if not symbol:
+        try:
+            account = trading_client.get_account()
+            equity = float(account.equity)
+            total_market_value = 0
+            total_pnl = 0
+            
+            for pos in positions_data:
+                total_market_value += pos["market_value"]
+                total_pnl += pos["unrealized_pl"]
+            
+            if total_market_value > 0:
+                total_exposure = (total_market_value / equity) * 100
+                
+                # Sort positions by market value
+                positions_data.sort(key=lambda x: abs(x['market_value']), reverse=True)
+                
+                # Add weights to positions
+                for pos in positions_data:
+                    pos["weight"] = (abs(pos["market_value"]) / total_market_value) * 100
+                
+                return jsonify({
+                    "positions": positions_data,
+                    "summary": {
+                        "total_market_value": total_market_value,
+                        "total_exposure": total_exposure,
+                        "cash_balance": float(account.cash),
+                        "portfolio_value": float(account.portfolio_value),
+                        "total_unrealized_pnl": total_pnl
+                    }
+                })
+        except Exception as e:
+            pass
+    
+    return jsonify(positions_data)
+
+@app.route('/api/plot/<symbol>', methods=['GET'])
+def get_plot(symbol):
+    """Generate and return a strategy plot for a symbol"""
+    if symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    days = request.args.get('days', default=30, type=int)
+    
+    try:
+        buf, stats = create_strategy_plot(symbol, days)
+        
+        # Convert plot to base64 for embedding in HTML
+        buf.seek(0)
+        plot_data = base64.b64encode(buf.read()).decode('utf-8')
+        
         return jsonify({
-            'symbol': symbol,
-            'count': len(data_store.price_history[symbol]),
-            'data': data_store.price_history[symbol]
+            "plot": plot_data,
+            "stats": stats
         })
-    else:
-        return jsonify({
-            'symbol': symbol,
-            'count': 0,
-            'data': []
-        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/prices')
-def get_prices():
-    """Return latest prices for all symbols"""
-    return jsonify(data_store.get_latest_prices())
-
-@app.route('/api/signals')
+@app.route('/api/signals', methods=['GET'])
 def get_signals():
-    """Return recent trading signals"""
-    return jsonify(data_store.trading_signals)
+    """Get latest signals for all symbols or a specific symbol"""
+    symbol = request.args.get('symbol')
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+        
+    symbols_to_check = [symbol] if symbol else symbols
+    signals_data = []
+    
+    for sym in symbols_to_check:
+        try:
+            analysis = strategies[sym].analyze()
+            if not analysis:
+                signals_data.append({"symbol": sym, "error": "No data available"})
+                continue
+                
+            # Get signal strength and direction
+            signal_strength = abs(analysis['daily_composite'])
+            signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
+            
+            # Format time since last signal
+            last_signal_info = None
+            if analysis.get('last_signal_time') is not None:
+                now = pd.Timestamp.now(tz=analysis['last_signal_time'].tzinfo)
+                last_time = analysis['last_signal_time']
+                time_diff = now - last_time
+                hours = int(time_diff.total_seconds() / 3600)
+                minutes = int((time_diff.total_seconds() % 3600) / 60)
+                
+                last_signal_info = {
+                    "time": last_time.strftime('%Y-%m-%d %H:%M'),
+                    "hours_ago": hours,
+                    "minutes_ago": minutes,
+                    "type": "BUY" if analysis['daily_composite'] > 0 else "SELL"
+                }
+            
+            # Classify signals
+            daily_signal = (
+                "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
+                else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
+                else "WEAK " + signal_direction if signal_strength > 0.5
+                else "NEUTRAL"
+            )
+            
+            weekly_signal = (
+                "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
+                else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
+                else "WEAK BUY" if analysis['weekly_composite'] > 0
+                else "WEAK SELL" if analysis['weekly_composite'] < 0
+                else "NEUTRAL"
+            )
+            
+            signals_data.append({
+                "symbol": sym,
+                "name": TRADING_SYMBOLS[sym]['name'],
+                "signal_strength": signal_strength,
+                "signal_direction": signal_direction,
+                "daily_signal": daily_signal,
+                "weekly_signal": weekly_signal,
+                "last_signal": last_signal_info,
+                "current_price": analysis['current_price'],
+                "daily_composite": analysis['daily_composite'],
+                "weekly_composite": analysis['weekly_composite']
+            })
+        except Exception as e:
+            signals_data.append({"symbol": sym, "error": str(e)})
+    
+    return jsonify(signals_data)
 
-@app.route('/api/portfolio')
+@app.route('/api/backtest', methods=['POST'])
+def run_backtest_api():
+    """Run backtest simulation"""
+    data = request.json
+    symbol = data.get('symbol')
+    days = data.get('days', 30)
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    symbols_to_backtest = [symbol] if symbol else symbols
+    
+    try:
+        results = {}
+        for sym in symbols_to_backtest:
+            backtest_result, stats = run_backtest(sym, days)
+            
+            # Generate plot
+            plot_buf = create_backtest_plot(backtest_result, sym, days)
+            plot_buf.seek(0)
+            plot_data = base64.b64encode(plot_buf.read()).decode('utf-8')
+            
+            results[sym] = {
+                "stats": stats,
+                "plot": plot_data
+            }
+        
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/portfolio', methods=['GET'])
 def get_portfolio():
-    """Return portfolio history"""
-    return jsonify(data_store.portfolio_history)
+    """Get portfolio history"""
+    interval = request.args.get('interval', '1D')
+    timeframe = request.args.get('timeframe', '1M')
+    
+    try:
+        # Get portfolio history
+        portfolio_data = get_portfolio_history(trading_client, interval, timeframe)
+        
+        # Create plot
+        plot_buf = create_portfolio_plot(portfolio_data, interval, timeframe)
+        plot_buf.seek(0)
+        plot_data = base64.b64encode(plot_buf.read()).decode('utf-8')
+        
+        return jsonify({
+            "plot": plot_data,
+            "data": portfolio_data.to_dict(orient='records')
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/health')
-def health_check():
-    """Health check endpoint for Replit"""
-    return jsonify({"status": "ok", "message": "Trading bot dashboard is running"})
+@app.route('/api/open', methods=['POST'])
+def open_position():
+    """Open a new position"""
+    data = request.json
+    symbol = data.get('symbol')
+    amount = data.get('amount')
+    
+    if not symbol or symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    if not amount or float(amount) <= 0:
+        return jsonify({"error": "Invalid amount"}), 400
+    
+    try:
+        # Get current price
+        analysis = strategies[symbol].analyze()
+        if not analysis:
+            return jsonify({"error": f"No data available for {symbol}"}), 400
+        
+        current_price = analysis['current_price']
+        
+        # Calculate shares from amount
+        executor = trading_bot.executors[symbol]
+        shares = executor.calculate_shares_from_amount(float(amount), current_price)
+        
+        # Execute trade
+        result = trading_client.submit_order(
+            symbol=get_api_symbol(symbol),
+            qty=shares,
+            side='buy',
+            type='market',
+            time_in_force='day'
+        )
+        
+        return jsonify({
+            "success": True,
+            "message": f"Successfully opened position for {symbol}",
+            "order_id": result.id,
+            "symbol": symbol,
+            "shares": shares,
+            "price": current_price,
+            "amount": float(amount)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/close', methods=['POST'])
+def close_position():
+    """Close positions"""
+    data = request.json
+    symbol = data.get('symbol')
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    symbols_to_close = [symbol] if symbol else symbols
+    results = []
+    
+    for sym in symbols_to_close:
+        try:
+            # Check if position exists
+            try:
+                position = trading_client.get_open_position(get_api_symbol(sym))
+            except Exception:
+                results.append({"symbol": sym, "message": "No open position"})
+                continue
+            
+            # Close position
+            result = trading_client.close_position(get_api_symbol(sym))
+            
+            results.append({
+                "symbol": sym,
+                "success": True,
+                "message": f"Successfully closed position for {sym}",
+                "order_id": result.id
+            })
+        except Exception as e:
+            results.append({"symbol": sym, "error": str(e)})
+    
+    return jsonify(results)
+
+@app.route('/api/orders', methods=['GET'])
+def get_orders():
+    """Get past orders"""
+    symbol = request.args.get('symbol')
+    limit = request.args.get('limit', default=20, type=int)
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    try:
+        if symbol:
+            orders = trading_client.get_orders(
+                symbol=get_api_symbol(symbol),
+                limit=limit,
+                nested=True
+            )
+        else:
+            orders = trading_client.get_orders(
+                limit=limit,
+                nested=True
+            )
+        
+        orders_data = []
+        for order in orders:
+            orders_data.append({
+                "id": order.id,
+                "symbol": get_display_symbol(order.symbol),
+                "side": order.side,
+                "qty": order.qty,
+                "filled_qty": order.filled_qty,
+                "type": order.type,
+                "status": order.status,
+                "submitted_at": order.submitted_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "filled_at": order.filled_at.strftime('%Y-%m-%d %H:%M:%S') if order.filled_at else None,
+                "filled_avg_price": order.filled_avg_price
+            })
+        
+        return jsonify(orders_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Data store for dashboard
+class DataStore:
+    def __init__(self):
+        self.portfolio_data = {}
+        
+    def update_portfolio(self, data):
+        self.portfolio_data = data
+        
+    def get_portfolio(self):
+        return self.portfolio_data
+
+# Initialize data store
+data_store = DataStore()
 
 def run_flask_server():
-    """Run the Flask server in a separate thread"""
-    # Check if running on Replit
-    if os.getenv('REPL_ID') and os.getenv('REPL_SLUG'):
-        # Running on Replit - use 0.0.0.0 and port 8080
-        print("Running on Replit - using port 8080")
-        app.run(host='0.0.0.0', port=8080)
-    else:
-        # Running locally - use port 8081
-        print("Running locally - using port 8081")
-        app.run(host='0.0.0.0', port=8081)
+    """Run the Flask server with modern parameters"""
+    app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
 
-# This allows importing the datastore from the main script
-def get_data_store():
-    return data_store
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

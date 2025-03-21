@@ -371,7 +371,7 @@ Bar Time: {analysis['bar_time']}
         # Start the Flask server in a separate thread
         flask_thread = threading.Thread(target=run_flask_server, daemon=True)
         flask_thread.start()
-        logger.info("Dashboard server started at http://localhost:8080")
+        logger.info("Dashboard server started at http://localhost:5000")
         
         # Start both the trading and backtest loops
         trading_task = asyncio.create_task(trading_loop())
