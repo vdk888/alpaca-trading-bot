@@ -37,3 +37,9 @@ Debug Log for Trading Bot Dashboard
 [2025-03-21 16:54:15] Action: Added console logging to dashboard.html to debug price history data loading
 [2025-03-21 16:54:15] Action: Modified run_market_hours.py to ensure signal is explicitly included in the analysis_data dictionary
 [2025-03-21 16:54:15] Next step: Check if data is being generated properly by examining the console logs
+[2025-03-21 17:22:39] Issue: Price chart still not displaying correctly despite signals showing
+[2025-03-21 17:22:39] Action: Examined app streamlit exemple.py to see how it handles price history data
+[2025-03-21 17:22:39] Action: Updated dashboard_flask.py to improve file organization with symbol-specific directories
+[2025-03-21 17:22:39] Action: Completely refactored the updatePriceChart function in dashboard.html to better handle price data
+[2025-03-21 17:22:39] Action: Added data validation, sorting, and improved signal display in the chart
+[2025-03-21 17:22:39] Next step: Run the application and check if the price chart now displays correctly

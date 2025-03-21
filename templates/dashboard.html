@@ -164,143 +164,72 @@
     </div>
 
     <script>
-        // Global chart instance
+        // Global variables
         let priceChart = null;
-        let currentSymbol = null;
         let priceHistory = {};
+        let activeSymbol = null;
         
-        // Initialize the dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup symbol list click handlers
-            const symbolItems = document.querySelectorAll('.symbol-item');
-            symbolItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const symbol = this.getAttribute('data-symbol');
-                    loadSymbolData(symbol);
+        // Initialize on document ready
+        $(document).ready(function() {
+            // Get active symbols
+            $.getJSON('/api/symbols', function(data) {
+                const symbols = data.symbols;
+                if (symbols.length > 0) {
+                    // Load first symbol by default
+                    activeSymbol = symbols[0];
+                    loadSymbolData(activeSymbol);
                     
-                    // Update active state
-                    symbolItems.forEach(s => s.classList.remove('active'));
-                    this.classList.add('active');
-                });
+                    // Set up refresh interval
+                    setInterval(function() {
+                        if (activeSymbol) {
+                            loadSymbolData(activeSymbol);
+                        }
+                    }, 5000);  // Refresh every 5 seconds
+                }
             });
             
-            // Load first symbol if available
-            if (symbolItems.length > 0) {
-                const firstSymbol = symbolItems[0].getAttribute('data-symbol');
-                loadSymbolData(firstSymbol);
-                symbolItems[0].classList.add('active');
-            }
-            
-            // Start update loops
+            // Start price updates
             updatePrices();
-            updatePortfolioData();
-            updateRecentSignals();
-            updateRecentTrades();
+            
+            // Update portfolio
+            updatePortfolio();
+            
+            // Update signals
+            updateSignals();
         });
         
         // Function to load symbol data
         function loadSymbolData(symbol) {
-            currentSymbol = symbol;
-            document.getElementById('selectedSymbolHeader').textContent = `Price Chart: ${symbol}`;
-            
-            fetch(`/api/data/${symbol}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateSymbolData(symbol, data);
+            $.getJSON(`/api/data/${symbol}`, function(data) {
+                // Update the active symbol
+                activeSymbol = symbol;
+                
+                // Update price chart title
+                $('#priceChartTitle').text(`Price Chart: ${symbol}`);
+                
+                // Store price history
+                if (data.price_history && Array.isArray(data.price_history)) {
+                    console.log(`Received price history for ${symbol}: ${data.price_history.length} points`);
+                    console.log("First few price points:", data.price_history.slice(0, 3));
                     
-                    // Initialize or update price history
-                    if (!priceHistory[symbol]) {
-                        priceHistory[symbol] = [];
-                    }
-                    
-                    // Use historical data if available
-                    if (data.price_history && Array.isArray(data.price_history)) {
-                        priceHistory[symbol] = data.price_history.map(item => ({
-                            timestamp: item.timestamp,
-                            price: item.price,
-                            signal: item.signal || null
-                        }));
-                        console.log(`Loaded ${priceHistory[symbol].length} price history points for ${symbol}`);
-                    } else {
-                        // Add current price to history if no historical data
-                        const timestamp = new Date().toISOString();
-                        priceHistory[symbol].push({
-                            timestamp,
-                            price: data.current_price
-                        });
-                        console.log(`No price history available for ${symbol}, using current price only`);
-                        
-                        // Keep only last 100 points
-                        if (priceHistory[symbol].length > 100) {
-                            priceHistory[symbol] = priceHistory[symbol].slice(-100);
-                        }
-                    }
-                    
-                    updatePriceChart(symbol);
-                })
-                .catch(error => console.error('Error fetching symbol data:', error));
-        }
-        
-        // Function to update symbol data display
-        function updateSymbolData(symbol, data) {
-            // Update signal data
-            document.getElementById('dailyComposite').textContent = data.daily_composite?.toFixed(4) || '-';
-            document.getElementById('dailyUpperLimit').textContent = data.daily_upper_limit?.toFixed(4) || '-';
-            document.getElementById('dailyLowerLimit').textContent = data.daily_lower_limit?.toFixed(4) || '-';
-            document.getElementById('weeklyComposite').textContent = data.weekly_composite?.toFixed(4) || '-';
-            document.getElementById('weeklyUpperLimit').textContent = data.weekly_upper_limit?.toFixed(4) || '-';
-            document.getElementById('weeklyLowerLimit').textContent = data.weekly_lower_limit?.toFixed(4) || '-';
-            
-            // Update last update time
-            const lastUpdate = new Date(data.timestamp);
-            document.getElementById('lastUpdate').textContent = `Last update: ${lastUpdate.toLocaleString()}`;
-        }
-        
-        // Function to update prices
-        function updatePrices() {
-            fetch('/api/prices')
-                .then(response => response.json())
-                .then(data => {
-                    for (const [symbol, price] of Object.entries(data)) {
-                        const priceElement = document.getElementById(`price-${symbol}`);
-                        if (priceElement) {
-                            priceElement.textContent = `$${price.toFixed(2)}`;
-                            
-                            // Add to price history if it's the current symbol
-                            if (symbol === currentSymbol) {
-                                const timestamp = new Date().toISOString();
-                                if (!priceHistory[symbol]) {
-                                    priceHistory[symbol] = [];
-                                }
-                                
-                                // Only add if price changed
-                                const lastPrice = priceHistory[symbol].length > 0 ? 
-                                    priceHistory[symbol][priceHistory[symbol].length - 1].price : null;
-                                
-                                if (lastPrice !== price) {
-                                    priceHistory[symbol].push({
-                                        timestamp,
-                                        price
-                                    });
-                                    
-                                    // Keep only last 100 points
-                                    if (priceHistory[symbol].length > 100) {
-                                        priceHistory[symbol] = priceHistory[symbol].slice(-100);
-                                    }
-                                    
-                                    // Update chart
-                                    updatePriceChart(symbol);
-                                }
-                            }
-                        }
-                    }
-                })
-                .catch(error => console.error('Error fetching prices:', error))
-                .finally(() => {
-                    // Schedule next update
-                    setTimeout(updatePrices, 5000);  // Every 5 seconds
-                });
+                    priceHistory[symbol] = data.price_history.map(item => ({
+                        timestamp: item.timestamp,
+                        price: item.price,
+                        signal: item.signal || null
+                    }));
+                } else {
+                    console.warn(`No price history received for ${symbol}`);
+                    priceHistory[symbol] = [];
+                }
+                
+                // Update price chart
+                updatePriceChart(symbol);
+                
+                // Update signal data
+                updateSignalData(data);
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error(`Error loading data for ${symbol}:`, textStatus, errorThrown);
+            });
         }
         
         // Function to update price chart
@@ -311,13 +240,32 @@
             }
             
             console.log(`Updating price chart for ${symbol} with ${priceHistory[symbol].length} data points`);
+            console.log("Price history data:", priceHistory[symbol]);
             
             const chartData = priceHistory[symbol];
+            
+            // Make sure we have valid timestamps
+            chartData.forEach(point => {
+                if (typeof point.timestamp === 'string') {
+                    try {
+                        // Try to parse the timestamp
+                        new Date(point.timestamp);
+                    } catch (e) {
+                        console.error(`Invalid timestamp: ${point.timestamp}`, e);
+                        point.timestamp = new Date().toISOString();
+                    }
+                }
+            });
+            
+            // Sort data by timestamp
+            chartData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
             const labels = chartData.map(d => {
                 const date = new Date(d.timestamp);
                 // Format date as MM/DD HH:MM
                 return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
             });
+            
             const prices = chartData.map(d => d.price);
             
             // Extract buy and sell signals
@@ -327,60 +275,19 @@
             chartData.forEach((d, index) => {
                 if (d.signal === 'buy') {
                     buySignals.push({
-                        x: labels[index],
+                        x: index,
                         y: d.price
                     });
                 } else if (d.signal === 'sell') {
                     sellSignals.push({
-                        x: labels[index],
+                        x: index,
                         y: d.price
-                    });
-                } else {
-                    // Push null to maintain array length
-                    buySignals.push(null);
-                    sellSignals.push(null);
-                }
-            });
-            
-            // Create annotations for signals
-            const annotations = [];
-            chartData.forEach((d, index) => {
-                if (d.signal === 'buy') {
-                    annotations.push({
-                        type: 'line',
-                        mode: 'vertical',
-                        scaleID: 'x',
-                        value: labels[index],
-                        borderColor: 'rgba(0, 255, 0, 0.5)',
-                        borderWidth: 2,
-                        label: {
-                            content: 'BUY',
-                            enabled: true,
-                            position: 'top',
-                            backgroundColor: 'rgba(0, 255, 0, 0.7)'
-                        }
-                    });
-                } else if (d.signal === 'sell') {
-                    annotations.push({
-                        type: 'line',
-                        mode: 'vertical',
-                        scaleID: 'x',
-                        value: labels[index],
-                        borderColor: 'rgba(255, 0, 0, 0.5)',
-                        borderWidth: 2,
-                        label: {
-                            content: 'SELL',
-                            enabled: true,
-                            position: 'top',
-                            backgroundColor: 'rgba(255, 0, 0, 0.7)'
-                        }
                     });
                 }
             });
             
             if (priceChart) {
                 priceChart.destroy();
-                priceChart = null;
             }
             
             const ctx = document.getElementById('priceChart').getContext('2d');
@@ -395,26 +302,8 @@
                             borderColor: 'rgb(75, 192, 192)',
                             tension: 0.1,
                             fill: false,
-                            pointRadius: 2,
+                            pointRadius: 1,
                             pointHoverRadius: 5
-                        },
-                        {
-                            label: 'Buy Signals',
-                            data: buySignals,
-                            pointBackgroundColor: 'green',
-                            pointBorderColor: 'green',
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            showLine: false
-                        },
-                        {
-                            label: 'Sell Signals',
-                            data: sellSignals,
-                            pointBackgroundColor: 'red',
-                            pointBorderColor: 'red',
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            showLine: false
                         }
                     ]
                 },
@@ -430,7 +319,9 @@
                             },
                             ticks: {
                                 maxRotation: 45,
-                                minRotation: 45
+                                minRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 10
                             }
                         },
                         y: {
@@ -441,30 +332,75 @@
                             }
                         }
                     },
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
                     plugins: {
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const datasetLabel = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    return datasetLabel + ': ' + value;
-                                }
-                            }
+                            mode: 'index',
+                            intersect: false
                         },
-                        annotation: {
-                            annotations: annotations
+                        legend: {
+                            position: 'top',
                         }
                     }
                 }
             });
+            
+            // Add buy signals as separate points
+            if (buySignals.length > 0) {
+                priceChart.data.datasets.push({
+                    label: 'Buy Signals',
+                    data: buySignals.map((point, i) => ({
+                        x: labels[point.x],
+                        y: point.y
+                    })),
+                    backgroundColor: 'green',
+                    borderColor: 'green',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    showLine: false
+                });
+            }
+            
+            // Add sell signals as separate points
+            if (sellSignals.length > 0) {
+                priceChart.data.datasets.push({
+                    label: 'Sell Signals',
+                    data: sellSignals.map((point, i) => ({
+                        x: labels[point.x],
+                        y: point.y
+                    })),
+                    backgroundColor: 'red',
+                    borderColor: 'red',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    showLine: false
+                });
+            }
+            
+            priceChart.update();
+            console.log("Chart updated with price data and signals");
         }
         
-        // Function to update portfolio data
-        function updatePortfolioData() {
+        // Function to update prices
+        function updatePrices() {
+            fetch('/api/prices')
+                .then(response => response.json())
+                .then(data => {
+                    for (const [symbol, price] of Object.entries(data)) {
+                        const priceElement = document.getElementById(`price-${symbol}`);
+                        if (priceElement) {
+                            priceElement.textContent = `$${price.toFixed(2)}`;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching prices:', error))
+                .finally(() => {
+                    // Schedule next update
+                    setTimeout(updatePrices, 5000);  // Every 5 seconds
+                });
+        }
+        
+        // Function to update portfolio
+        function updatePortfolio() {
             fetch('/api/portfolio')
                 .then(response => response.json())
                 .then(data => {
@@ -482,12 +418,12 @@
                 .catch(error => console.error('Error fetching portfolio data:', error))
                 .finally(() => {
                     // Schedule next update
-                    setTimeout(updatePortfolioData, 30000);  // Every 30 seconds
+                    setTimeout(updatePortfolio, 30000);  // Every 30 seconds
                 });
         }
         
-        // Function to update recent signals
-        function updateRecentSignals() {
+        // Function to update signals
+        function updateSignals() {
             fetch('/api/signals')
                 .then(response => response.json())
                 .then(data => {
@@ -518,7 +454,7 @@
                 .catch(error => console.error('Error fetching signal data:', error))
                 .finally(() => {
                     // Schedule next update
-                    setTimeout(updateRecentSignals, 10000);  // Every 10 seconds
+                    setTimeout(updateSignals, 10000);  // Every 10 seconds
                 });
         }
         
