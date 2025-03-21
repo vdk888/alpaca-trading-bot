@@ -7,6 +7,10 @@ import logging
 import time
 from queue import Queue
 import pandas as pd
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates', static_folder='static')

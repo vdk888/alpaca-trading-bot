@@ -10,3 +10,11 @@ Debug Log for Trading Bot Dashboard
 [2025-03-21 15:24:20] Action: Changed Flask server port from 8080 to 8081 to avoid potential conflicts
 [2025-03-21 15:24:20] Action: Restarted the application
 [2025-03-21 15:24:20] Next step: Try accessing dashboard at http://localhost:8081
+[2025-03-21 15:35:43] Issue: Dashboard structure loads correctly on port 8081, but no data is being populated
+[2025-03-21 15:35:43] Cause: API keys are configured in .env file but not being properly loaded
+[2025-03-21 15:35:43] Action: Checking how environment variables are loaded in the application
+[2025-03-21 15:39:00] Action: Added load_dotenv() call at the beginning of run_market_hours.py
+[2025-03-21 15:39:00] Action: Added load_dotenv() call to dashboard_flask.py
+[2025-03-21 15:39:00] Action: Updated config.py to provide better warning messages
+[2025-03-21 15:39:00] Action: Fixed indentation error in run_market_hours.py
+[2025-03-21 15:39:00] Next step: Restart the application to test if data is now being populated

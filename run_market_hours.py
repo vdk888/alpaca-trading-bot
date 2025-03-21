@@ -19,6 +19,9 @@ import matplotlib.pyplot as plt
 from indicators import get_default_params
 import threading
 
+# Load environment variables from .env file
+load_dotenv()
+
 # Import Flask dashboard components
 from dashboard_flask import app, data_store, run_flask_server
 
@@ -50,14 +53,17 @@ def is_market_hours():
 
 async def run_bot():
     """Main function to run the trading bot"""
-    # Try to load from .env file, but continue if file not found
-    try:
-        load_dotenv()
-    except Exception as e:
-        logger.warning(f"Could not load .env file: {e}")
+    # Environment variables are already loaded at the beginning of the script
     
-    # Check for required environment variables
-    required_vars = ['ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'TELEGRAM_BOT_TOKEN', 'CHAT_ID', 'BOT_PASSWORD', 'TRADE_HISTORY_FILE']
+    # Check required environment variables
+    required_vars = [
+        'ALPACA_API_KEY', 
+        'ALPACA_SECRET_KEY', 
+        'TELEGRAM_BOT_TOKEN', 
+        'CHAT_ID', 
+        'BOT_PASSWORD',
+        'TRADE_HISTORY_FILE'
+    ]
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     
     if missing_vars:

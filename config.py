@@ -10,7 +10,9 @@ ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
 ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
 
 if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
-    print("WARNING: Alpaca API credentials not found in environment variables. Some features may not work.")
+    print("WARNING: Alpaca API credentials not found in environment variables.")
+    print("Please make sure your .env file contains valid API keys.")
+    # We'll let the application continue, but it might not work properly
     ALPACA_API_KEY = "demo_key"
     ALPACA_SECRET_KEY = "demo_secret"
     # Using demo keys for development purposes
