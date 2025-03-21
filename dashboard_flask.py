@@ -138,9 +138,22 @@ def get_portfolio():
     """Return portfolio history"""
     return jsonify(data_store.portfolio_history)
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Replit"""
+    return jsonify({"status": "ok", "message": "Trading bot dashboard is running"})
+
 def run_flask_server():
     """Run the Flask server in a separate thread"""
-    app.run(host='0.0.0.0', port=8081)
+    # Check if running on Replit
+    if os.getenv('REPL_ID') and os.getenv('REPL_SLUG'):
+        # Running on Replit - use 0.0.0.0 and port 8080
+        print("Running on Replit - using port 8080")
+        app.run(host='0.0.0.0', port=8080)
+    else:
+        # Running locally - use port 8081
+        print("Running locally - using port 8081")
+        app.run(host='0.0.0.0', port=8081)
 
 # This allows importing the datastore from the main script
 def get_data_store():

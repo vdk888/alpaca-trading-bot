@@ -18,3 +18,10 @@ Debug Log for Trading Bot Dashboard
 [2025-03-21 15:39:00] Action: Updated config.py to provide better warning messages
 [2025-03-21 15:39:00] Action: Fixed indentation error in run_market_hours.py
 [2025-03-21 15:39:00] Next step: Restart the application to test if data is now being populated
+[2025-03-21 15:58:04] Issue: Dashboard not visible on Replit
+[2025-03-21 15:58:04] Cause: Flask server is running on localhost, which is not accessible from Replit
+[2025-03-21 15:58:04] Action: Need to modify the Flask server configuration to make it accessible from Replit
+[2025-03-21 16:00:00] Action: Updated dashboard_flask.py to detect if running on Replit and use the appropriate port
+[2025-03-21 16:00:00] Action: Added a health check endpoint at /health for Replit to verify the server is running
+[2025-03-21 16:00:00] Action: Checked .replit file - already properly configured to run the application and expose port 8080
+[2025-03-21 16:00:00] Next step: Push changes to Replit and restart the application there
