@@ -118,7 +118,13 @@ class DataStore:
     
     def get_symbol_data(self, symbol):
         """Get data for a specific symbol"""
-        return self.data.get(symbol, {})
+        data = self.data.get(symbol, {})
+        
+        # Make sure price history is included in the response
+        if symbol in self.price_history:
+            data['price_history'] = self.price_history[symbol]
+        
+        return data
     
     def get_latest_prices(self):
         """Get latest prices for all symbols"""

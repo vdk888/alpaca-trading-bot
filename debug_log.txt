@@ -25,3 +25,11 @@ Debug Log for Trading Bot Dashboard
 [2025-03-21 16:00:00] Action: Added a health check endpoint at /health for Replit to verify the server is running
 [2025-03-21 16:00:00] Action: Checked .replit file - already properly configured to run the application and expose port 8080
 [2025-03-21 16:00:00] Next step: Push changes to Replit and restart the application there
+[2025-03-21 16:22:10] Issue: Price history not showing on the dashboard chart
+[2025-03-21 16:22:10] Cause: Price history data is stored in DataStore but not being included in API responses
+[2025-03-21 16:22:10] Action: Examining how price history is stored and retrieved in dashboard_flask.py
+[2025-03-21 16:22:10] Action: Checking how the frontend requests and processes price history data
+[2025-03-21 16:22:10] Next step: Modify get_symbol_data method in DataStore to ensure price history is included in the response
+[2025-03-21 16:25:15] Action: Modified the get_symbol_data method in DataStore class to explicitly include price history in the API response
+[2025-03-21 16:25:15] Action: Restarted the application to apply changes
+[2025-03-21 16:25:15] Next step: Verify that price history is now showing on the dashboard chart

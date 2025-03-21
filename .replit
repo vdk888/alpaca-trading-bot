@@ -13,8 +13,8 @@ ignorePorts = true
 channel = "stable-24_05"
 
 [[ports]]
-localPort = 8080
-externalPort = 80
+localPort = 8081
+externalPort = 81
 
 [objectStorage]
 defaultBucketID = "replit-objstore-2927bac7-9a77-4731-9fd7-61c199e7357c"
