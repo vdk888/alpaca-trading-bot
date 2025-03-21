@@ -8,6 +8,7 @@ import time
 from queue import Queue
 import pandas as pd
 from dotenv import load_dotenv
+from config import TRADING_SYMBOLS
 
 # Load environment variables
 load_dotenv()
