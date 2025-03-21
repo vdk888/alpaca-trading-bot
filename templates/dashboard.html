@@ -165,259 +165,46 @@
     </div>
 
     <script>
-        // Wait for page to load
+        function updatePrices() {
+            $.get('/api/prices')
+                .done(function(data) {
+                    Object.entries(data).forEach(([symbol, price]) => {
+                        const priceElement = $(`#price-${symbol}`);
+                        const oldPrice = parseFloat(priceElement.data('price') || 0);
+                        const newPrice = parseFloat(price);
+
+                        priceElement
+                            .text(`$${newPrice.toFixed(2)}`)
+                            .data('price', newPrice)
+                            .removeClass('price-up price-down')
+                            .addClass(newPrice > oldPrice ? 'price-up' : newPrice < oldPrice ? 'price-down' : '');
+                    });
+                })
+                .fail(function(error) {
+                    console.error('Error loading prices:', error);
+                });
+        }
+
+        function loadSymbolData(symbol) {
+            $.get(`/api/data/${symbol}`)
+                .done(function(data) {
+                    // Handle successful data load
+                    console.log(`Loaded data for ${symbol}:`, data);
+                })
+                .fail(function(error) {
+                    console.error(`Error loading data for ${symbol}:`, error);
+                });
+        }
+
+        // Update prices every 5 seconds
+        setInterval(updatePrices, 5000);
+        updatePrices(); // Initial update
+
+        // Load data for each symbol
         $(document).ready(function() {
-            // Global variables for chart
-            let priceChart = null;
-            let priceHistory = {};
-            let activeSymbol = null;
-
-            // Initialize dashboard
-            $.getJSON('/api/symbols', function(data) {
-                const symbols = data.symbols;
-                if (symbols && symbols.length > 0) {
-                    // Load first symbol by default
-                    activeSymbol = symbols[0];
-                    loadSymbolData(activeSymbol);
-
-                    // Set up refresh interval
-                    setInterval(function() {
-                        if (activeSymbol) {
-                            loadSymbolData(activeSymbol);
-                        }
-                    }, 5000);
-                }
-            });
-
-            // Click handler for symbols
-            $('#symbolList').on('click', '.symbol-item', function(e) {
-                e.preventDefault();
-                const symbol = $(this).data('symbol');
-                activeSymbol = symbol;
-                loadSymbolData(symbol);
-            });
-
-            // Start data updates
-            updatePrices();
-            updatePortfolio();
-            updateSignals();
-            updateRecentTrades();
-
-            // Function to load symbol data
-            function loadSymbolData(symbol) {
-                $.getJSON(`/api/data/${symbol}`).done(function(data) {
-                    // Update chart title
-                    $('#selectedSymbolHeader').text(`Price Chart: ${symbol}`);
-
-                    // Update price history
-                    if (data.price_history && Array.isArray(data.price_history)) {
-                        priceHistory[symbol] = data.price_history;
-                        updatePriceChart(symbol);
-                    }
-
-                    // Update signal data
-                    updateSignalData(data);
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error(`Error loading data for ${symbol}:`, textStatus, errorThrown);
-                });
-            }
-
-            // Function to update signal data display
-            function updateSignalData(data) {
-                $('#dailyComposite').text(data.daily_composite?.toFixed(4) || '-');
-                $('#dailyUpperLimit').text(data.daily_upper_limit?.toFixed(4) || '-');
-                $('#dailyLowerLimit').text(data.daily_lower_limit?.toFixed(4) || '-');
-                $('#weeklyComposite').text(data.weekly_composite?.toFixed(4) || '-');
-                $('#weeklyUpperLimit').text(data.weekly_upper_limit?.toFixed(4) || '-');
-                $('#weeklyLowerLimit').text(data.weekly_lower_limit?.toFixed(4) || '-');
-            }
-
-            // Function to update prices
-            function updatePrices() {
-                $.getJSON('/api/prices').done(function(data) {
-                    $.each(data, function(symbol, price) {
-                        $(`#price-${symbol}`).text(`$${parseFloat(price).toFixed(2)}`);
-                    });
-                }).fail(function(error) {
-                    console.error('Error fetching prices:', error);
-                });
-                setTimeout(updatePrices, 5000);
-            }
-
-            // Function to update portfolio
-            function updatePortfolio() {
-                $.getJSON('/api/portfolio').done(function(data) {
-                    if (data.length > 0) {
-                        const latest = data[data.length - 1];
-                        $('#portfolioValue').text(`$${latest.total_value.toFixed(2)}`);
-                        $('#portfolioCash').text(`$${latest.cash.toFixed(2)}`);
-
-                        const pnl = latest.today_pnl;
-                        const pnlElement = $('#portfolioPnL');
-                        pnlElement.text(`$${Math.abs(pnl).toFixed(2)} ${pnl >= 0 ? '▲' : '▼'}`);
-                        pnlElement.removeClass('price-up price-down').addClass(pnl >= 0 ? 'price-up' : 'price-down');
-                    }
-                });
-                setTimeout(updatePortfolio, 30000);
-            }
-
-            // Function to update signals
-            function updateSignals() {
-                $.getJSON('/api/signals').done(function(data) {
-                    const signalsContainer = $('#recentSignals');
-                    if (!data || data.length === 0) {
-                        signalsContainer.html('<p>No signals yet</p>');
-                        return;
-                    }
-
-                    let html = '';
-                    const recentSignals = data.slice(-5).reverse();
-
-                    recentSignals.forEach(signal => {
-                        const signalClass = signal.signal === 1 ? 'signal-buy' : 'signal-sell';
-                        const signalType = signal.signal === 1 ? 'BUY' : 'SELL';
-                        const time = new Date(signal.timestamp).toLocaleString();
-
-                        html += `
-                            <div class="alert ${signalClass} mb-2 py-2">
-                                <strong>${signal.symbol} - ${signalType}</strong> at $${signal.price.toFixed(2)}<br>
-                                <small>${time}</small>
-                            </div>
-                        `;
-                    });
-
-                    signalsContainer.html(html);
-                });
-                setTimeout(updateSignals, 10000);
-            }
-
-            // Function to update recent trades
-            function updateRecentTrades() {
-                $.getJSON('/api/signals').done(function(data) {
-                    const tradesBody = $('#tradesTableBody');
-                    const tradingSignals = data.filter(s => s.executed === true);
-
-                    if (!tradingSignals || tradingSignals.length === 0) {
-                        tradesBody.html('<tr><td colspan="6" class="text-center">No recent trades</td></tr>');
-                        return;
-                    }
-
-                    let html = '';
-                    const recentTrades = tradingSignals.slice(-10).reverse();
-
-                    recentTrades.forEach(trade => {
-                        const tradeType = trade.signal === 1 ? 'BUY' : 'SELL';
-                        const typeClass = trade.signal === 1 ? 'text-success' : 'text-danger';
-                        const time = new Date(trade.timestamp).toLocaleString();
-
-                        html += `
-                            <tr>
-                                <td>${time}</td>
-                                <td>${trade.symbol}</td>
-                                <td class="${typeClass}">${tradeType}</td>
-                                <td>$${trade.price.toFixed(2)}</td>
-                                <td>${trade.quantity?.toFixed(8) || '-'}</td>
-                                <td>$${(trade.price * (trade.quantity || 0)).toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-
-                    tradesBody.html(html);
-                });
-                setTimeout(updateRecentTrades, 10000);
-            }
-
-            // Function to update price chart
-            function updatePriceChart(symbol) {
-                if (!priceHistory[symbol] || !priceHistory[symbol].length) {
-                    console.log(`No price history available for ${symbol}`);
-                    return;
-                }
-
-                const chartData = priceHistory[symbol];
-
-                // Prepare data for chart
-                const labels = chartData.map(d => {
-                    const date = new Date(d.timestamp);
-                    return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                });
-
-                const prices = chartData.map(d => d.price);
-                const buySignals = [];
-                const sellSignals = [];
-
-                chartData.forEach((d, index) => {
-                    if (d.signal === 'buy') {
-                        buySignals.push({x: index, y: d.price});
-                    } else if (d.signal === 'sell') {
-                        sellSignals.push({x: index, y: d.price});
-                    }
-                });
-
-                if (priceChart) {
-                    priceChart.destroy();
-                }
-
-                const ctx = document.getElementById('priceChart').getContext('2d');
-                priceChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: `${symbol} Price`,
-                            data: prices,
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                display: true,
-                                title: {
-                                    display: true,
-                                    text: 'Time'
-                                }
-                            },
-                            y: {
-                                display: true,
-                                title: {
-                                    display: true,
-                                    text: 'Price ($)'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Add signals if they exist
-                if (buySignals.length > 0) {
-                    priceChart.data.datasets.push({
-                        label: 'Buy Signals',
-                        data: buySignals.map(p => ({x: labels[p.x], y: p.y})),
-                        backgroundColor: 'green',
-                        pointRadius: 6,
-                        pointStyle: 'triangle',
-                        showLine: false
-                    });
-                }
-
-                if (sellSignals.length > 0) {
-                    priceChart.data.datasets.push({
-                        label: 'Sell Signals',
-                        data: sellSignals.map(p => ({x: labels[p.x], y: p.y})),
-                        backgroundColor: 'red',
-                        pointRadius: 6,
-                        pointStyle: 'triangle',
-                        showLine: false
-                    });
-                }
-
-                priceChart.update();
-            }
+            {% for symbol in active_symbols %}
+            loadSymbolData("{{ symbol }}");
+            {% endfor %}
         });
     </script>
 </body>
