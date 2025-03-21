@@ -291,7 +291,8 @@ async def run_bot():
                                     'timestamp': analysis['timestamp'].isoformat() if hasattr(analysis['timestamp'], 'isoformat') else str(analysis['timestamp']),
                                     'price_change_5m': analysis['price_change_5m'],
                                     'price_change_1h': analysis['price_change_1h'],
-                                    'position': analysis['position']
+                                    'position': analysis['position'],
+                                    'signal': analysis['signal']  # Ensure signal is included in the data
                                 }
                                 
                                 # Update dashboard data store

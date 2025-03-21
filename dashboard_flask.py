@@ -81,6 +81,11 @@ class DataStore:
             
             # Add price history to data_dict
             data_dict['price_history'] = self.price_history[symbol]
+            
+            # Log price history for debugging
+            print(f"Price history for {symbol}: {len(self.price_history[symbol])} points")
+            if self.price_history[symbol]:
+                print(f"Latest price point: {self.price_history[symbol][-1]}")
         
         self.data[symbol] = data_dict
         self.last_prices[symbol] = current_price
@@ -189,6 +194,22 @@ def get_symbols():
 def get_symbol_data(symbol):
     """Return data for a specific symbol"""
     return jsonify(data_store.get_symbol_data(symbol))
+
+@app.route('/api/debug/price_history/<symbol>')
+def debug_price_history(symbol):
+    """Debug endpoint to check price history for a symbol"""
+    if symbol in data_store.price_history:
+        return jsonify({
+            'symbol': symbol,
+            'count': len(data_store.price_history[symbol]),
+            'data': data_store.price_history[symbol]
+        })
+    else:
+        return jsonify({
+            'symbol': symbol,
+            'count': 0,
+            'data': []
+        })
 
 @app.route('/api/prices')
 def get_prices():

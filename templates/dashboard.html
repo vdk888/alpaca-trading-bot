@@ -221,6 +221,7 @@
                             price: item.price,
                             signal: item.signal || null
                         }));
+                        console.log(`Loaded ${priceHistory[symbol].length} price history points for ${symbol}`);
                     } else {
                         // Add current price to history if no historical data
                         const timestamp = new Date().toISOString();
@@ -228,6 +229,7 @@
                             timestamp,
                             price: data.current_price
                         });
+                        console.log(`No price history available for ${symbol}, using current price only`);
                         
                         // Keep only last 100 points
                         if (priceHistory[symbol].length > 100) {
@@ -304,8 +306,11 @@
         // Function to update price chart
         function updatePriceChart(symbol) {
             if (!priceHistory[symbol] || priceHistory[symbol].length === 0) {
+                console.log(`No price history available for ${symbol}`);
                 return;
             }
+            
+            console.log(`Updating price chart for ${symbol} with ${priceHistory[symbol].length} data points`);
             
             const chartData = priceHistory[symbol];
             const labels = chartData.map(d => {
