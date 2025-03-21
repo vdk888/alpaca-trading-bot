@@ -26,8 +26,10 @@ class DataStore:
         self.active_symbols = set()
         self.price_history = {}  # Store price history for each symbol
         
-        # Create data directory if it doesn't exist
+        # Create data directory and symbol subdirectories if they don't exist
         os.makedirs('data', exist_ok=True)
+        for symbol in TRADING_SYMBOLS:
+            os.makedirs(f'data/{symbol.replace("/", "_")}', exist_ok=True)
 
     def update_price_data(self, symbol, data_dict):
         """Update price data for a symbol"""
@@ -92,11 +94,12 @@ class DataStore:
         self.active_symbols.add(symbol)
         
         # Save data to disk for persistence
-        with open(f'data/{symbol}_latest.json', 'w') as f:
+        symbol_dir = symbol.replace("/", "_")
+        with open(f'data/{symbol_dir}/latest.json', 'w') as f:
             json.dump(data_dict, f)
         
         # Save price history separately
-        with open(f'data/{symbol}_history.json', 'w') as f:
+        with open(f'data/{symbol_dir}/history.json', 'w') as f:
             json.dump(self.price_history[symbol], f)
     
     def add_trading_signal(self, signal_data):
