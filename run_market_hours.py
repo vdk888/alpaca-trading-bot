@@ -278,8 +278,12 @@ async def run_bot():
                             
                             # Update dashboard data
                             if analysis:
+                                # Get the latest price
+                                latest_price = df['close'].iloc[-1] if not df.empty else None
+                                
                                 # Convert analysis to a serializable dict
                                 analysis_data = {
+                                    'current_price': latest_price,
                                     'symbol': symbol,
                                     'current_price': analysis['current_price'],
                                     'daily_composite': analysis['daily_composite'],

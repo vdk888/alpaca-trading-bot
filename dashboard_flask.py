@@ -36,14 +36,19 @@ class DataStore:
         """Update price data for a symbol"""
         self.last_update[symbol] = datetime.now().isoformat()
         
-        # Initialize price history for this symbol if it doesn't exist
+        # Initialize data structures if they don't exist
         if symbol not in self.price_history:
             self.price_history[symbol] = []
         
-        # Add current price to price history
-        current_price = data_dict.get('current_price')
-        if current_price:
+        # Update current price and create price point
+        current_price = float(data_dict.get('current_price', 0))
+        if current_price > 0:
+            self.last_prices[symbol] = current_price
+            
+            # Create timestamp
             timestamp = data_dict.get('timestamp', datetime.now().isoformat())
+            if isinstance(timestamp, datetime):
+                timestamp = timestamp.isoformat()
             
             # Check if there's a signal for this price point
             signal = None
