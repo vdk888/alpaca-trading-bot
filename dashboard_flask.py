@@ -24,7 +24,7 @@ class DataStore:
         self.portfolio_history = []
         self.last_update = {}
         self.last_prices = {}
-        self.active_symbols = set()
+        self.active_symbols = set(TRADING_SYMBOLS.keys())
         self.price_history = {}  # Store price history for each symbol
         
         # Create data directory and symbol subdirectories if they don't exist

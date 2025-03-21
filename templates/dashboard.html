@@ -8,13 +8,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script>
         // Wait for jQuery to load
         window.onload = function() {
             if (typeof jQuery == 'undefined') {
                 console.error('jQuery not loaded');
                 return;
             }
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
         body {
             padding-top: 20px;
@@ -397,7 +398,7 @@
                         priceElement.text(`$${parseFloat(price).toFixed(2)}`);
                     }
                 });
-            }).fail(function(error) {
+            }, function(error) {
                 console.error('Error fetching prices:', error);
             }).always(function() {
                 // Schedule next update
