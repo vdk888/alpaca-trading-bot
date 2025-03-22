@@ -100,15 +100,19 @@ async def run_bot():
                             except Exception as e:
                                 logger.warning(f"Could not read from Object Storage: {str(e)}")
                                 # Try local file as fallback
-                                try:
-                                    with open("best_params.json", "r") as f:
+                                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                                if os.path.exists(params_file):
+                                    with open(params_file, "r") as f:
                                         best_params_data = json.load(f)
                                         if symbol in best_params_data:
                                             last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
                                             days_since_update = (datetime.datetime.now() - last_update).days
                                             needs_update = days_since_update >= 7  # Update weekly
-                                except FileNotFoundError:
-                                    logger.warning(f"Local best_params.json not found for {symbol}")
+                                        else:
+                                            logger.warning(f"Symbol {symbol} not found in best_params.json")
+                                            needs_update = True
+                                else:
+                                    logger.warning(f"Local best_params.json not found at {params_file}")
                                     needs_update = True
                         except (json.JSONDecodeError, KeyError) as e:
                             logger.warning(f"Could not read best_params.json for {symbol}: {str(e)}")
@@ -182,8 +186,9 @@ async def run_bot():
                             except Exception as e:
                                 print(f"Could not read from Object Storage: {e}")
                                 # Try local file as fallback
-                                try:
-                                    with open("best_params.json", "r") as f:
+                                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                                if os.path.exists(params_file):
+                                    with open(params_file, "r") as f:
                                         best_params_data = json.load(f)
                                         if symbol in best_params_data:
                                             params = best_params_data[symbol]['best_params']
@@ -191,7 +196,7 @@ async def run_bot():
                                         else:
                                             print(f"No best parameters found for {symbol}. Using default parameters.")
                                             params = get_default_params()
-                                except FileNotFoundError:
+                                else:
                                     print("Best parameters file not found. Using default parameters.")
                                     params = get_default_params()
                         except Exception as e:

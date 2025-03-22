@@ -122,8 +122,10 @@ def find_best_params(symbol: str,
             print(f"Successfully loaded {output_file} from Object Storage")
         except ImportError:
             # If replit is not available, use local file
-            if os.path.exists(output_file):
-                with open(output_file, "r") as f:
+            # Use absolute path to best_params.json
+            params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_file)
+            if os.path.exists(params_file):
+                with open(params_file, "r") as f:
                     existing_data = json.load(f)
                     print(f"Loaded {output_file} from local filesystem")
             else:
@@ -246,7 +248,9 @@ def find_best_params(symbol: str,
                 print(f"Saved {output_file} to Object Storage")
             except ImportError:
                 # If replit is not available, save to local file
-                with open(output_file, "w") as f:
+                # Use absolute path to best_params.json
+                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_file)
+                with open(params_file, "w") as f:
                     json.dump(existing_data, f, indent=2)
                     print(f"Saved {output_file} to local filesystem")
         except Exception as e:
@@ -326,8 +330,10 @@ def run_backtest(symbol: str,
             print(f"Successfully loaded best parameters from Object Storage")
         except ImportError:
             # If replit is not available, use local file
-            if os.path.exists(best_params_file):
-                with open(best_params_file, "r") as f:
+            # Use absolute path to best_params.json
+            params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), best_params_file)
+            if os.path.exists(params_file):
+                with open(params_file, "r") as f:
                     best_params_data = json.load(f)
                     print("Loaded best parameters from local file")
             else:
@@ -751,7 +757,9 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
     # Try to load best_params.json for strategy performance data
     best_params_data = {}
     try:
-        with open("best_params.json", "r") as f:
+        # Use absolute path to best_params.json
+        params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+        with open(params_file, "r") as f:
             best_params_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         print("Warning: Could not load best_params.json or file is invalid")

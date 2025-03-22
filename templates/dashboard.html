@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alpaca Trading Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .card { margin-bottom: 20px; }
+        .indicator-value { font-weight: bold; }
+        .positive { color: green; }
+        .negative { color: red; }
+        .neutral { color: gray; }
+        .tab-content { padding: 20px 0; }
+        .nav-tabs { margin-bottom: 20px; }
+        .signal-strong { font-weight: bold; }
+        .signal-buy { color: green; }
+        .signal-sell { color: red; }
+        .signal-neutral { color: gray; }
+        .position-summary { font-size: 0.9rem; }
+        .refresh-btn { cursor: pointer; }
+        .symbol-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .market-open { color: green; }
+        .market-closed { color: red; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Alpaca Trading Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#positions">Positions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#signals">Signals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#indicators">Indicators</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#charts">Charts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#orders">Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#backtest">Backtest</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="tab-content">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview">
+                <div class="row">
+                    <!-- Account Balance -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Account Balance <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateBalance()"></i></h5>
+                            </div>
+                            <div class="card-body" id="balance-info">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Today's Performance <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePerformance()"></i></h5>
+                            </div>
+                            <div class="card-body" id="performance-info">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Status -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Market Status <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateMarkets()"></i></h5>
+                    </div>
+                    <div class="card-body" id="markets-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trading Status -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Trading Status <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateStatus()"></i></h5>
+                    </div>
+                    <div class="card-body" id="status-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Ranking -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Performance Ranking <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateRank()"></i></h5>
+                    </div>
+                    <div class="card-body" id="rank-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Positions Tab -->
+            <div class="tab-pane fade" id="positions">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Current Positions <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePositions()"></i></h5>
+                    </div>
+                    <div class="card-body" id="positions-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio History -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Portfolio History</h5>
+                        <div class="d-flex">
+                            <select class="form-select me-2" id="portfolio-interval">
+                                <option value="1D">Daily</option>
+                                <option value="1H">Hourly</option>
+                                <option value="15Min">15 Minutes</option>
+                            </select>
+                            <select class="form-select" id="portfolio-timeframe">
+                                <option value="1M">1 Month</option>
+                                <option value="3M">3 Months</option>
+                                <option value="1Y">1 Year</option>
+                                <option value="YTD">Year to Date</option>
+                            </select>
+                            <button class="btn btn-primary ms-2" onclick="updatePortfolio()">Update</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="portfolio-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Position Controls -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Position Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Open Position</h6>
+                                <div class="input-group mb-3">
+                                    <select class="form-select" id="open-position-symbol">
+                                        <!-- Will be populated dynamically -->
+                                    </select>
+                                    <input type="number" class="form-control" id="open-position-amount" placeholder="Amount ($)">
+                                    <button class="btn btn-success" onclick="openPosition()">Open</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Close Position</h6>
+                                <div class="input-group mb-3">
+                                    <select class="form-select" id="close-position-symbol">
+                                        <option value="">All Positions</option>
+                                        <!-- Will be populated dynamically -->
+                                    </select>
+                                    <button class="btn btn-danger" onclick="closePosition()">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Signals Tab -->
+            <div class="tab-pane fade" id="signals">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Latest Signals <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateSignals()"></i></h5>
+                    </div>
+                    <div class="card-body" id="signals-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Indicators Tab -->
+            <div class="tab-pane fade" id="indicators">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Current Indicators <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateIndicators()"></i></h5>
+                    </div>
+                    <div class="card-body" id="indicators-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Tab -->
+            <div class="tab-pane fade" id="charts">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Strategy Visualization</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <select class="form-select" id="symbol-select">
+                                    <!-- Will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="days-select">
+                                    <option value="1">1 Day</option>
+                                    <option value="5" selected>5 Days</option>
+                                    <option value="10">10 Days</option>
+                                    <option value="30">30 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3" id="plot-container">
+                            <img id="strategy-plot" class="img-fluid" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders Tab -->
+            <div class="tab-pane fade" id="orders">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Open Orders <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateOrders()"></i></h5>
+                    </div>
+                    <div class="card-body" id="orders-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backtest Tab -->
+            <div class="tab-pane fade" id="backtest">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Backtest Results <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateBacktest()"></i></h5>
+                    </div>
+                    <div class="card-body" id="backtest-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Populate symbols dropdown
+        const availableSymbols = JSON.parse('{{ symbols|tojson|safe }}');
+        
+        function populateSymbolDropdowns() {
+            const symbolSelect = document.getElementById('symbol-select');
+            const openPositionSymbol = document.getElementById('open-position-symbol');
+            const closePositionSymbol = document.getElementById('close-position-symbol');
+            
+            // Clear existing options
+            symbolSelect.innerHTML = '';
+            openPositionSymbol.innerHTML = '';
+            closePositionSymbol.innerHTML = '<option value="">All Positions</option>';
+            
+            // Add symbols to dropdowns
+            availableSymbols.forEach(symbol => {
+                // Strategy visualization dropdown
+                const option1 = document.createElement('option');
+                option1.value = symbol;
+                option1.text = symbol;
+                symbolSelect.appendChild(option1);
+                
+                // Open position dropdown
+                const option2 = document.createElement('option');
+                option2.value = symbol;
+                option2.text = symbol;
+                openPositionSymbol.appendChild(option2);
+                
+                // Close position dropdown
+                const option3 = document.createElement('option');
+                option3.value = symbol;
+                option3.text = symbol;
+                closePositionSymbol.appendChild(option3);
+            });
+        }
+
+        // Format number as currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        }
+        
+        // Format number as percentage
+        function formatPercentage(value) {
+            return new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value/100);
+        }
+        
+        // Format number with 2 decimal places
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        }
+        
+        // Get CSS class for positive/negative values
+        function getValueClass(value) {
+            return value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
+        }
+        
+        // Get CSS class for signal
+        function getSignalClass(signal) {
+            if (signal.includes('STRONG BUY') || signal.includes('WEAK BUY')) {
+                return 'signal-buy' + (signal.includes('STRONG') ? ' signal-strong' : '');
+            } else if (signal.includes('STRONG SELL') || signal.includes('WEAK SELL')) {
+                return 'signal-sell' + (signal.includes('STRONG') ? ' signal-strong' : '');
+            } else {
+                return 'signal-neutral';
+            }
+        }
+
+        // Update functions
+        function updateBalance() {
+            $.get('/dashboard/api/balance', function(data) {
+                if (data.error) {
+                    $('#balance-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                const todayPL = data.today_pl || 0;
+                const todayPLClass = getValueClass(todayPL);
+                
+                const balanceHtml = `
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p>Cash: ${formatCurrency(data.cash)}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Portfolio Value: ${formatCurrency(data.portfolio_value)}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Buying Power: ${formatCurrency(data.buying_power)}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Today's P&L: <span class="${todayPLClass}">${formatCurrency(todayPL)}</span></p>
+                        </div>
+                    </div>
+                `;
+                $('#balance-info').html(balanceHtml);
+            });
+        }
+        
+        function updatePerformance() {
+            $.get('/dashboard/api/performance', function(data) {
+                if (data.error) {
+                    $('#performance-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                const todayPLClass = getValueClass(data.today_pl);
+                
+                const performanceHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Today's P&L: <span class="${todayPLClass}">${formatCurrency(data.today_pl)} (${formatPercentage(data.today_pl_pct)})</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>Starting Equity: ${formatCurrency(data.starting_equity)}</p>
+                            <p>Current Equity: ${formatCurrency(data.current_equity)}</p>
+                        </div>
+                    </div>
+                `;
+                $('#performance-info').html(performanceHtml);
+            });
+        }
+        
+        function updateMarkets() {
+            $.get('/dashboard/api/markets', function(data) {
+                if (Object.keys(data).length === 0) {
+                    $('#markets-info').html(`<div class="alert alert-warning">No market data available</div>`);
+                    return;
+                }
+                
+                let marketsHtml = '<div class="row">';
+                
+                for (const [symbol, info] of Object.entries(data)) {
+                    if (info.error) continue;
+                    
+                    const statusClass = info.is_open ? 'market-open' : 'market-closed';
+                    const statusText = info.is_open ? 'Open' : 'Closed';
+                    
+                    marketsHtml += `
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6>${symbol} (${info.name})</h6>
+                                    <p>Exchange: ${info.exchange}</p>
+                                    <p>Status: <span class="${statusClass}">${statusText}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                marketsHtml += '</div>';
+                $('#markets-info').html(marketsHtml);
+            });
+        }
+
+        function updateStatus() {
+            $.get('/dashboard/api/status', function(data) {
+                if (Object.keys(data).length === 0) {
+                    $('#status-info').html(`<div class="alert alert-warning">No status data available</div>`);
+                    return;
+                }
+                
+                let statusHtml = '<div class="row">';
+                
+                for (const [symbol, info] of Object.entries(data)) {
+                    if (info.error) continue;
+                    
+                    const dailyCompositeClass = getValueClass(info.daily_composite);
+                    const weeklyCompositeClass = getValueClass(info.weekly_composite);
+                    const price5mClass = getValueClass(info.price_change_5m);
+                    const price1hClass = getValueClass(info.price_change_1h);
+                    
+                    statusHtml += `
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6>${symbol} (${info.name})</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>Position: <strong>${info.position}</strong></p>
+                                    <p>Current Price: ${formatCurrency(info.current_price)}</p>
+                                    <p>P&L: ${info.pos_pnl}</p>
+                                    <p>Daily Composite: <span class="${dailyCompositeClass}">${formatNumber(info.daily_composite)}</span></p>
+                                    <p>Weekly Composite: <span class="${weeklyCompositeClass}">${formatNumber(info.weekly_composite)}</span></p>
+                                    <p>5m Change: <span class="${price5mClass}">${formatPercentage(info.price_change_5m)}</span></p>
+                                    <p>1h Change: <span class="${price1hClass}">${formatPercentage(info.price_change_1h)}</span></p>
+                                    <p>Parameters: ${info.params}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                statusHtml += '</div>';
+                $('#status-info').html(statusHtml);
+            });
+        }
+        
+        function updatePositions() {
+            $.get('/dashboard/api/position', function(data) {
+                if (Object.keys(data).length === 0) {
+                    $('#positions-info').html(`<div class="alert alert-warning">No position data available</div>`);
+                    return;
+                }
+                
+                let positionsHtml = '';
+                
+                // Add summary if available
+                if (data.summary) {
+                    const summary = data.summary;
+                    const totalPnlClass = getValueClass(summary.total_unrealized_pl);
+                    
+                    positionsHtml += `
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6>Portfolio Summary</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p>Total Position Value: ${formatCurrency(summary.total_position_value)}</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p>Total Exposure: ${formatPercentage(summary.total_exposure)}</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p>Cash Balance: ${formatCurrency(summary.cash_balance)}</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p>Total Unrealized P&L: <span class="${totalPnlClass}">${formatCurrency(summary.total_unrealized_pl)}</span></p>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-3">Positions by Weight</h6>
+                                <div class="position-summary">
+                    `;
+                    
+                    // Add position weights
+                    for (const pos of summary.positions) {
+                        const pnlClass = getValueClass(pos.pnl);
+                        
+                        positionsHtml += `
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="symbol-badge">${pos.symbol}</span>
+                                    <span>${pos.side} ${pos.qty}</span>
+                                </div>
+                                <div>
+                                    <span>${formatPercentage(pos.weight)} weight</span>
+                                    <span class="${pnlClass}">${formatCurrency(pos.pnl)} (${formatPercentage(pos.pnl_pct)})</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    positionsHtml += `
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add individual positions
+                positionsHtml += '<div class="row">';
+                
+                for (const [symbol, info] of Object.entries(data)) {
+                    if (symbol === 'summary' || symbol === 'summary_error') continue;
+                    
+                    if (info.message) {
+                        // No position
+                        positionsHtml += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6>${symbol}</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>${info.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Has position
+                        const plClass = getValueClass(info.unrealized_pl);
+                        
+                        positionsHtml += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6>${symbol} (${info.name})</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Side: <strong>${info.side}</strong></p>
+                                        <p>Quantity: ${info.quantity}</p>
+                                        <p>Entry Price: ${formatCurrency(info.entry_price)}</p>
+                                        <p>Current Price: ${formatCurrency(info.current_price)}</p>
+                                        <p>Market Value: ${formatCurrency(info.market_value)}</p>
+                                        <p>Exposure: ${formatPercentage(info.exposure)}</p>
+                                        <p>Unrealized P&L: <span class="${plClass}">${formatCurrency(info.unrealized_pl)} (${formatPercentage(info.unrealized_plpc)})</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                positionsHtml += '</div>';
+                $('#positions-info').html(positionsHtml);
+            });
+        }
+        
+        function updateIndicators() {
+            $.get('/dashboard/api/indicators', function(data) {
+                if (Object.keys(data).length === 0) {
+                    $('#indicators-info').html(`<div class="alert alert-warning">No indicator data available</div>`);
+                    return;
+                }
+                
+                let indicatorsHtml = '<div class="row">';
+                
+                for (const [symbol, info] of Object.entries(data)) {
+                    if (info.error) continue;
+                    
+                    const dailyCompositeClass = getValueClass(info.daily_composite);
+                    const weeklyCompositeClass = getValueClass(info.weekly_composite);
+                    const price5mClass = getValueClass(info.price_change_5m);
+                    const price1hClass = getValueClass(info.price_change_1h);
+                    
+                    indicatorsHtml += `
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6>${symbol} (${info.name})</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Daily Indicators</h6>
+                                    <p>Composite: <span class="${dailyCompositeClass}">${formatNumber(info.daily_composite)}</span></p>
+                                    <p>Upper Limit: ${formatNumber(info.daily_upper_limit)}</p>
+                                    <p>Lower Limit: ${formatNumber(info.daily_lower_limit)}</p>
+                                    
+                                    <h6 class="mt-3">Weekly Indicators</h6>
+                                    <p>Composite: <span class="${weeklyCompositeClass}">${formatNumber(info.weekly_composite)}</span></p>
+                                    <p>Upper Limit: ${formatNumber(info.weekly_upper_limit)}</p>
+                                    <p>Lower Limit: ${formatNumber(info.weekly_lower_limit)}</p>
+                                    
+                                    <h6 class="mt-3">Price Changes</h6>
+                                    <p>5m Change: <span class="${price5mClass}">${formatPercentage(info.price_change_5m)}</span></p>
+                                    <p>1h Change: <span class="${price1hClass}">${formatPercentage(info.price_change_1h)}</span></p>
+                                    
+                                    <p class="mt-3">Parameters: ${info.params}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                indicatorsHtml += '</div>';
+                $('#indicators-info').html(indicatorsHtml);
+            });
+        }
+        
+        function updateSignals() {
+            $.get('/dashboard/api/signals', function(data) {
+                if (Object.keys(data).length === 0) {
+                    $('#signals-info').html(`<div class="alert alert-warning">No signal data available</div>`);
+                    return;
+                }
+                
+                let signalsHtml = '<div class="row">';
+                
+                for (const [symbol, info] of Object.entries(data)) {
+                    if (info.error) continue;
+                    
+                    const dailySignalClass = getSignalClass(info.daily_signal);
+                    const weeklySignalClass = getSignalClass(info.weekly_signal);
+                    
+                    // Format last signal info
+                    let lastSignalHtml = 'No recent signals';
+                    if (info.last_signal) {
+                        const lastSignal = info.last_signal;
+                        const signalTypeClass = lastSignal.type === 'BUY' ? 'signal-buy' : 'signal-sell';
+                        
+                        lastSignalHtml = `
+                            <p>Type: <span class="${signalTypeClass}">${lastSignal.type} ${lastSignal.strength}</span></p>
+                            <p>Time: ${lastSignal.time} (${lastSignal.hours_ago}h ${lastSignal.minutes_ago}m ago)</p>
+                        `;
+                    }
+                    
+                    signalsHtml += `
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6>${symbol} (${info.name})</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Current Signals</h6>
+                                    <p>Daily: <span class="${dailySignalClass}">${info.daily_signal}</span> (${formatNumber(info.daily_composite)})</p>
+                                    <p>Weekly: <span class="${weeklySignalClass}">${info.weekly_signal}</span> (${formatNumber(info.weekly_composite)})</p>
+                                    
+                                    <h6 class="mt-3">Last Signal</h6>
+                                    ${lastSignalHtml}
+                                    
+                                    <p class="mt-3">Parameters: ${info.params}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                signalsHtml += '</div>';
+                $('#signals-info').html(signalsHtml);
+            });
+        }
+        
+        function updatePlot() {
+            const symbol = $('#symbol-select').val();
+            const days = $('#days-select').val();
+            
+            $('#plot-container').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+            
+            $.get(`/dashboard/api/plot/${symbol}?days=${days}`, function(data) {
+                if (data.error) {
+                    $('#plot-container').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                let plotHtml = `
+                    <div class="mb-3">
+                        <h6>${data.stats.symbol} (${data.stats.name}) - ${data.stats.days} Days</h6>
+                        <p>Price Change: <span class="${getValueClass(data.stats.price_change)}">${formatPercentage(data.stats.price_change)}</span></p>
+                        <p>Trading Days: ${data.stats.trading_days}</p>
+                        <p>Buy Signals: ${data.stats.buy_signals}</p>
+                        <p>Sell Signals: ${data.stats.sell_signals}</p>
+                        <p>Parameters: ${data.stats.params}</p>
+                    </div>
+                    <img id="strategy-plot" class="img-fluid" src="data:image/png;base64,${data.plot}" />
+                `;
+                
+                $('#plot-container').html(plotHtml);
+            });
+        }
+        
+        function updatePortfolio() {
+            const interval = $('#portfolio-interval').val();
+            const timeframe = $('#portfolio-timeframe').val();
+            
+            $('#portfolio-info').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+            
+            $.get(`/dashboard/api/portfolio?interval=${interval}&timeframe=${timeframe}`, function(data) {
+                if (data.error) {
+                    $('#portfolio-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                let portfolioHtml = `
+                    <div class="mb-3">
+                        <h6>Portfolio History (${data.interval}, ${data.timeframe})</h6>
+                    </div>
+                    <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
+                `;
+                
+                $('#portfolio-info').html(portfolioHtml);
+            });
+        }
+        
+        function updateOrders() {
+            $.get('/dashboard/api/orders', function(data) {
+                if (data.error) {
+                    $('#orders-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                if (!data.orders || data.orders.length === 0) {
+                    $('#orders-info').html(`<div class="alert alert-info">No recent orders found</div>`);
+                    return;
+                }
+                
+                let ordersHtml = `
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Side</th>
+                                    <th>Type</th>
+                                    <th>Qty</th>
+                                    <th>Filled</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                for (const order of data.orders) {
+                    const statusClass = order.status === 'filled' ? 'text-success' : 
+                                        order.status === 'canceled' ? 'text-danger' : 'text-warning';
+                    
+                    ordersHtml += `
+                        <tr>
+                            <td>${order.symbol}</td>
+                            <td>${order.side}</td>
+                            <td>${order.type}</td>
+                            <td>${order.qty}</td>
+                            <td>${order.filled_qty || 0}</td>
+                            <td>${order.filled_avg_price ? formatCurrency(order.filled_avg_price) : 'N/A'}</td>
+                            <td class="${statusClass}">${order.status}</td>
+                            <td>${order.created_at}</td>
+                        </tr>
+                    `;
+                }
+                
+                ordersHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                $('#orders-info').html(ordersHtml);
+            });
+        }
+        
+        function updateRank() {
+            $.get('/dashboard/api/rank', function(data) {
+                if (data.error) {
+                    $('#rank-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                if (!data.performance || data.performance.length === 0) {
+                    $('#rank-info').html(`<div class="alert alert-info">No performance data available</div>`);
+                    return;
+                }
+                
+                let rankHtml = `
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
+                                    <th>5m Change</th>
+                                    <th>1h Change</th>
+                                    <th>P&L</th>
+                                    <th>P&L %</th>
+                                    <th>Daily Signal</th>
+                                    <th>Weekly Signal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                for (const item of data.performance) {
+                    const price5mClass = getValueClass(item.price_changes['5m']);
+                    const price1hClass = getValueClass(item.price_changes['1h']);
+                    const plClass = getValueClass(item.unrealized_pl);
+                    const plpcClass = getValueClass(item.unrealized_plpc);
+                    const dailyClass = getValueClass(item.daily_composite);
+                    const weeklyClass = getValueClass(item.weekly_composite);
+                    
+                    rankHtml += `
+                        <tr>
+                            <td>${item.symbol}</td>
+                            <td>${item.name}</td>
+                            <td class="${price5mClass}">${formatPercentage(item.price_changes['5m'])}</td>
+                            <td class="${price1hClass}">${formatPercentage(item.price_changes['1h'])}</td>
+                            <td class="${plClass}">${formatCurrency(item.unrealized_pl)}</td>
+                            <td class="${plpcClass}">${formatPercentage(item.unrealized_plpc)}</td>
+                            <td class="${dailyClass}">${formatNumber(item.daily_composite)}</td>
+                            <td class="${weeklyClass}">${formatNumber(item.weekly_composite)}</td>
+                        </tr>
+                    `;
+                }
+                
+                rankHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                $('#rank-info').html(rankHtml);
+            });
+        }
+        
+        function updateBacktest() {
+            $('#backtest-info').html(`
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6>Run Backtest</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Symbol</label>
+                                    <select class="form-select" id="backtest-symbol">
+                                        <option value="portfolio">Portfolio (All Symbols)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Days</label>
+                                    <input type="number" class="form-control" id="backtest-days" value="30" min="1" max="90">
+                                </div>
+                                <button class="btn btn-primary" onclick="runBacktest()">Run Backtest</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6>Backtest Results</h6>
+                            </div>
+                            <div class="card-body" id="backtest-results">
+                                <div class="alert alert-info">Run a backtest to see results</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            
+            // Add symbols to backtest dropdown
+            const backtestSymbol = document.getElementById('backtest-symbol');
+            availableSymbols.forEach(symbol => {
+                const option = document.createElement('option');
+                option.value = symbol;
+                option.text = symbol;
+                backtestSymbol.appendChild(option);
+            });
+        }
+        
+        function runBacktest() {
+            const symbol = $('#backtest-symbol').val();
+            const days = $('#backtest-days').val();
+            
+            $('#backtest-results').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Running backtest, this may take a moment...</p>
+                </div>
+            `);
+            
+            $.ajax({
+                url: '/dashboard/api/backtest',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ symbol, days }),
+                success: function(data) {
+                    if (data.error) {
+                        $('#backtest-results').html(`<div class="alert alert-danger">${data.error}</div>`);
+                        return;
+                    }
+                    
+                    if (symbol === 'portfolio') {
+                        // Portfolio backtest results
+                        let resultsHtml = `
+                            <div class="mb-3">
+                                <h6>Portfolio Backtest (${days} Days)</h6>
+                                <p>Total Return: <span class="${getValueClass(data.results.total_return_pct)}">${formatPercentage(data.results.total_return_pct)}</span></p>
+                                <p>Annualized Return: <span class="${getValueClass(data.results.annualized_return_pct)}">${formatPercentage(data.results.annualized_return_pct)}</span></p>
+                                <p>Max Drawdown: <span class="negative">${formatPercentage(data.results.max_drawdown_pct)}</span></p>
+                                <p>Sharpe Ratio: ${formatNumber(data.results.sharpe_ratio)}</p>
+                            </div>
+                            <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
+                        `;
+                        
+                        $('#backtest-results').html(resultsHtml);
+                    } else {
+                        // Individual symbol backtest results
+                        const symbolData = data[symbol];
+                        
+                        if (symbolData.error) {
+                            $('#backtest-results').html(`<div class="alert alert-danger">${symbolData.error}</div>`);
+                            return;
+                        }
+                        
+                        const result = symbolData.result;
+                        
+                        let resultsHtml = `
+                            <div class="mb-3">
+                                <h6>${symbol} Backtest (${days} Days)</h6>
+                                <p>Total Return: <span class="${getValueClass(result.total_return_pct)}">${formatPercentage(result.total_return_pct)}</span></p>
+                                <p>Buy & Hold Return: <span class="${getValueClass(result.buy_hold_return_pct)}">${formatPercentage(result.buy_hold_return_pct)}</span></p>
+                                <p>Max Drawdown: <span class="negative">${formatPercentage(result.max_drawdown_pct)}</span></p>
+                                <p>Win Rate: ${formatPercentage(result.win_rate)}</p>
+                                <p>Total Trades: ${result.total_trades}</p>
+                            </div>
+                            <img class="img-fluid" src="data:image/png;base64,${symbolData.plot}" />
+                        `;
+                        
+                        $('#backtest-results').html(resultsHtml);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#backtest-results').html(`<div class="alert alert-danger">Error running backtest: ${error}</div>`);
+                }
+            });
+        }
+        
+        function openPosition() {
+            const symbol = $('#open-position-symbol').val();
+            const amount = $('#open-position-amount').val();
+            
+            if (!symbol || !amount) {
+                alert('Please select a symbol and enter an amount');
+                return;
+            }
+            
+            if (isNaN(amount) || parseFloat(amount) <= 0) {
+                alert('Please enter a valid positive amount');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to open a position for ${symbol} with $${amount}?`)) {
+                return;
+            }
+            
+            $.ajax({
+                url: '/dashboard/api/open',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ symbol, amount }),
+                success: function(data) {
+                    if (data.error) {
+                        alert(`Error: ${data.error}`);
+                        return;
+                    }
+                    
+                    alert(`Position opened for ${symbol}`);
+                    updatePositions();
+                    updateStatus();
+                },
+                error: function(xhr, status, error) {
+                    alert(`Error opening position: ${error}`);
+                }
+            });
+        }
+        
+        function closePosition() {
+            const symbol = $('#close-position-symbol').val();
+            const confirmMsg = symbol ? 
+                `Are you sure you want to close the position for ${symbol}?` : 
+                'Are you sure you want to close ALL positions?';
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+            
+            $.ajax({
+                url: '/dashboard/api/close',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ symbol }),
+                success: function(data) {
+                    if (data.error) {
+                        alert(`Error: ${data.error}`);
+                        return;
+                    }
+                    
+                    alert(symbol ? `Position closed for ${symbol}` : 'All positions closed');
+                    updatePositions();
+                    updateStatus();
+                },
+                error: function(xhr, status, error) {
+                    alert(`Error closing position: ${error}`);
+                }
+            });
+        }
+
+        // Initial updates
+        populateSymbolDropdowns();
+        updateBalance();
+        updatePerformance();
+        updateMarkets();
+        updateStatus();
+        updatePositions();
+        updateSignals();
+        updateIndicators();
+        updatePlot();
+        updatePortfolio();
+        updateOrders();
+        updateRank();
+        updateBacktest();
+
+        // Setup periodic updates
+        setInterval(updateBalance, 60000);  // Every minute
+        setInterval(updatePerformance, 60000);  // Every minute
+        setInterval(updateStatus, 60000);   // Every minute
+        setInterval(updatePositions, 60000);   // Every minute
+
+        // Setup event listeners
+        $('#symbol-select, #days-select').change(updatePlot);
+    </script>
+</body>
+</html>

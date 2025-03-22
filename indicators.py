@@ -339,8 +339,10 @@ if __name__ == "__main__":
                 params = get_default_params()
         except ImportError:
             # If replit is not available, use local file
-            if os.path.exists("best_params.json"):
-                with open("best_params.json", "r") as f:
+            # Use absolute path to best_params.json
+            params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'best_params.json')
+            if os.path.exists(params_file):
+                with open(params_file, "r") as f:
                     best_params_data = json.load(f)
                     if symbol in best_params_data:
                         params = best_params_data[symbol]['best_params']
@@ -349,7 +351,7 @@ if __name__ == "__main__":
                         print(f"No best parameters found for {symbol}. Using default parameters.")
                         params = get_default_params()
             else:
-                print("Best parameters file not found. Using default parameters.")
+                print(f"Parameters file not found at {params_file}")
                 params = get_default_params()
         except Exception as e:
             print(f"Error reading parameters: {e}")

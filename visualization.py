@@ -11,6 +11,7 @@ import logging
 import matplotlib
 import json
 import config
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -170,14 +171,19 @@ def create_strategy_plot(symbol='SPY', days=5, return_data=False):
         
         # Generate signals
         try:
-            with open("best_params.json", "r") as f:
-                best_params_data = json.load(f)
-                if symbol in best_params_data:
-                    params = best_params_data[symbol]['best_params']
-                    logger.info(f"Using best parameters for {symbol}: {params}")
-                else:
-                    logger.info(f"No best parameters found for {symbol}. Using default parameters.")
-                    params = get_default_params()
+            params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+            if os.path.exists(params_file):
+                with open(params_file, "r") as f:
+                    best_params_data = json.load(f)
+                    if symbol in best_params_data:
+                        params = best_params_data[symbol]['best_params']
+                        logger.info(f"Using best parameters for {symbol}: {params}")
+                    else:
+                        logger.info(f"No best parameters found for {symbol}. Using default parameters.")
+                        params = get_default_params()
+            else:
+                logger.warning(f"Parameters file not found at {params_file}")
+                params = get_default_params()
         except FileNotFoundError:
             logger.warning("Best parameters file not found. Using default parameters.")
             params = get_default_params()
@@ -481,16 +487,21 @@ def create_multi_symbol_plot(symbols=None, days=5):
             
             # Generate signals
             try:
-                with open("best_params.json", "r") as f:
-                    best_params_data = json.load(f)
-                    if self.symbol in best_params_data:
-                        params = best_params_data[self.symbol]['best_params']
-                        print(f"Using best parameters for {self.symbol}: {params}")
-                    else:
-                        print(f"No best parameters found for {self.symbol}. Using default parameters.")
-                        params = get_default_params()
+                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                if os.path.exists(params_file):
+                    with open(params_file, "r") as f:
+                        best_params_data = json.load(f)
+                        if symbol in best_params_data:
+                            params = best_params_data[symbol]['best_params']
+                            logger.info(f"Using best parameters for {symbol}: {params}")
+                        else:
+                            logger.info(f"No best parameters found for {symbol}. Using default parameters.")
+                            params = get_default_params()
+                else:
+                    logger.warning(f"Parameters file not found at {params_file}")
+                    params = get_default_params()
             except FileNotFoundError:
-                print("Best parameters file not found. Using default parameters.")
+                logger.warning("Best parameters file not found. Using default parameters.")
                 params = get_default_params()        
 
             signals, daily_data, weekly_data = generate_signals(data, params)

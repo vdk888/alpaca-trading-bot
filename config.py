@@ -5,12 +5,24 @@ from datetime import datetime, timedelta
 import pytz
 import yfinance as yf
 
+# Try to load environment variables from .env file if dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 ALPACA_PAPER = True
 ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
 ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
 
+# For development/testing, use placeholder values if environment variables are not set
 if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
-    raise ValueError("Alpaca API credentials not found in environment variables")
+    print("Warning: Alpaca API credentials not found in environment variables.")
+    print("Using placeholder values for development/testing.")
+    print("Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables for production use.")
+    ALPACA_API_KEY = "placeholder_api_key"
+    ALPACA_SECRET_KEY = "placeholder_secret_key"
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95

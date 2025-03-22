@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
 import logging
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import filters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
@@ -35,40 +36,56 @@ class TradingBot:
         # Initialize trading executors for each symbol
         self.executors = {symbol: TradingExecutor(trading_client, symbol) for symbol in symbols}
             
-        # Initialize the application and bot
+        # Initialize the application
         self.application = Application.builder().token(self.bot_token).build()
-        self._bot = None  # Will be initialized in start()
+        self._bot = None  # Will be initialized when application starts
+        
+        # Setup command handlers
         self.setup_handlers(self.application)
-            
+
     def get_best_params(self, symbol):
             """Get best parameters for a symbol from Object Storage"""
             try:
                 from replit.object_storage import Client
                 
                 # Initialize Object Storage client
-                client = Client()
-                
-                # Try to get parameters from Object Storage
-                json_content = client.download_as_text("best_params.json")
-                best_params_data = json.loads(json_content)
-                
-                if symbol in best_params_data:
-                    return best_params_data[symbol]['best_params']
-                else:
-                    return "Using default parameters"
-            except Exception as e:
-                logger.error(f"Error reading from Object Storage: {e}")
-                # Try local file as fallback
                 try:
-                    with open("best_params.json", "r") as f:
+                    client = Client()
+                    
+                    # Try to get parameters from Object Storage
+                    try:
+                        json_content = client.download_as_text("best_params.json")
+                        best_params_data = json.loads(json_content)
+                        logger.info("Successfully loaded best parameters from Object Storage")
+                    except Exception as e:
+                        logger.error(f"Error reading from Object Storage: {e}")
+                        raise  # Re-raise to fall back to local file
+                except ImportError:
+                    logger.warning("Replit module not available, falling back to local file")
+                    raise  # Fall back to local file
+                except Exception as e:
+                    logger.error(f"Error initializing Replit client: {e}")
+                    raise  # Fall back to local file
+            except Exception:
+                # Try local file as fallback
+                logger.info("Falling back to local file")
+                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                logger.info(f"Looking for file at: {params_file}")
+                
+                if os.path.exists(params_file):
+                    logger.info(f"File exists at {params_file}")
+                    with open(params_file, "r") as f:
                         best_params_data = json.load(f)
-                    if symbol in best_params_data:
-                        return best_params_data[symbol]['best_params']
-                    else:
-                        return "Using default parameters"
-                except FileNotFoundError:
-                    return "Using default parameters"
-
+                        logger.info(f"Loaded best parameters from local file: {params_file}")
+                else:
+                    logger.error(f"Best parameters file not found at {params_file}")
+                    raise FileNotFoundError(f"Best parameters file not found at {params_file}")
+                
+            if symbol in best_params_data:
+                return best_params_data[symbol]['best_params']
+            else:
+                return "Using default parameters"
+                
     def setup_handlers(self, application: Application):
         """Setup all command handlers"""
         application.add_handler(CommandHandler("start", self.start_command))
@@ -98,7 +115,7 @@ class TradingBot:
     def bot(self):
         """Lazy initialization of bot instance"""
         if self._bot is None:
-            self._bot = Bot(token=self.bot_token)
+            self._bot = self.application.bot
         return self._bot
 
     async def start(self):
@@ -1185,23 +1202,38 @@ Price Changes:
                 from replit.object_storage import Client
                 
                 # Initialize Object Storage client
-                client = Client()
-                
-                # Try to get parameters from Object Storage
                 try:
-                    json_content = client.download_as_text("best_params.json")
-                    best_params_data = json.loads(json_content)
-                    logger.info("Successfully loaded best parameters from Object Storage")
+                    client = Client()
+                    
+                    # Try to get parameters from Object Storage
+                    try:
+                        json_content = client.download_as_text("best_params.json")
+                        best_params_data = json.loads(json_content)
+                        logger.info("Successfully loaded best parameters from Object Storage")
+                    except Exception as e:
+                        logger.error(f"Error reading from Object Storage: {e}")
+                        raise  # Re-raise to fall back to local file
+                except ImportError:
+                    logger.warning("Replit module not available, falling back to local file")
+                    raise  # Fall back to local file
                 except Exception as e:
-                    logger.error(f"Error reading from Object Storage: {e}")
-                    # Try local file as fallback
-                    with open("best_params.json", "r") as f:
+                    logger.error(f"Error initializing Replit client: {e}")
+                    raise  # Fall back to local file
+            except Exception:
+                # Try local file as fallback
+                logger.info("Falling back to local file")
+                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                logger.info(f"Looking for file at: {params_file}")
+                
+                if os.path.exists(params_file):
+                    logger.info(f"File exists at {params_file}")
+                    with open(params_file, "r") as f:
                         best_params_data = json.load(f)
-                        logger.info("Loaded best parameters from local file")
-            except Exception as e:
-                await update.message.reply_text("❌ Best parameters file not found. Run backtest optimization first.")
-                logger.error(f"Failed to read best_params.json: {e}")
-                return
+                        logger.info(f"Loaded best parameters from local file: {params_file}")
+                else:
+                    logger.error(f"Best parameters file not found at {params_file}")
+                    await update.message.reply_text("❌ Best parameters file not found. Run backtest optimization first.")
+                    return
                 
             if symbol:
                 # Get best parameters for a specific symbol

@@ -19,17 +19,19 @@ import matplotlib.pyplot as plt
 from indicators import get_default_params
 
 # Add Flask server for Replit deployment
-from flask import Flask
+from flask import Flask, render_template, redirect
+from dashboard import dashboard
 import threading
 
 app = Flask(__name__)
+app.register_blueprint(dashboard, url_prefix='/dashboard')
 
 @app.route('/')
 def home():
-    return "Trading Bot is running!"
+    return redirect('/dashboard')
 
 def run_flask():
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=5000)
 
 # Start Flask server in a daemon thread
 flask_thread = threading.Thread(target=run_flask, daemon=True)
@@ -143,9 +145,15 @@ async def run_bot():
                                 best_params_data = json.loads(json_content)
                             except ImportError:
                                 # If replit is not available, use local file
-                                if os.path.exists('best_params.json'):
-                                    with open('best_params.json', 'r') as f:
+                                # Use absolute path to best_params.json
+                                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'best_params.json')
+                                if os.path.exists(params_file):
+                                    with open(params_file, 'r') as f:
                                         best_params_data = json.load(f)
+                                    logger.info(f"Loaded parameters from {params_file}")
+                                else:
+                                    logger.warning(f"Parameters file not found at {params_file}")
+                                    best_params_data = {}
                             except Exception as e:
                                 logger.warning(f"Could not read parameters: {str(e)}")
 
@@ -224,9 +232,15 @@ async def run_bot():
                                 best_params_data = json.loads(json_content)
                             except ImportError:
                                 # If replit is not available, use local file
-                                if os.path.exists('best_params.json'):
-                                    with open('best_params.json', 'r') as f:
+                                # Use absolute path to best_params.json
+                                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'best_params.json')
+                                if os.path.exists(params_file):
+                                    with open(params_file, 'r') as f:
                                         best_params_data = json.load(f)
+                                    logger.info(f"Loaded parameters from {params_file}")
+                                else:
+                                    logger.warning(f"Parameters file not found at {params_file}")
+                                    best_params_data = {}
                             except Exception as e:
                                 logger.warning(f"Could not read parameters: {str(e)}")
 
