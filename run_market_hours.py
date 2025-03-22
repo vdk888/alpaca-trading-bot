@@ -133,32 +133,26 @@ async def run_bot():
                         # Check if we need to update parameters
                         needs_update = True
                         try:
-                            from replit.object_storage import Client
-                            
-                            # Initialize Object Storage client
-                            client = Client()
-                            
-                            # Try to get parameters from Object Storage
+                            # Try to get parameters from Object Storage (Replit) or local file
+                            best_params_data = {}
                             try:
+                                # First try replit storage
+                                from replit.object_storage import Client
+                                client = Client()
                                 json_content = client.download_as_text("best_params.json")
                                 best_params_data = json.loads(json_content)
-                                if symbol in best_params_data:
-                                    last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
-                                    days_since_update = (datetime.datetime.now() - last_update).days
-                                    needs_update = days_since_update >= 7  # Update weekly
-                            except Exception as e:
-                                logger.warning(f"Could not read from Object Storage: {str(e)}")
-                                # Try local file as fallback
-                                try:
-                                    with open("best_params.json", "r") as f:
+                            except ImportError:
+                                # If replit is not available, use local file
+                                if os.path.exists('best_params.json'):
+                                    with open('best_params.json', 'r') as f:
                                         best_params_data = json.load(f)
-                                        if symbol in best_params_data:
-                                            last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
-                                            days_since_update = (datetime.datetime.now() - last_update).days
-                                            needs_update = days_since_update >= 7  # Update weekly
-                                except FileNotFoundError:
-                                    logger.warning(f"Local best_params.json not found for {symbol}")
-                                    needs_update = True
+                            except Exception as e:
+                                logger.warning(f"Could not read parameters: {str(e)}")
+
+                            if symbol in best_params_data:
+                                last_update = datetime.datetime.strptime(best_params_data[symbol].get('date', '2000-01-01'), "%Y-%m-%d")
+                                days_since_update = (datetime.datetime.now() - last_update).days
+                                needs_update = days_since_update >= 7  # Update weekly
                         except (json.JSONDecodeError, KeyError) as e:
                             logger.warning(f"Could not read best_params.json for {symbol}: {str(e)}")
                             needs_update = True
@@ -220,40 +214,28 @@ async def run_bot():
                             
                         # Generate signals
                         try:
-                            from replit.object_storage import Client
-                            
-                            # Initialize Object Storage client
-                            client = Client()
-                            
-                            # Try to get parameters from Object Storage
+                            # Try to get parameters from Object Storage (Replit) or local file
+                            best_params_data = {}
                             try:
+                                # First try replit storage
+                                from replit.object_storage import Client
+                                client = Client()
                                 json_content = client.download_as_text("best_params.json")
                                 best_params_data = json.loads(json_content)
-                                print("Successfully loaded best parameters from Object Storage")
-                                if symbol in best_params_data:
-                                    params = best_params_data[symbol]['best_params']
-                                    print(f"Using best parameters for {symbol}: {params}")
-                                else:
-                                    print(f"No best parameters found for {symbol}. Using default parameters.")
-                                    params = get_default_params()
-                            except Exception as e:
-                                print(f"Could not read from Object Storage: {e}")
-                                # Try local file as fallback
-                                try:
-                                    with open("best_params.json", "r") as f:
+                            except ImportError:
+                                # If replit is not available, use local file
+                                if os.path.exists('best_params.json'):
+                                    with open('best_params.json', 'r') as f:
                                         best_params_data = json.load(f)
-                                        print("Loaded best parameters from local file")
-                                        if symbol in best_params_data:
-                                            params = best_params_data[symbol]['best_params']
-                                            print(f"Using best parameters for {symbol}: {params}")
-                                        else:
-                                            print(f"No best parameters found for {symbol}. Using default parameters.")
-                                            params = get_default_params()
-                                except FileNotFoundError:
-                                    print("Best parameters file not found. Using default parameters.")
-                                    params = get_default_params()
+                            except Exception as e:
+                                logger.warning(f"Could not read parameters: {str(e)}")
+
+                            if symbol in best_params_data:
+                                params = best_params_data[symbol]['best_params']
+                            else:
+                                params = get_default_params()
                         except Exception as e:
-                            print(f"Error loading parameters: {e}")
+                            logger.warning(f"Error loading parameters: {e}")
                             params = get_default_params()
                         
                         try:

@@ -22,8 +22,8 @@ def get_portfolio_history(timeframe='1D', period='1M', date_end=None):
         dict: Portfolio history data including equity values and timestamps
     """
     # API endpoint (using paper trading by default)
-    #base_url = "https://paper-api.alpaca.markets"
-    base_url = "https://api.alpaca.markets"
+    base_url = "https://paper-api.alpaca.markets"
+    #base_url = "https://api.alpaca.markets"
     endpoint = f"{base_url}/v2/account/portfolio/history"
     
     # Headers for authentication
