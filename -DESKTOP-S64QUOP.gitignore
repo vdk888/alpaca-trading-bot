@@ -1,0 +1,20 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+build/
+dist/
+*.egg-info
+
+# Logs
+*.log
+*.csv
+
+# IDE
+.vscode/
+.idea/

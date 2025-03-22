@@ -5,8 +5,8 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
-from visualization import create_strategy_plot, create_multi_symbol_plot, generate_signals, get_default_params
-from config import TRADING_SYMBOLS, lookback_days_param, PER_SYMBOL_CAPITAL_MULTIPLIER, default_backtest_interval
+from visualization import create_strategy_plot, create_multi_symbol_plot
+from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -16,12 +16,6 @@ import pytz
 from utils import get_api_symbol, get_display_symbol
 import asyncio
 import json
-import indicators
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import io
-import yfinance as yf
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -183,8 +177,8 @@ class TradingBot:
 /indicators [symbol] - View current indicator values
 /plot [symbol] [days] - Generate strategy visualization
 /signals - View latest signals for all symbols
-/backtest [symbol] [days] - Run backtest simulation (default: all symbols, 30 days)
-/backtest portfolio [days] - Run portfolio backtest (default: all symbols, 30 days)
+/backtest [symbol] [days] - Run backtest simulation (default: all symbols, 5 days)
+/backtest portfolio [days] - Run portfolio backtest (default: all symbols, 5 days)
 /bestparams [symbol] - Get best parameters (all symbols if none specified)
 
 💰 Trading Commands:
@@ -216,6 +210,7 @@ class TradingBot:
                 return
                 
             symbols_to_check = [symbol] if symbol else self.symbols
+            has_data = False
             
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
@@ -471,7 +466,7 @@ Price Changes:
             args = context.args if context.args else []
             
             # Default values
-            days = lookback_days_param
+            days = 5
             symbols_to_plot = self.symbols
             
             if len(args) >= 1:
@@ -744,7 +739,7 @@ Price Changes:
             args = context.args if context.args else []
             
             # Default values
-            days = lookback_days_param
+            days = 5
             
             if not args:
                 await update.message.reply_text(
@@ -1447,17 +1442,15 @@ Price Changes:
                             data.index = data.index.tz_localize('UTC')
                         
                         # Create the plot
-                        plt.figure(figsize=(12, 10))
-                        
-                        # Price and orders plot (50% height)
-                        ax1 = plt.subplot(3, 1, 1)
+                        plt.figure(figsize=(12, 6))
                         
                         # Plot price data
-                        ax1.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
+                        plt.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
                         
                         # Plot buy orders
                         buy_orders = [order for order in orders if order['side'].lower() == 'buy' and order['status'] == 'filled']
                         for order in buy_orders:
+                            # Use submitted_at if filled_at is not available
                             order_time = order['filled_at'] or order['submitted_at']
                             if isinstance(order_time, str):
                                 order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
@@ -1466,8 +1459,8 @@ Price Changes:
                             if not price:  # Skip if no price available
                                 continue
                             
-                            ax1.scatter(order_time, price, marker='^', color='green', s=100, zorder=5)
-                            ax1.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
+                            plt.scatter(order_time, price, marker='^', color='green', s=100, zorder=5)
+                            plt.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
                                     (order_time, price),
                                     xytext=(0, 10),
                                     textcoords='offset points',
@@ -1479,6 +1472,7 @@ Price Changes:
                         # Plot sell orders
                         sell_orders = [order for order in orders if order['side'].lower() == 'sell' and order['status'] == 'filled']
                         for order in sell_orders:
+                            # Use submitted_at if filled_at is not available
                             order_time = order['filled_at'] or order['submitted_at']
                             if isinstance(order_time, str):
                                 order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
@@ -1487,8 +1481,8 @@ Price Changes:
                             if not price:  # Skip if no price available
                                 continue
                             
-                            ax1.scatter(order_time, price, marker='v', color='red', s=100, zorder=5)
-                            ax1.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
+                            plt.scatter(order_time, price, marker='v', color='red', s=100, zorder=5)
+                            plt.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
                                     (order_time, price),
                                     xytext=(0, -10),
                                     textcoords='offset points',
@@ -1497,71 +1491,38 @@ Price Changes:
                                     fontsize=8,
                                     bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
                         
-                        ax1.set_title(f"{symbol} Price with Order History")
-                        ax1.grid(True, alpha=0.3)
-                        ax1.legend()
+                        # Format the plot
+                        plt.title(f"{symbol} Price with Order History")
+                        plt.xlabel('Date')
+                        plt.ylabel('Price')
+                        plt.grid(True, alpha=0.3)
                         
-                        # Prepare data for indicators
-                        ohlcv_data = pd.DataFrame({
-                            'open': data['Open'],
-                            'high': data['High'],
-                            'low': data['Low'],
-                            'close': data['Close'],
-                            'volume': data['Volume']
-                        })
+                        # Format x-axis dates
+                        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                        plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
+                        plt.gcf().autofmt_xdate()
                         
-                        # Get strategy parameters
-                        try:
-                            with open("best_params.json", "r") as f:
-                                best_params_data = json.load(f)
-                                if symbol in best_params_data:
-                                    params = best_params_data[symbol]['best_params']
-                                else:
-                                    params = get_default_params()
-                        except FileNotFoundError:
-                            params = get_default_params()
-                        
-                        # Generate signals with indicators
-                        signals, daily_data, weekly_data = generate_signals(ohlcv_data, params)
-                        
-                        # Plot daily composite (25% height)
-                        ax2 = plt.subplot(3, 1, 2, sharex=ax1)
-                        ax2.plot(signals.index, signals['daily_composite'], label='Daily Composite', color='blue')
-                        ax2.plot(signals.index, signals['daily_up_lim'], '--', label='Upper Limit', color='green')
-                        ax2.plot(signals.index, signals['daily_down_lim'], '--', label='Lower Limit', color='red')
-                        ax2.plot(signals.index, signals['daily_up_lim_2std'], ':', label='Upper 2 STD', color='green', alpha=0.7)
-                        ax2.plot(signals.index, signals['daily_down_lim_2std'], ':', label='Lower 2 STD', color='red', alpha=0.7)
-                        
-                        ax2.set_title('Daily Composite Indicator')
-                        ax2.legend()
-                        ax2.grid(True, alpha=0.3)
-                        
-                        # Plot weekly composite (25% height)
-                        ax3 = plt.subplot(3, 1, 3, sharex=ax1)
-                        ax3.plot(signals.index, signals['weekly_composite'], label='Weekly Composite', color='blue')
-                        ax3.plot(signals.index, signals['weekly_up_lim'], '--', label='Upper Limit', color='green')
-                        ax3.plot(signals.index, signals['weekly_down_lim'], '--', label='Lower Limit', color='red')
-                        ax3.plot(signals.index, signals['weekly_up_lim_2std'], ':', label='Upper 2 STD', color='green', alpha=0.7)
-                        ax3.plot(signals.index, signals['weekly_down_lim_2std'], ':', label='Lower 2 STD', color='red', alpha=0.7)
-                        
-                        ax3.set_title('Weekly Composite Indicator')
-                        ax3.legend()
-                        ax3.grid(True, alpha=0.3)
-                        
-                        # Format x-axis
-                        plt.gcf().autofmt_xdate()  # Angle and align the tick labels so they look better
-                        
-                        # Adjust layout to prevent overlapping
-                        plt.tight_layout()
+                        # Add legend
+                        buy_patch = plt.Line2D([], [], marker='^', color='green', linestyle='None', 
+                                            markersize=10, label='Buy Orders')
+                        sell_patch = plt.Line2D([], [], marker='v', color='red', linestyle='None', 
+                                            markersize=10, label='Sell Orders')
+                        price_line = plt.Line2D([], [], color='blue', label='Price')
+                        plt.legend(handles=[price_line, buy_patch, sell_patch])
                         
                         # Save to buffer
                         buf = io.BytesIO()
-                        plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+                        plt.tight_layout()
+                        plt.savefig(buf, format='png', dpi=150)
                         buf.seek(0)
                         plt.close()
                         
-                        # Send the plot
-                        await update.message.reply_photo(buf)
+                        # Send the chart
+                        await update.message.reply_document(
+                            document=buf,
+                            filename=f"{symbol}_orders.png",
+                            caption=f"📊 {symbol} price chart with {len(orders)} recent orders"
+                        )
                     except Exception as e:
                         await update.message.reply_text(f"❌ Error generating chart: {str(e)}")
             else:
