@@ -18,9 +18,21 @@ import base64
 import matplotlib.pyplot as plt
 import json
 from fetch import is_market_open
+from helpers.alpaca_service import AlpacaService
 
 # Create blueprint instead of Flask app
 dashboard = Blueprint('dashboard', __name__, template_folder='templates')
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('dashboard.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Initialize trading client and strategies
 trading_client = TradingClient(
@@ -47,13 +59,13 @@ def get_best_params(symbol):
                 else:
                     return "Using default parameters"
             else:
-                logging.warning(f"Parameters file not found at {params_file}")
+                logger.warning(f"Parameters file not found at {params_file}")
                 return "Using default parameters"
         except FileNotFoundError:
-            logging.warning(f"Parameters file not found at {params_file}")
+            logger.warning(f"Parameters file not found at {params_file}")
             return "Using default parameters"
     except Exception as e:
-        logging.error(f"Error reading from best_params.json: {e}")
+        logger.error(f"Error reading from best_params.json: {e}")
         return "Using default parameters"
 
 @dashboard.route('/')
@@ -64,6 +76,7 @@ def home():
 @dashboard.route('/api/status')
 def get_status():
     """Get current trading status for all symbols"""
+    logger.info("API call: /api/status")
     symbol = request.args.get('symbol', None)
     
     if symbol and symbol not in symbols:
@@ -117,6 +130,7 @@ def get_status():
 @dashboard.route('/api/position')
 def get_position():
     """Get current position details"""
+    logger.info("API call: /api/position")
     symbol = request.args.get('symbol', None)
     
     if symbol and symbol not in symbols:
@@ -210,6 +224,7 @@ def get_position():
 @dashboard.route('/api/balance')
 def get_balance():
     """Get account balance"""
+    logger.info("API call: /api/balance")
     try:
         account = trading_client.get_account()
         return jsonify({
@@ -224,6 +239,7 @@ def get_balance():
 @dashboard.route('/api/performance')
 def get_performance():
     """View today's performance"""
+    logger.info("API call: /api/performance")
     try:
         account = trading_client.get_account()
         today_pl = float(account.equity) - float(account.last_equity)
@@ -241,6 +257,7 @@ def get_performance():
 @dashboard.route('/api/indicators')
 def get_indicators():
     """View current indicator values"""
+    logger.info("API call: /api/indicators")
     symbol = request.args.get('symbol', None)
     
     if symbol and symbol not in symbols:
@@ -276,11 +293,14 @@ def get_indicators():
     
     return jsonify(indicators_data)
 
-@dashboard.route('/api/plot/<symbol>')
-def get_plot(symbol):
+@dashboard.route('/api/plot')
+def get_plot():
     """Generate strategy visualization"""
-    if symbol not in symbols:
-        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    logger.info("API call: /api/plot")
+    symbol = request.args.get('symbol', None)
+    
+    if not symbol or symbol not in symbols:
+        return jsonify({"error": f"Invalid or missing symbol parameter"}), 400
         
     days = request.args.get('days', default=5, type=int)
     
@@ -312,11 +332,13 @@ def get_plot(symbol):
             }
         })
     except Exception as e:
+        logger.error(f"Error generating plot: {str(e)}")
         return jsonify({"error": f"Error generating plot: {str(e)}"}), 500
 
 @dashboard.route('/api/signals')
 def get_signals():
     """View latest signals for all symbols"""
+    logger.info("API call: /api/signals")
     symbol = request.args.get('symbol', None)
     
     if symbol and symbol not in symbols:
@@ -391,6 +413,7 @@ def get_signals():
 @dashboard.route('/api/markets')
 def get_markets():
     """View market hours for all symbols"""
+    logger.info("API call: /api/markets")
     market_data = {}
     
     for symbol in symbols:
@@ -409,21 +432,23 @@ def get_markets():
 @dashboard.route('/api/symbols')
 def get_symbols():
     """List all trading symbols"""
-    symbol_data = {}
+    logger.info("API call: /api/symbols")
+    symbol_data = []
     
     for symbol in symbols:
-        symbol_data[symbol] = {
+        symbol_data.append({
             "name": TRADING_SYMBOLS[symbol]['name'],
             "exchange": TRADING_SYMBOLS[symbol].get('exchange', 'Unknown'),
             "api_symbol": get_api_symbol(symbol),
             "display_symbol": get_display_symbol(symbol)
-        }
+        })
     
     return jsonify(symbol_data)
 
-@dashboard.route('/api/open', methods=['POST'])
+@dashboard.route('/api/position/open', methods=['POST'])
 def open_position():
     """Open a new position with specified amount"""
+    logger.info("API call: /api/position/open")
     data = request.json
     symbol = data.get('symbol')
     amount = data.get('amount')
@@ -454,9 +479,10 @@ def open_position():
     except Exception as e:
         return jsonify({"error": f"Error opening position: {str(e)}"}), 500
 
-@dashboard.route('/api/close', methods=['POST'])
+@dashboard.route('/api/position/close', methods=['POST'])
 def close_position():
     """Close positions"""
+    logger.info("API call: /api/position/close")
     data = request.json
     symbol = data.get('symbol')
     
@@ -487,6 +513,7 @@ def close_position():
 @dashboard.route('/api/backtest', methods=['POST'])
 def run_backtest_api():
     """Run backtest simulation"""
+    logger.info("API call: /api/backtest")
     data = request.json
     symbol = data.get('symbol')
     days = data.get('days', default_backtest_interval)
@@ -502,7 +529,8 @@ def run_backtest_api():
     if symbol == "portfolio":
         try:
             # Run portfolio backtest
-            results = run_portfolio_backtest(symbols, days)
+            alpaca_service = AlpacaService()
+            results = alpaca_service.run_portfolio_backtest(symbols, days)
             
             # Create plot
             buf = create_portfolio_backtest_plot(results)
@@ -546,33 +574,68 @@ def run_backtest_api():
         
         return jsonify(results)
 
+@dashboard.route('/api/backtest/info')
+def get_backtest_info():
+    """Get backtest info without running a full simulation"""
+    logger.info("API call: /api/backtest/info")
+    symbol = request.args.get('symbol', None)
+    days = request.args.get('days', default=default_backtest_interval, type=int)
+    
+    if symbol and symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+        
+    if days <= 0 or days > default_backtest_interval:
+        return jsonify({"error": f"Days must be between 1 and {default_backtest_interval}"}), 400
+    
+    try:
+        # Get best parameters
+        params = get_best_params(symbol) if symbol else "Using default parameters"
+        
+        return jsonify({
+            'symbol': symbol,
+            'days': days,
+            'params': params,
+            'message': f"Ready to run backtest for {symbol if symbol else 'all symbols'} over {days} days"
+        })
+    except Exception as e:
+        logger.error(f"Error getting backtest info: {str(e)}")
+        return jsonify({"error": f"Error getting backtest info: {str(e)}"}), 500
+
 @dashboard.route('/api/portfolio')
 def get_portfolio():
     """Get portfolio history graph"""
-    interval = request.args.get('interval', '1D')
-    timeframe = request.args.get('timeframe', '1M')
+    logger.info("API call: /api/portfolio")
+    timeframe = request.args.get('interval', '1D')  # This is passed as 'interval' from frontend
+    period = request.args.get('timeframe', '1M')    # This is passed as 'timeframe' from frontend
     
     try:
-        # Get portfolio history
-        history = get_portfolio_history(interval, timeframe)
+        # Initialize AlpacaService
+        alpaca_service = AlpacaService()
+        logger.info(f"Getting portfolio history with timeframe={timeframe}, period={period}")
         
-        # Create plot
-        buf = create_portfolio_plot(history, interval, timeframe)
+        # Get portfolio history
+        history = alpaca_service.get_portfolio_history(timeframe=timeframe, period=period)
+        
+        # Create plot - pass only the history parameter as that's what the function expects
+        buf = create_portfolio_plot(history)
         buf.seek(0)
         plot_url = base64.b64encode(buf.read()).decode()
         
+        logger.info("Portfolio plot created successfully")
         return jsonify({
             "success": True,
             "plot": plot_url,
-            "interval": interval,
-            "timeframe": timeframe
+            "timeframe": timeframe,
+            "period": period
         })
     except Exception as e:
+        logger.error(f"Error getting portfolio history: {str(e)}")
         return jsonify({"error": f"Error getting portfolio history: {str(e)}"}), 500
 
 @dashboard.route('/api/rank')
 def get_rank():
     """Display performance ranking of all assets"""
+    logger.info("API call: /api/rank")
     try:
         performance_data = []
         
@@ -624,42 +687,66 @@ def get_rank():
 @dashboard.route('/api/orders')
 def get_orders():
     """View past orders from Alpaca account"""
-    symbol = request.args.get('symbol')
-    limit = request.args.get('limit', 20, type=int)
+    logger.info("API call: /api/orders")
+    symbol = request.args.get('symbol', None)
+    limit = request.args.get('limit', 10, type=int)
     
     if symbol and symbol not in symbols:
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
     
     try:
+        # Initialize AlpacaService
+        alpaca_service = AlpacaService()
+        logger.info(f"Getting orders with limit: {limit}")
+        
+        # Get all orders using get_recent_trades method
+        orders = alpaca_service.get_recent_trades(limit=limit)
+        logger.info(f"Retrieved {len(orders)} orders")
+        
+        # Filter by symbol if specified
         if symbol:
-            # Get orders for a specific symbol
             api_symbol = get_api_symbol(symbol)
-            orders = trading_client.get_orders(symbol=api_symbol, limit=limit)
-        else:
-            # Get all orders
-            orders = trading_client.get_orders(limit=limit)
+            logger.info(f"Filtering orders for symbol: {api_symbol}")
+            orders = [order for order in orders if order['symbol'].lower() == api_symbol.lower()]
+            
+            if not orders:
+                logger.warning(f"No orders found for symbol: {symbol}")
+                return jsonify({
+                    "success": True,
+                    "orders": []
+                })
         
         orders_data = []
-        
         for order in orders:
-            orders_data.append({
-                "id": order.id,
-                "symbol": order.symbol,
-                "side": order.side,
-                "type": order.type,
-                "qty": order.qty,
-                "filled_qty": order.filled_qty,
-                "filled_avg_price": order.filled_avg_price,
-                "status": order.status,
-                "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                "updated_at": order.updated_at.strftime('%Y-%m-%d %H:%M:%S') if order.updated_at else None
-            })
+            try:
+                # Convert datetime objects to strings if needed
+                submitted_at = order['submitted_at'].strftime('%Y-%m-%d %H:%M:%S') if order['submitted_at'] else None
+                filled_at = order['filled_at'].strftime('%Y-%m-%d %H:%M:%S') if order['filled_at'] else None
+                
+                orders_data.append({
+                    "id": order.get('id', 'N/A'),
+                    "symbol": order['symbol'],
+                    "side": order['side'],
+                    "type": order['type'],
+                    "qty": order['qty'],
+                    "filled_qty": order['filled_qty'],
+                    "filled_avg_price": order['filled_avg_price'],
+                    "status": order['status'],
+                    "created_at": submitted_at,
+                    "updated_at": filled_at
+                })
+            except Exception as e:
+                logger.error(f"Error processing order: {str(e)}")
+                # Continue processing other orders
+                continue
         
+        logger.info(f"Returning {len(orders_data)} processed orders")
         return jsonify({
             "success": True,
             "orders": orders_data
         })
     except Exception as e:
+        logger.error(f"Error getting orders: {str(e)}")
         return jsonify({"error": f"Error getting orders: {str(e)}"}), 500
 
 if __name__ == '__main__':
