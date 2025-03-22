@@ -3,6 +3,7 @@ import numpy as np
 from typing import Dict, Union, List, Tuple
 import json
 import config
+import os
 
 def calculate_hurst_exponent(data: pd.Series, lags: List[int]) -> float:
     """Calculate Hurst exponent using R/S analysis"""
@@ -324,13 +325,10 @@ if __name__ == "__main__":
     symbol = "BTC/USD"
     
     try:
-        # Try to get parameters from Object Storage
-        from replit.object_storage import Client
-        
-        # Initialize Object Storage client
-        client = Client()
-        
+        # Try to get parameters from Replit Object Storage first
         try:
+            from replit.object_storage import Client
+            client = Client()
             json_content = client.download_as_text("best_params.json")
             best_params_data = json.loads(json_content)
             if symbol in best_params_data:
@@ -339,10 +337,9 @@ if __name__ == "__main__":
             else:
                 print(f"No best parameters found for {symbol}. Using default parameters.")
                 params = get_default_params()
-        except Exception as e:
-            print(f"Could not read from Object Storage: {e}")
-            # Try local file as fallback
-            try:
+        except ImportError:
+            # If replit is not available, use local file
+            if os.path.exists("best_params.json"):
                 with open("best_params.json", "r") as f:
                     best_params_data = json.load(f)
                     if symbol in best_params_data:
@@ -351,13 +348,15 @@ if __name__ == "__main__":
                     else:
                         print(f"No best parameters found for {symbol}. Using default parameters.")
                         params = get_default_params()
-            except FileNotFoundError:
+            else:
                 print("Best parameters file not found. Using default parameters.")
                 params = get_default_params()
+        except Exception as e:
+            print(f"Error reading parameters: {e}")
+            params = get_default_params()
     except Exception as e:
         print(f"Error loading parameters: {e}")
-        params = get_default_params()        
-
+        params = get_default_params()
     
     result = generate_signals(data, params)
     print(result[0].tail(10))

@@ -7,7 +7,7 @@ import pytz
 import json
 import config
 from config import lookback_days_param
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -88,13 +88,10 @@ class TradingStrategy:
                 
             # Initialize parameters    
             try:
-                # Try to get parameters from Object Storage
-                from replit.object_storage import Client
-                
-                # Initialize Object Storage client
-                client = Client()
-                
+                # Try to get parameters from Replit Object Storage first
                 try:
+                    from replit.object_storage import Client
+                    client = Client()
                     json_content = client.download_as_text("best_params.json")
                     best_params_data = json.loads(json_content)
                     if self.symbol in best_params_data:
@@ -103,10 +100,9 @@ class TradingStrategy:
                     else:
                         print(f"No best parameters found for {self.symbol}. Using default parameters.")
                         params = get_default_params()
-                except Exception as e:
-                    print(f"Could not read from Object Storage: {e}")
-                    # Try local file as fallback
-                    try:
+                except ImportError:
+                    # If replit is not available, use local file
+                    if os.path.exists("best_params.json"):
                         with open("best_params.json", "r") as f:
                             best_params_data = json.load(f)
                             if self.symbol in best_params_data:
@@ -115,12 +111,15 @@ class TradingStrategy:
                             else:
                                 print(f"No best parameters found for {self.symbol}. Using default parameters.")
                                 params = get_default_params()
-                    except FileNotFoundError:
+                    else:
                         print("Best parameters file not found. Using default parameters.")
                         params = get_default_params()
+                except Exception as e:
+                    print(f"Error reading parameters: {e}")
+                    params = get_default_params()
             except Exception as e:
                 print(f"Error loading parameters: {e}")
-                params = get_default_params()        
+                params = get_default_params()
             
             # Generate signals using our indicators
             signals, daily_data, weekly_data = generate_signals(self.data, params)

@@ -743,10 +743,10 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
     print(f"\n{'='*80}")
     print(f"Calculating rankings at {current_time}")
     print(f"Looking back to {lookback_time}")
-    print(
-        f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12} {'Source':>10}"
-    )
-    print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12} {'-'*10:>10}")
+    #print(
+    #    f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12} {'Source':>10}"
+    #)
+    #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12} {'-'*10:>10}")
 
     # Try to load best_params.json for strategy performance data
     best_params_data = {}
@@ -795,9 +795,9 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                 # Store the final performance value
                 performance_dict[symbol] = performance
 
-                print(
-                    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}% {performance_source:>10}"
-                )
+                #print(
+                #    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}% {performance_source:>10}"
+                #)
         except Exception as e:
             print(f"Error processing {symbol}: {str(e)}")
             continue
@@ -810,13 +810,13 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
         perf_df['rank'] = perf_df['performance'].rank(
             pct=True)  # Percentile ranking
 
-        print("\nFinal Rankings:")
-        print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
-        print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
-        for idx in perf_df.index:
-            print(
-                f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}"
-            )
+        #print("\nFinal Rankings:")
+        #print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
+        #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
+        #for idx in perf_df.index:
+        #    print(
+        #        f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}"
+        #    )
 
         return perf_df
     return None
