@@ -48,15 +48,6 @@
                         <button class="nav-link" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions" type="button" role="tab" aria-controls="positions" aria-selected="false">Positions</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="signals-tab" data-bs-toggle="tab" data-bs-target="#signals" type="button" role="tab" aria-controls="signals" aria-selected="false">Signals</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="indicators-tab" data-bs-toggle="tab" data-bs-target="#indicators" type="button" role="tab" aria-controls="indicators" aria-selected="false">Indicators</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button" role="tab" aria-controls="charts" aria-selected="false">Backtest Visualization</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -209,71 +200,6 @@
                 </div>
             </div>
             
-            <!-- Signals Tab -->
-            <div class="tab-pane fade" id="signals" role="tabpanel" aria-labelledby="signals-tab">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Latest Signals <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateSignals()"></i></h5>
-                    </div>
-                    <div class="card-body" id="signals-info">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Indicators Tab -->
-            <div class="tab-pane fade" id="indicators" role="tabpanel" aria-labelledby="indicators-tab">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Current Indicators <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateIndicators()"></i></h5>
-                    </div>
-                    <div class="card-body" id="indicators-info">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Charts Tab -->
-            <div class="tab-pane fade" id="charts" role="tabpanel" aria-labelledby="charts-tab">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Backtest Visualization <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateChart()"></i></h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label">Symbol</label>
-                                <select class="form-select" id="chart-symbol">
-                                    <option value="portfolio">Portfolio (All Symbols)</option>
-                                    <!-- Will be populated dynamically -->
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Days</label>
-                                <select class="form-select" id="chart-days">
-                                    <option value="5">5 Days</option>
-                                    <option value="10">10 Days</option>
-                                    <option value="30" selected>30 Days</option>
-                                    <option value="60">60 Days</option>
-                                    <option value="90">90 Days</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">&nbsp;</label>
-                                <button class="btn btn-primary d-block" onclick="updateChart()">Generate Chart</button>
-                            </div>
-                        </div>
-                        <div class="mt-3" id="chart-container">
-                            <div class="alert alert-info">Select a symbol and timeframe, then click "Generate Chart" to view backtest results.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Orders Tab -->
             <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
                 <div class="card">
@@ -312,13 +238,11 @@
             const symbolSelect = document.getElementById('symbol-select');
             const openPositionSymbol = document.getElementById('open-position-symbol');
             const closePositionSymbol = document.getElementById('close-position-symbol');
-            const chartSymbol = document.getElementById('chart-symbol');
             
             // Clear existing options
             symbolSelect.innerHTML = '';
             openPositionSymbol.innerHTML = '';
             closePositionSymbol.innerHTML = '<option value="">All Positions</option>';
-            chartSymbol.innerHTML = '<option value="portfolio">Portfolio (All Symbols)</option>';
             
             // Add symbols to dropdowns
             availableSymbols.forEach(symbol => {
@@ -339,12 +263,6 @@
                 option3.value = symbol;
                 option3.text = symbol;
                 closePositionSymbol.appendChild(option3);
-                
-                // Chart dropdown
-                const option4 = document.createElement('option');
-                option4.value = symbol;
-                option4.text = symbol;
-                chartSymbol.appendChild(option4);
             });
         }
 
@@ -621,215 +539,6 @@
                 
                 positionsHtml += '</div>';
                 $('#positions-info').html(positionsHtml);
-            });
-        }
-        
-        function updateIndicators() {
-            $.get('/dashboard/api/indicators', function(data) {
-                if (Object.keys(data).length === 0) {
-                    $('#indicators-info').html(`<div class="alert alert-warning">No indicator data available</div>`);
-                    return;
-                }
-                
-                let indicatorsHtml = '<div class="row">';
-                
-                for (const [symbol, info] of Object.entries(data)) {
-                    if (info.error) continue;
-                    
-                    const dailyCompositeClass = getValueClass(info.daily_composite);
-                    const weeklyCompositeClass = getValueClass(info.weekly_composite);
-                    const price5mClass = getValueClass(info.price_change_5m);
-                    const price1hClass = getValueClass(info.price_change_1h);
-                    
-                    indicatorsHtml += `
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header">
-                                    <h6>${symbol} (${info.name})</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h6>Daily Indicators</h6>
-                                    <p>Composite: <span class="${dailyCompositeClass}">${formatNumber(info.daily_composite)}</span></p>
-                                    <p>Upper Limit: ${formatNumber(info.daily_upper_limit)}</p>
-                                    <p>Lower Limit: ${formatNumber(info.daily_lower_limit)}</p>
-                                    
-                                    <h6 class="mt-3">Weekly Indicators</h6>
-                                    <p>Composite: <span class="${weeklyCompositeClass}">${formatNumber(info.weekly_composite)}</span></p>
-                                    <p>Upper Limit: ${formatNumber(info.weekly_upper_limit)}</p>
-                                    <p>Lower Limit: ${formatNumber(info.weekly_lower_limit)}</p>
-                                    
-                                    <h6 class="mt-3">Price Changes</h6>
-                                    <p>5m Change: <span class="${price5mClass}">${formatPercentage(info.price_change_5m)}</span></p>
-                                    <p>1h Change: <span class="${price1hClass}">${formatPercentage(info.price_change_1h)}</span></p>
-                                    
-                                    <p class="mt-3">Parameters: ${info.params}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                indicatorsHtml += '</div>';
-                $('#indicators-info').html(indicatorsHtml);
-            });
-        }
-        
-        function updateSignals() {
-            $.get('/dashboard/api/signals', function(data) {
-                if (Object.keys(data).length === 0) {
-                    $('#signals-info').html(`<div class="alert alert-warning">No signal data available</div>`);
-                    return;
-                }
-                
-                let signalsHtml = '<div class="row">';
-                
-                for (const [symbol, info] of Object.entries(data)) {
-                    if (info.error) continue;
-                    
-                    const dailySignalClass = getSignalClass(info.daily_signal);
-                    const weeklySignalClass = getSignalClass(info.weekly_signal);
-                    
-                    // Format last signal info
-                    let lastSignalHtml = 'No recent signals';
-                    if (info.last_signal) {
-                        const lastSignal = info.last_signal;
-                        const signalTypeClass = lastSignal.type === 'BUY' ? 'signal-buy' : 'signal-sell';
-                        
-                        lastSignalHtml = `
-                            <p>Type: <span class="${signalTypeClass}">${lastSignal.type} ${lastSignal.strength}</span></p>
-                            <p>Time: ${lastSignal.time} (${lastSignal.hours_ago}h ${lastSignal.minutes_ago}m ago)</p>
-                        `;
-                    }
-                    
-                    signalsHtml += `
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header">
-                                    <h6>${symbol} (${info.name})</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h6>Current Signals</h6>
-                                    <p>Daily: <span class="${dailySignalClass}">${info.daily_signal}</span> (${formatNumber(info.daily_composite)})</p>
-                                    <p>Weekly: <span class="${weeklySignalClass}">${info.weekly_signal}</span> (${formatNumber(info.weekly_composite)})</p>
-                                    
-                                    <h6 class="mt-3">Last Signal</h6>
-                                    ${lastSignalHtml}
-                                    
-                                    <p class="mt-3">Parameters: ${info.params}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                signalsHtml += '</div>';
-                $('#signals-info').html(signalsHtml);
-            });
-        }
-        
-        function updateChart() {
-            const symbol = $('#chart-symbol').val();
-            const days = $('#chart-days').val();
-            
-            $('#chart-container').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Generating backtest chart, this may take a moment...</p>
-                </div>
-            `);
-            
-            $.ajax({
-                url: '/dashboard/api/backtest',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ symbol, days }),
-                success: function(data) {
-                    if (data.error) {
-                        $('#chart-container').html(`<div class="alert alert-danger">${data.error}</div>`);
-                        return;
-                    }
-                    
-                    if (symbol === 'portfolio') {
-                        // Portfolio backtest results
-                        const results = data.results;
-                        let resultsHtml = `
-                            <div class="mb-3">
-                                <h6>Portfolio Backtest (${days} Days)</h6>
-                                <p>Total Return: <span class="${getValueClass(results.total_return_pct)}">${formatPercentage(results.total_return_pct)}</span></p>
-                                <p>Max Drawdown: <span class="negative">${formatPercentage(results.max_drawdown_pct)}</span></p>
-                                <p>Initial Capital: $${formatNumber(results.initial_capital)}</p>
-                                <p>Final Value: $${formatNumber(results.final_value)}</p>
-                                <p>Trading Costs: $${formatNumber(results.trading_costs)}</p>
-                                ${results.sharpe_ratio ? `<p>Sharpe Ratio: ${results.sharpe_ratio.toFixed(2)}</p>` : ''}
-                                ${results.annualized_return_pct ? `<p>Annualized Return: <span class="${getValueClass(results.annualized_return_pct)}">${formatPercentage(results.annualized_return_pct)}</span></p>` : ''}
-                            </div>
-                            <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
-                        `;
-                        
-                        $('#chart-container').html(resultsHtml);
-                    } else {
-                        // Individual symbol backtest results
-                        const symbolData = data[symbol];
-                        
-                        if (!symbolData || symbolData.error) {
-                            $('#chart-container').html(`<div class="alert alert-danger">${symbolData ? symbolData.error : 'No data returned for this symbol'}</div>`);
-                            return;
-                        }
-                        
-                        const result = symbolData.result;
-                        
-                        let resultsHtml = `
-                            <div class="mb-3">
-                                <h6>${symbol} Backtest (${days} Days)</h6>
-                                <p>Total Return: <span class="${getValueClass(result.total_return_pct)}">${formatPercentage(result.total_return_pct)}</span></p>
-                                <p>Buy & Hold Return: <span class="${getValueClass(result.buy_hold_return_pct)}">${formatPercentage(result.buy_hold_return_pct)}</span></p>
-                                <p>Win Rate: ${formatPercentage(result.win_rate)}</p>
-                                <p>Total Trades: ${result.total_trades}</p>
-                                <p>Max Drawdown: <span class="negative">${formatPercentage(result.max_drawdown_pct)}</span></p>
-                                <p>Trading Costs: $${formatNumber(result.trading_costs)}</p>
-                                ${result.sharpe_ratio ? `<p>Sharpe Ratio: ${result.sharpe_ratio.toFixed(2)}</p>` : ''}
-                            </div>
-                            <img class="img-fluid" src="data:image/png;base64,${symbolData.plot}" />
-                        `;
-                        
-                        $('#chart-container').html(resultsHtml);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#chart-container').html(`<div class="alert alert-danger">Error generating chart: ${error}</div>`);
-                    console.error('Backtest API error:', xhr.responseText);
-                }
-            });
-        }
-        
-        function updatePortfolio() {
-            const interval = $('#portfolio-interval').val();
-            const timeframe = $('#portfolio-timeframe').val();
-            
-            $('#portfolio-info').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `);
-            
-            $.get(`/dashboard/api/portfolio?interval=${interval}&timeframe=${timeframe}`, function(data) {
-                if (data.error) {
-                    $('#portfolio-info').html(`<div class="alert alert-danger">${data.error}</div>`);
-                    return;
-                }
-                
-                let portfolioHtml = `
-                    <div class="mb-3">
-                        <h6>Portfolio History (${data.interval}, ${data.timeframe})</h6>
-                    </div>
-                    <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
-                `;
-                
-                $('#portfolio-info').html(portfolioHtml);
             });
         }
         
@@ -1148,8 +857,6 @@
         updateMarkets();
         updateStatus();
         updatePositions();
-        updateIndicators();
-        updateSignals();
         updateOrders();
         updateRank();
         updateBacktest();
