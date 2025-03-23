@@ -1,0 +1,156 @@
+{% extends "base_layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Backtest Results <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateBacktest()"></i></h5>
+                </div>
+                <div class="card-body" id="backtest-info">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Utility functions
+    function formatPercentage(value) {
+        if (value === null || value === undefined) return 'N/A';
+        return value.toFixed(2) + '%';
+    }
+    
+    function getValueClass(value) {
+        if (value === null || value === undefined) return 'neutral';
+        return value > 0 ? 'positive' : (value < 0 ? 'negative' : 'neutral');
+    }
+
+    function updateBacktest() {
+        $('#backtest-info').html(`
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Run Backtest</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Symbol</label>
+                                <select class="form-select" id="backtest-symbol">
+                                    <option value="portfolio">Portfolio (All Symbols)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Days</label>
+                                <input type="number" class="form-control" id="backtest-days" value="30" min="1" max="90">
+                            </div>
+                            <button class="btn btn-primary" onclick="runBacktest()">Run Backtest</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Backtest Results</h6>
+                        </div>
+                        <div class="card-body" id="backtest-results">
+                            <div class="alert alert-info">Run a backtest to see results</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        // Add symbols to backtest dropdown
+        const backtestSymbol = document.getElementById('backtest-symbol');
+        availableSymbols.forEach(symbol => {
+            const option = document.createElement('option');
+            option.value = symbol;
+            option.text = symbol;
+            backtestSymbol.appendChild(option);
+        });
+    }
+    
+    function runBacktest() {
+        const symbol = $('#backtest-symbol').val();
+        const days = $('#backtest-days').val();
+        
+        $('#backtest-results').html(`
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Running backtest, this may take a moment...</p>
+            </div>
+        `);
+        
+        $.ajax({
+            url: '/dashboard/api/backtest',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ symbol, days }),
+            success: function(data) {
+                if (data.error) {
+                    $('#backtest-results').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                if (symbol === 'portfolio') {
+                    // Portfolio backtest results
+                    let resultsHtml = `
+                        <div class="mb-3">
+                            <h6>Portfolio Backtest (${days} Days)</h6>
+                            <p>Total Return: <span class="${getValueClass(data.results.total_return_pct)}">${formatPercentage(data.results.total_return_pct)}</span></p>
+                            <p>Annualized Return: <span class="${getValueClass(data.results.annualized_return_pct)}">${formatPercentage(data.results.annualized_return_pct)}</span></p>
+                            <p>Max Drawdown: <span class="negative">${formatPercentage(data.results.max_drawdown_pct)}</span></p>
+                            <p>Sharpe Ratio: ${data.results.sharpe_ratio.toFixed(2)}</p>
+                        </div>
+                        <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
+                    `;
+                    
+                    $('#backtest-results').html(resultsHtml);
+                } else {
+                    // Individual symbol backtest results
+                    const symbolData = data[symbol];
+                    
+                    if (symbolData.error) {
+                        $('#backtest-results').html(`<div class="alert alert-danger">${symbolData.error}</div>`);
+                        return;
+                    }
+                    
+                    const result = symbolData.result;
+                    
+                    let resultsHtml = `
+                        <div class="mb-3">
+                            <h6>${symbol} Backtest (${days} Days)</h6>
+                            <p>Total Return: <span class="${getValueClass(result.total_return_pct)}">${formatPercentage(result.total_return_pct)}</span></p>
+                            <p>Buy & Hold Return: <span class="${getValueClass(result.buy_hold_return_pct)}">${formatPercentage(result.buy_hold_return_pct)}</span></p>
+                            <p>Win Rate: ${formatPercentage(result.win_rate)}</p>
+                            <p>Total Trades: ${result.total_trades}</p>
+                            <p>Max Drawdown: <span class="negative">${formatPercentage(result.max_drawdown_pct)}</span></p>
+                        </div>
+                        <img class="img-fluid" src="data:image/png;base64,${symbolData.plot}" />
+                    `;
+                    
+                    $('#backtest-results').html(resultsHtml);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#backtest-results').html(`<div class="alert alert-danger">Error running backtest: ${error}</div>`);
+            }
+        });
+    }
+
+    // Initialize backtest tab
+    $(document).ready(function() {
+        updateBacktest();
+    });
+</script>
+{% endblock %}

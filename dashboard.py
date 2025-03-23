@@ -69,9 +69,28 @@ def get_best_params(symbol):
         return "Using default parameters"
 
 @dashboard.route('/')
-def home():
-    """Dashboard home page"""
+def index():
+    """Render dashboard template"""
+    logger.info("Rendering dashboard template")
     return render_template('dashboard.html', symbols=symbols)
+
+@dashboard.route('/backtest')
+def backtest_page():
+    """Render backtest template"""
+    logger.info("Rendering backtest template")
+    return render_template('backtest.html', symbols=symbols)
+
+@dashboard.route('/positions')
+def positions_page():
+    """Render positions template"""
+    logger.info("Rendering positions template")
+    return render_template('dashboard.html', symbols=symbols, active_tab='positions')
+
+@dashboard.route('/orders')
+def orders_page():
+    """Render orders template"""
+    logger.info("Rendering orders template")
+    return render_template('dashboard.html', symbols=symbols, active_tab='orders')
 
 @dashboard.route('/api/status')
 def get_status():

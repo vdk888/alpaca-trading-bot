@@ -47,16 +47,16 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                        <button class="nav-link {% if not active_tab or active_tab == 'overview' %}active{% endif %}" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions" type="button" role="tab" aria-controls="positions" aria-selected="false">Positions</button>
+                        <button class="nav-link {% if active_tab == 'positions' %}active{% endif %}" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions" type="button" role="tab" aria-controls="positions" aria-selected="false">Positions</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
+                        <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="backtest-tab" data-bs-toggle="tab" data-bs-target="#backtest" type="button" role="tab" aria-controls="backtest" aria-selected="false">Backtest</button>
+                        <a class="nav-link" href="/dashboard/backtest">Backtest</a>
                     </li>
                 </ul>
             </div>
@@ -66,7 +66,7 @@
     <div class="container-fluid mt-4">
         <div class="tab-content" id="myTabContent">
             <!-- Overview Tab -->
-            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="tab-pane fade {% if not active_tab or active_tab == 'overview' %}show active{% endif %}" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                 <div class="row">
                     <!-- Account Balance -->
                     <div class="col-md-6">
@@ -111,7 +111,7 @@
             </div>
             
             <!-- Positions Tab -->
-            <div class="tab-pane fade" id="positions" role="tabpanel" aria-labelledby="positions-tab">
+            <div class="tab-pane fade {% if active_tab == 'positions' %}show active{% endif %}" id="positions" role="tabpanel" aria-labelledby="positions-tab">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5>Current Positions <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePositions()"></i></h5>
@@ -182,26 +182,12 @@
             </div>
             
             <!-- Orders Tab -->
-            <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+            <div class="tab-pane fade {% if active_tab == 'orders' %}show active{% endif %}" id="orders" role="tabpanel" aria-labelledby="orders-tab">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5>Open Orders <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateOrders()"></i></h5>
                     </div>
                     <div class="card-body" id="orders-info">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Backtest Tab -->
-            <div class="tab-pane fade" id="backtest" role="tabpanel" aria-labelledby="backtest-tab">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Backtest Results <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateBacktest()"></i></h5>
-                    </div>
-                    <div class="card-body" id="backtest-info">
                         <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
@@ -718,122 +704,6 @@
             });
         }
         
-        function updateBacktest() {
-            $('#backtest-info').html(`
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6>Run Backtest</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Symbol</label>
-                                    <select class="form-select" id="backtest-symbol">
-                                        <option value="portfolio">Portfolio (All Symbols)</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Days</label>
-                                    <input type="number" class="form-control" id="backtest-days" value="30" min="1" max="90">
-                                </div>
-                                <button class="btn btn-primary" onclick="runBacktest()">Run Backtest</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6>Backtest Results</h6>
-                            </div>
-                            <div class="card-body" id="backtest-results">
-                                <div class="alert alert-info">Run a backtest to see results</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `);
-            
-            // Add symbols to backtest dropdown
-            const backtestSymbol = document.getElementById('backtest-symbol');
-            availableSymbols.forEach(symbol => {
-                const option = document.createElement('option');
-                option.value = symbol;
-                option.text = symbol;
-                backtestSymbol.appendChild(option);
-            });
-        }
-        
-        function runBacktest() {
-            const symbol = $('#backtest-symbol').val();
-            const days = $('#backtest-days').val();
-            
-            $('#backtest-results').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Running backtest, this may take a moment...</p>
-                </div>
-            `);
-            
-            $.ajax({
-                url: '/dashboard/api/backtest',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ symbol, days }),
-                success: function(data) {
-                    if (data.error) {
-                        $('#backtest-results').html(`<div class="alert alert-danger">${data.error}</div>`);
-                        return;
-                    }
-                    
-                    if (symbol === 'portfolio') {
-                        // Portfolio backtest results
-                        let resultsHtml = `
-                            <div class="mb-3">
-                                <h6>Portfolio Backtest (${days} Days)</h6>
-                                <p>Total Return: <span class="${getValueClass(data.results.total_return_pct)}">${formatPercentage(data.results.total_return_pct)}</span></p>
-                                <p>Annualized Return: <span class="${getValueClass(data.results.annualized_return_pct)}">${formatPercentage(data.results.annualized_return_pct)}</span></p>
-                                <p>Max Drawdown: <span class="negative">${formatPercentage(data.results.max_drawdown_pct)}</span></p>
-                                <p>Sharpe Ratio: ${data.results.sharpe_ratio.toFixed(2)}</p>
-                            </div>
-                            <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
-                        `;
-                        
-                        $('#backtest-results').html(resultsHtml);
-                    } else {
-                        // Individual symbol backtest results
-                        const symbolData = data[symbol];
-                        
-                        if (symbolData.error) {
-                            $('#backtest-results').html(`<div class="alert alert-danger">${symbolData.error}</div>`);
-                            return;
-                        }
-                        
-                        const result = symbolData.result;
-                        
-                        let resultsHtml = `
-                            <div class="mb-3">
-                                <h6>${symbol} Backtest (${days} Days)</h6>
-                                <p>Total Return: <span class="${getValueClass(result.total_return_pct)}">${formatPercentage(result.total_return_pct)}</span></p>
-                                <p>Buy & Hold Return: <span class="${getValueClass(result.buy_hold_return_pct)}">${formatPercentage(result.buy_hold_return_pct)}</span></p>
-                                <p>Win Rate: ${formatPercentage(result.win_rate)}</p>
-                                <p>Total Trades: ${result.total_trades}</p>
-                                <p>Max Drawdown: <span class="negative">${formatPercentage(result.max_drawdown_pct)}</span></p>
-                            </div>
-                            <img class="img-fluid" src="data:image/png;base64,${symbolData.plot}" />
-                        `;
-                        
-                        $('#backtest-results').html(resultsHtml);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#backtest-results').html(`<div class="alert alert-danger">Error running backtest: ${error}</div>`);
-                }
-            });
-        }
-        
         function updatePortfolio() {
             const interval = $('#portfolio-interval').val();
             const timeframe = $('#portfolio-timeframe').val();
@@ -852,14 +722,9 @@
                     return;
                 }
                 
-                let portfolioHtml = `
-                    <div class="mb-3">
-                        <h6>Portfolio History (${data.interval}, ${data.timeframe})</h6>
-                    </div>
+                $('#portfolio-info').html(`
                     <img class="img-fluid" src="data:image/png;base64,${data.plot}" />
-                `;
-                
-                $('#portfolio-info').html(portfolioHtml);
+                `);
             });
         }
 
@@ -942,7 +807,6 @@
         updatePositions();
         updateOrders();
         updateRank();
-        updateBacktest();
         
         // Set up auto-refresh
         setInterval(updateBalance, 60000);  // Every minute
