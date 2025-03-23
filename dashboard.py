@@ -686,15 +686,24 @@ def get_rank():
     """Display performance ranking of all assets"""
     logger.info("API call: /api/rank")
     try:
+        # Get performance data for all symbols
+        rankings = {}
+        performances = {}
         performance_data = []
         
         for symbol in symbols:
             try:
+                executor = executors[symbol]
                 strategy = strategies[symbol]
                 analysis = strategy.analyze()
                 
-                if not analysis:
+                if not analysis or 'current_price' not in analysis:
                     continue
+                
+                # Calculate performance ranking like in the Telegram bot
+                rank, performance = executor.calculate_performance_ranking(analysis['current_price'])
+                rankings[symbol] = rank
+                performances[symbol] = performance
                 
                 # Get price changes
                 price_changes = {
@@ -718,19 +727,23 @@ def get_rank():
                     "unrealized_pl": unrealized_pl,
                     "unrealized_plpc": unrealized_plpc,
                     "daily_composite": analysis['daily_composite'],
-                    "weekly_composite": analysis['weekly_composite']
+                    "weekly_composite": analysis['weekly_composite'],
+                    "rank": rank,
+                    "performance": performance
                 })
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error processing {symbol} for ranking: {str(e)}")
                 continue
         
-        # Sort by unrealized P&L percentage
-        performance_data.sort(key=lambda x: x['unrealized_plpc'], reverse=True)
+        # Sort by ranking (best to worst) like in the Telegram bot
+        performance_data.sort(key=lambda x: x['rank'], reverse=True)
         
         return jsonify({
             "success": True,
             "performance": performance_data
         })
     except Exception as e:
+        logger.error(f"Error getting performance ranking: {str(e)}", exc_info=True)
         return jsonify({"error": f"Error getting performance ranking: {str(e)}"}), 500
 
 @dashboard.route('/api/orders')
