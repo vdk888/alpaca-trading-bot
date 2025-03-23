@@ -18,11 +18,7 @@ ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
 
 # For development/testing, use placeholder values if environment variables are not set
 if not ALPACA_API_KEY or not ALPACA_SECRET_KEY:
-    print("Warning: Alpaca API credentials not found in environment variables.")
-    print("Using placeholder values for development/testing.")
-    print("Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables for production use.")
-    ALPACA_API_KEY = "placeholder_api_key"
-    ALPACA_SECRET_KEY = "placeholder_secret_key"
+    raise ValueError("Alpaca API credentials not found in environment variables")
 
 # Default trading parameters
 DEFAULT_RISK_PERCENT = 0.95

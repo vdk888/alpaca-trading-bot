@@ -518,34 +518,68 @@ def run_backtest_api():
     symbol = data.get('symbol')
     days = data.get('days', default_backtest_interval)
     
+    logger.info(f"Backtest request: symbol={symbol}, days={days}")
+    
     try:
         days = int(days)
     except ValueError:
+        logger.error(f"Invalid days value: {days}")
         return jsonify({"error": "Days must be a number"}), 400
     
     if days <= 0 or days > default_backtest_interval:
+        logger.error(f"Days out of range: {days}")
         return jsonify({"error": f"Days must be between 1 and {default_backtest_interval}"}), 400
     
     if symbol == "portfolio":
         try:
-            # Run portfolio backtest
-            alpaca_service = AlpacaService()
-            results = alpaca_service.run_portfolio_backtest(symbols, days)
+            logger.info("Running portfolio backtest")
+            # Run portfolio backtest directly
+            results = run_portfolio_backtest(symbols, days)
             
+            logger.info("Creating portfolio backtest plot")
             # Create plot
             buf = create_portfolio_backtest_plot(results)
             buf.seek(0)
             plot_url = base64.b64encode(buf.read()).decode()
             
+            # Extract key metrics for the frontend
+            metrics = {
+                "total_return_pct": results['metrics']['total_return'],
+                "max_drawdown_pct": results['metrics']['max_drawdown'],
+                "final_value": results['metrics']['final_value'],
+                "initial_capital": results['metrics']['initial_capital'],
+                "trading_costs": results['metrics']['trading_costs']
+            }
+            
+            # Calculate annualized return if we have enough data
+            if len(results['data']) > 1:
+                days_elapsed = (results['data'].index[-1] - results['data'].index[0]).days
+                if days_elapsed > 0:
+                    annualized_return = ((1 + results['metrics']['total_return']/100) ** (365/days_elapsed) - 1) * 100
+                    metrics["annualized_return_pct"] = annualized_return
+                else:
+                    metrics["annualized_return_pct"] = results['metrics']['total_return']
+            else:
+                metrics["annualized_return_pct"] = 0
+                
+            # Calculate Sharpe ratio if available
+            if 'sharpe_ratio' in results['metrics']:
+                metrics["sharpe_ratio"] = results['metrics']['sharpe_ratio']
+            else:
+                metrics["sharpe_ratio"] = 0
+            
+            logger.info("Portfolio backtest completed successfully")
             return jsonify({
                 "success": True,
                 "plot": plot_url,
-                "results": results
+                "results": metrics
             })
         except Exception as e:
+            logger.error(f"Error running portfolio backtest: {str(e)}", exc_info=True)
             return jsonify({"error": f"Error running portfolio backtest: {str(e)}"}), 500
     else:
         if symbol and symbol not in symbols:
+            logger.error(f"Invalid symbol: {symbol}")
             return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
             
         symbols_to_backtest = [symbol] if symbol else symbols
@@ -553,20 +587,35 @@ def run_backtest_api():
         
         for sym in symbols_to_backtest:
             try:
+                logger.info(f"Running backtest for {sym}")
                 # Run backtest
                 result = run_backtest(sym, days)
                 
-                # Create plot
-                buf = create_backtest_plot(result)
+                logger.info(f"Creating backtest plot for {sym}")
+                # Create plot - this returns a tuple of (buffer, stats)
+                buf, stats = create_backtest_plot(result)
                 buf.seek(0)
                 plot_url = base64.b64encode(buf.read()).decode()
+                
+                # Extract key metrics for the frontend
+                metrics = {
+                    "total_return_pct": stats['total_return'],
+                    "buy_hold_return_pct": stats.get('buy_hold_return', 0),
+                    "max_drawdown_pct": stats['max_drawdown'],
+                    "win_rate": stats['win_rate'],
+                    "total_trades": stats['total_trades'],
+                    "sharpe_ratio": stats.get('sharpe_ratio', 0),
+                    "trading_costs": stats.get('trading_costs', 0)
+                }
                 
                 results[sym] = {
                     "success": True,
                     "plot": plot_url,
-                    "result": result
+                    "result": metrics
                 }
+                logger.info(f"Backtest for {sym} completed successfully")
             except Exception as e:
+                logger.error(f"Error running backtest for {sym}: {str(e)}", exc_info=True)
                 results[sym] = {
                     "success": False,
                     "error": f"Error running backtest: {str(e)}"
