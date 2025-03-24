@@ -40,6 +40,8 @@
     </style>
 </head>
 <body>
+    <!-- Hidden element to store config values -->
+    <div id="config-data" data-interval-ms="{{ interval_ms }}" style="display: none;"></div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Alpaca Trading Dashboard</a>
@@ -135,11 +137,26 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Capital Multiplier History -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Capital Multiplier History <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateCapitalMultiplier()"></i></h5>
+                    </div>
+                    <div class="card-body" id="capital-multiplier-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Ensure annotation plugin is registered globally
+        Chart.defaults.plugins.annotation = Chart.defaults.plugins.annotation || {};
+        
         // Populate symbols dropdown
         const availableSymbols = JSON.parse('{{ symbols|tojson|safe }}');
         
@@ -342,6 +359,20 @@
             });
         }
         
+        function updateCapitalMultiplier() {
+            const days = parseInt($('#price-chart-days').val());
+            console.log('updateCapitalMultiplier called with days:', days);
+            $.get(`/dashboard/api/capital-multiplier?days=${days}`, function(data) {
+                if (data.error) {
+                    $('#capital-multiplier-info').html(`<div class="alert alert-danger">${data.error}</div>`);
+                    return;
+                }
+                
+                // Create capital multiplier chart
+                createCapitalMultiplierChart(data);
+            });
+        }
+        
         function createPerformanceChart(data) {
             // Clear previous content
             $('#rank-info').empty();
@@ -448,6 +479,186 @@
                     }
                 }
             });
+        }
+        
+        function createCapitalMultiplierChart(data) {
+            // Clear previous content
+            $('#capital-multiplier-info').empty();
+            
+            console.log('Capital Multiplier data:', data);
+            
+            // Check if we have the data in the expected format
+            if (!data || !data.dates || !data.multiplier || !Array.isArray(data.dates) || data.dates.length === 0) {
+                console.warn('Capital Multiplier data is not in expected format:', data);
+                $('#capital-multiplier-info').html('<div class="alert alert-warning">No capital multiplier data available</div>');
+                return;
+            }
+            
+            // Create container for the line chart and current value
+            const container = $('<div class="row"></div>');
+            
+            // Add current multiplier value at the top
+            if (data.current_multiplier) {
+                const currentValueCol = $('<div class="col-md-12 mb-3"></div>');
+                const currentValueAlert = $(`
+                    <div class="alert ${data.current_multiplier > 1.5 ? 'alert-success' : 'alert-warning'}">
+                        <strong>Current Capital Multiplier: ${data.current_multiplier}x</strong> 
+                        (Using ${data.lookback_days.toFixed(1)} days lookback for calculation)
+                    </div>
+                `);
+                currentValueCol.append(currentValueAlert);
+                container.append(currentValueCol);
+            }
+            
+            const chartCol = $('<div class="col-md-12"></div>');
+            
+            // Create canvas for the line chart
+            const canvas = $('<canvas></canvas>').attr('id', 'capital-multiplier-chart').css('height', '400px');
+            chartCol.append(canvas);
+            
+            // Add column to the container
+            container.append(chartCol);
+            
+            // Add the container to the capital-multiplier-info div
+            $('#capital-multiplier-info').append(container);
+            
+            // Create the line chart
+            const ctx = document.getElementById('capital-multiplier-chart').getContext('2d');
+            
+            // Calculate upper and lower bounds based on standard deviation
+            const upperBound = data.multiplier.map((val, idx) => Math.min(3.0, val + data.std[idx]));
+            const lowerBound = data.multiplier.map((val, idx) => Math.max(0.5, val - data.std[idx]));
+            
+            // Add a reference line dataset for the neutral value (1.5)
+            const neutralLine = Array(data.dates.length).fill(1.5);
+            
+            // Add a vertical line for today (last data point)
+            // We'll use a separate dataset with a single point for the current date
+            const todayMarker = Array(data.dates.length).fill(null);
+            if (data.dates.length > 0) {
+                todayMarker[todayMarker.length - 1] = data.multiplier[data.multiplier.length - 1];
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [
+                        {
+                            label: 'Capital Multiplier',
+                            data: data.multiplier,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Upper Bound (+1 STD)',
+                            data: upperBound,
+                            borderColor: 'rgba(75, 192, 75, 0.5)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Lower Bound (-1 STD)',
+                            data: lowerBound,
+                            borderColor: 'rgba(255, 99, 132, 0.5)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Neutral (1.5x)',
+                            data: neutralLine,
+                            borderColor: 'rgba(128, 128, 128, 0.5)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            tension: 0.0,
+                            fill: false
+                        },
+                        {
+                            label: 'Today',
+                            data: todayMarker,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 0,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            fill: false,
+                            showLine: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Capital Multiplier Evolution'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Multiplier Value'
+                            },
+                            min: 0.5,
+                            max: 3.0,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + 'x';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Add a description of what the capital multiplier means
+            const description = $(`
+                <div class="mt-3">
+                    <p><strong>Capital Multiplier:</strong> A dynamic factor (0.5x to 3.0x) that adjusts position sizes based on market conditions.</p>
+                    <ul>
+                        <li>Higher values (>1.5x) indicate favorable market conditions for increased exposure</li>
+                        <li>Lower values (<1.5x) suggest caution and reduced position sizes</li>
+                        <li>The dotted lines represent the standard deviation bounds</li>
+                        <li>This multiplier is used in the trading algorithm to dynamically adjust position sizes</li>
+                    </ul>
+                    <p><small>Note: The trading system uses a lookback period of ${data.lookback_days ? data.lookback_days.toFixed(1) : '?'} days to calculate the current multiplier value.</small></p>
+                </div>
+            `);
+            $('#capital-multiplier-info').append(description);
         }
         
         function updatePriceCharts() {
@@ -797,6 +1008,19 @@
             updatePerformance();
             updatePriceCharts();
             updateRank();
+            updateCapitalMultiplier();
+            
+            // Set up auto-refresh based on the interval from config
+            const updateInterval = parseInt($("#config-data").data("interval-ms"));
+            console.log("Setting up auto-refresh every " + updateInterval + "ms (" + (updateInterval/1000/60).toFixed(2) + " minutes)");
+            
+            setInterval(function() {
+                updateBalance();
+                updatePerformance();
+                updatePriceCharts();
+                updateRank();
+                updateCapitalMultiplier();
+            }, updateInterval);
         });
     </script>
 </body>

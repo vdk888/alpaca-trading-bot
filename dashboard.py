@@ -5,7 +5,7 @@ import logging
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
-from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER, lookback_days_param
+from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER, lookback_days_param, DEFAULT_INTERVAL, BARS_PER_DAY
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -72,8 +72,19 @@ def get_best_params(symbol):
 @dashboard.route('/')
 def index():
     """Render dashboard template"""
-    logger.info("Rendering dashboard template")
-    return render_template('dashboard.html', symbols=symbols, lookback_days=int(lookback_days_param))
+    logger.info("Rendering dashboard")
+    
+    # Convert interval to milliseconds for JavaScript
+    interval_ms = 60000  # Default to 1 minute
+    if DEFAULT_INTERVAL == '1h':
+        interval_ms = 60 * 60 * 1000  # 1 hour in milliseconds
+    elif DEFAULT_INTERVAL in BARS_PER_DAY:
+        # Calculate milliseconds based on the interval
+        minutes_per_bar = 24 * 60 / BARS_PER_DAY[DEFAULT_INTERVAL]
+        interval_ms = int(minutes_per_bar * 60 * 1000)
+    
+    logger.info(f"Using update interval: {DEFAULT_INTERVAL} ({interval_ms}ms)")
+    return render_template('dashboard.html', symbols=symbols, lookback_days=int(lookback_days_param), interval_ms=interval_ms)
 
 @dashboard.route('/backtest')
 def backtest_page():
@@ -746,6 +757,177 @@ def get_rank():
     except Exception as e:
         logger.error(f"Error getting performance ranking: {str(e)}", exc_info=True)
         return jsonify({"error": f"Error getting performance ranking: {str(e)}"}), 500
+
+@dashboard.route('/api/capital-multiplier')
+def get_capital_multiplier():
+    """Calculate and return the capital multiplier history"""
+    logger.info("API call: /api/capital-multiplier")
+    
+    try:
+        from config import calculate_capital_multiplier
+        import yfinance as yf
+        import numpy as np
+        import pandas as pd
+        from datetime import datetime, timedelta
+        import pytz
+        
+        # Get the days parameter, default to lookback_days_param if not provided
+        days = request.args.get('days', type=int)
+        if days is None or days <= 0:
+            days = int(lookback_days_param)
+        
+        logger.info(f"Calculating capital multiplier history for the last {days} days")
+        
+        # Get end and start dates - use more days than requested to have enough data for calculations
+        end_date = datetime.now(pytz.UTC)
+        start_date = end_date - timedelta(days=days * 2)  # Double the days to have enough data for calculations
+        
+        # Collect daily performance data for all assets
+        symbol_data = {}
+        
+        for symbol, config in TRADING_SYMBOLS.items():
+            try:
+                # Get the yfinance symbol
+                yf_symbol = config['yfinance']
+                if '/' in yf_symbol:
+                    yf_symbol = yf_symbol.replace('/', '-')
+                
+                # Fetch historical data
+                ticker = yf.Ticker(yf_symbol)
+                data = ticker.history(start=start_date, end=end_date, interval='1d')
+                
+                if len(data) >= 10:  # Need enough data for meaningful calculation
+                    # Calculate daily returns
+                    data['return'] = data['Close'].pct_change() * 100  # as percentage
+                    symbol_data[symbol] = data
+            except Exception as e:
+                logger.error(f"Error processing {symbol} for capital multiplier: {str(e)}")
+                continue
+        
+        if not symbol_data:
+            return jsonify({"error": "No data available for capital multiplier calculation"}), 500
+        
+        # Get the common date range for all symbols
+        # First, convert all DatetimeIndex to date objects for consistent comparison
+        all_dates = {}
+        for symbol, data in symbol_data.items():
+            all_dates[symbol] = [d.date() if hasattr(d, 'date') else d for d in data.index]
+        
+        # Find common dates across all symbols
+        common_dates = set(all_dates[list(all_dates.keys())[0]])
+        for symbol in all_dates:
+            common_dates = common_dates.intersection(set(all_dates[symbol]))
+        
+        # Sort the common dates
+        common_dates = sorted(list(common_dates))
+        
+        # We need at least some dates for calculation
+        if len(common_dates) < 10:
+            return jsonify({"error": f"Not enough common data points: {len(common_dates)}"}), 500
+        
+        # Calculate capital multiplier for each date
+        multiplier_history = []
+        std_history = []
+        dates = []
+        
+        # We need a few days of data before we can start calculating
+        window_size = 7  # For moving average calculation
+        min_data_points = 10  # Minimum data points needed
+        
+        # Start from a point where we have enough historical data
+        for i in range(min_data_points, len(common_dates)):
+            current_date = common_dates[i]
+            
+            # Collect daily performances for this date range
+            daily_performances = []
+            
+            for symbol, data in symbol_data.items():
+                # Convert index to date objects for comparison
+                date_indices = [d.date() if hasattr(d, 'date') else d for d in data.index]
+                
+                # Find data up to current date
+                valid_indices = [j for j, date in enumerate(date_indices) if date <= current_date]
+                if len(valid_indices) >= min_data_points:
+                    # Get returns and add to collection
+                    returns = data['return'].iloc[valid_indices].dropna().values
+                    if len(returns) >= min_data_points:
+                        daily_performances.append(returns[-min_data_points:])
+            
+            if not daily_performances or len(daily_performances) < 3:
+                continue
+                
+            # Calculate average daily performance across all assets
+            min_length = min(len(perfs) for perfs in daily_performances)
+            if min_length < min_data_points:
+                continue
+                
+            aligned_performances = [perfs[-min_length:] for perfs in daily_performances]
+            daily_avg_performance = np.mean(aligned_performances, axis=0)
+            
+            # Calculate moving average
+            window = min(window_size, len(daily_avg_performance)//2)
+            if window < 3:
+                continue
+                
+            ma = np.convolve(daily_avg_performance, np.ones(window)/window, mode='valid')
+            
+            if len(ma) < 2:
+                continue
+            
+            # Get current performance (average of last 3 days) and MA
+            current_perf = np.mean(daily_avg_performance[-3:])
+            current_ma = ma[-1]
+            
+            # Calculate differences between performance and MA
+            diffs = daily_avg_performance[-len(ma):] - ma
+            
+            # Calculate standard deviation of these differences
+            std_diff = np.std(diffs)
+            if std_diff == 0:
+                std_diff = 0.1  # Avoid division by zero
+            
+            # Calculate current difference
+            current_diff = current_perf - current_ma
+            
+            # Normalize the difference with bounds at -2std and 2std
+            normalized_diff = max(min(current_diff / (2 * std_diff), 2), -2)
+            
+            # Apply sigmoid function to get a value between 0 and 1
+            sigmoid = 1 / (1 + np.exp(-normalized_diff))
+            
+            # Scale to range [0.5, 3.0]
+            multiplier = 0.5 + 2.5 * sigmoid
+            
+            # Add to history
+            if isinstance(current_date, datetime):
+                date_str = current_date.strftime('%Y-%m-%d')
+            else:
+                date_str = current_date.strftime('%Y-%m-%d')
+            
+            dates.append(date_str)
+            multiplier_history.append(round(multiplier, 2))
+            std_history.append(round(std_diff, 2))
+        
+        # Limit to the requested number of days
+        if days and len(dates) > days:
+            dates = dates[-days:]
+            multiplier_history = multiplier_history[-days:]
+            std_history = std_history[-days:]
+        
+        # Calculate the current capital multiplier using the same parameters as trading implementation
+        current_multiplier = calculate_capital_multiplier(lookback_days_param/2)
+        
+        return jsonify({
+            "success": True,
+            "dates": dates,
+            "multiplier": multiplier_history,
+            "std": std_history,
+            "current_multiplier": round(current_multiplier, 2),
+            "lookback_days": lookback_days_param/2  # Include the actual lookback days used in trading
+        })
+    except Exception as e:
+        logger.error(f"Error calculating capital multiplier history: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Error calculating capital multiplier history: {str(e)}"}), 500
 
 @dashboard.route('/api/orders')
 def get_orders():
