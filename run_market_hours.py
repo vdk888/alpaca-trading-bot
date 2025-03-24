@@ -20,11 +20,12 @@ from indicators import get_default_params
 
 # Add Flask server for Replit deployment
 from flask import Flask, render_template, redirect
-from dashboard import dashboard
+from dashboard import dashboard, register_blueprints
 import threading
 
 app = Flask(__name__)
-app.register_blueprint(dashboard, url_prefix='/dashboard')
+# Register all blueprints including dashboard and account_api
+register_blueprints(app)
 
 @app.route('/')
 def home():
