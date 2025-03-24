@@ -85,13 +85,13 @@ def backtest_page():
 def positions_page():
     """Render positions template"""
     logger.info("Rendering positions template")
-    return render_template('dashboard.html', symbols=symbols, active_tab='positions')
+    return render_template('positions.html', symbols=symbols)
 
 @dashboard.route('/orders')
 def orders_page():
     """Render orders template"""
     logger.info("Rendering orders template")
-    return render_template('dashboard.html', symbols=symbols, active_tab='orders')
+    return render_template('orders.html', symbols=symbols)
 
 @dashboard.route('/api/status')
 def get_status():
@@ -837,10 +837,10 @@ def get_orders():
         logger.error(f"Error getting orders: {str(e)}")
         return jsonify({"error": f"Error getting orders: {str(e)}"}), 500
 
-@dashboard.route('/api/price')
+@dashboard.route('/api/price-data')
 def get_price_data():
     """Get price data for a specific symbol"""
-    logger.info("API call: /api/price")
+    logger.info("API call: /api/price-data")
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', 7, type=int)
     logger.info(f"Fetching price data for {symbol} over {days} days")
