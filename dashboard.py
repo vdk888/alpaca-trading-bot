@@ -853,6 +853,7 @@ def get_price_data():
     
     try:
         from fetch import get_latest_data
+        from indicators import generate_signals, get_default_params
         
         # Fetch price data for the symbol
         df = get_latest_data(symbol, days=days)
@@ -868,13 +869,49 @@ def get_price_data():
             df = df[df.index >= cutoff_date]
             logger.info(f"Filtered data for {symbol} from {cutoff_date} to now, resulting in {len(df)} data points")
         
+        # Get parameters for indicators
+        try:
+            # Try to get best parameters for the symbol
+            best_params = get_best_params(symbol)
+            if isinstance(best_params, str):  # If it returns a message string instead of params
+                params = get_default_params()
+            else:
+                params = best_params
+        except Exception as e:
+            logger.warning(f"Error getting parameters for {symbol}: {str(e)}. Using default parameters.")
+            params = get_default_params()
+            
+        # Calculate indicators
+        try:
+            signal_data = generate_signals(df, params)
+            daily_data = signal_data[1]  # Daily composite data
+            weekly_data = signal_data[2]  # Weekly composite data
+            logger.info(f"Generated indicators for {symbol}: {len(daily_data)} daily points, {len(weekly_data)} weekly points")
+        except Exception as e:
+            logger.error(f"Error generating indicators for {symbol}: {str(e)}")
+            raise
+        
         # Format the data for Chart.js
         price_data = {
             'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
             'prices': df['close'].tolist(),
             'symbol': symbol,
             'name': TRADING_SYMBOLS[symbol]['name'],
-            'days': days  # Include days in the response
+            'days': days,  # Include days in the response
+            
+            # Add daily indicator data
+            'daily_composite': daily_data['Composite'].tolist(),
+            'daily_up_lim': daily_data['Up_Lim'].tolist(),
+            'daily_down_lim': daily_data['Down_Lim'].tolist(),
+            'daily_up_lim_2std': daily_data['Up_Lim_2STD'].tolist(),
+            'daily_down_lim_2std': daily_data['Down_Lim_2STD'].tolist(),
+            
+            # Add weekly indicator data
+            'weekly_composite': weekly_data['Composite'].tolist(),
+            'weekly_up_lim': weekly_data['Up_Lim'].tolist(),
+            'weekly_down_lim': weekly_data['Down_Lim'].tolist(),
+            'weekly_up_lim_2std': weekly_data['Up_Lim_2STD'].tolist(),
+            'weekly_down_lim_2std': weekly_data['Down_Lim_2STD'].tolist()
         }
         
         return jsonify(price_data)
