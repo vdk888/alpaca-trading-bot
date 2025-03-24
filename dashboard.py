@@ -17,8 +17,9 @@ import io
 import base64
 import matplotlib.pyplot as plt
 import json
-from fetch import is_market_open
+from fetch import is_market_open, get_latest_data
 from helpers.alpaca_service import AlpacaService
+from datetime import timedelta
 
 # Create blueprint instead of Flask app
 dashboard = Blueprint('dashboard', __name__, template_folder='templates')
@@ -459,7 +460,8 @@ def get_symbols():
             "name": TRADING_SYMBOLS[symbol]['name'],
             "exchange": TRADING_SYMBOLS[symbol].get('exchange', 'Unknown'),
             "api_symbol": get_api_symbol(symbol),
-            "display_symbol": get_display_symbol(symbol)
+            "display_symbol": get_display_symbol(symbol),
+            "symbol": symbol  # Add the original symbol key
         })
     
     return jsonify(symbol_data)
@@ -829,6 +831,49 @@ def get_orders():
     except Exception as e:
         logger.error(f"Error getting orders: {str(e)}")
         return jsonify({"error": f"Error getting orders: {str(e)}"}), 500
+
+@dashboard.route('/api/price')
+def get_price_data():
+    """Get price data for a specific symbol"""
+    logger.info("API call: /api/price")
+    symbol = request.args.get('symbol', None)
+    days = request.args.get('days', 7, type=int)
+    
+    if not symbol:
+        return jsonify({"error": "Symbol parameter is required"}), 400
+        
+    if symbol not in symbols:
+        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+    
+    try:
+        from fetch import get_latest_data
+        
+        # Fetch price data for the symbol
+        df = get_latest_data(symbol)
+        
+        # Limit to the requested number of days
+        if days:
+            # Convert index to datetime if it's not already
+            if not isinstance(df.index, pd.DatetimeIndex):
+                df.index = pd.to_datetime(df.index)
+                
+            # Filter for the last N days
+            cutoff_date = datetime.now(pytz.UTC) - timedelta(days=days)
+            df = df[df.index >= cutoff_date]
+        
+        # Format the data for Chart.js
+        price_data = {
+            'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
+            'prices': df['close'].tolist(),
+            'symbol': symbol,
+            'name': TRADING_SYMBOLS[symbol]['name']
+        }
+        
+        return jsonify(price_data)
+        
+    except Exception as e:
+        logger.error(f"Error fetching price data for {symbol}: {str(e)}")
+        return jsonify({"error": f"Error fetching price data: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app = dashboard

@@ -108,6 +108,28 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Symbol Price Charts -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Symbol Price Charts <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePriceCharts()"></i></h5>
+                        <div>
+                            <select class="form-select" id="price-chart-days">
+                                <option value="3">3 Days</option>
+                                <option value="7" selected>7 Days</option>
+                                <option value="14">14 Days</option>
+                                <option value="30">30 Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="price-charts-container">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Positions Tab -->
@@ -703,7 +725,7 @@
                 }
             });
         }
-        
+
         function updatePortfolio() {
             const interval = $('#portfolio-interval').val();
             const timeframe = $('#portfolio-timeframe').val();
@@ -800,18 +822,138 @@
             });
         }
 
+        // Function to update price charts for all symbols
+        function updatePriceCharts() {
+            const days = $('#price-chart-days').val();
+            const container = $('#price-charts-container');
+            container.html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
+            
+            // Fetch symbols first
+            $.ajax({
+                url: '/dashboard/api/symbols',
+                method: 'GET',
+                success: function(data) {
+                    container.empty();
+                    
+                    // Create a row with columns for each symbol
+                    data.forEach(function(symbolData) {
+                        // Use the original symbol key for API calls
+                        const symbol = symbolData.symbol;
+                        
+                        // Create a column for each symbol
+                        const col = $('<div class="col-md-6 col-lg-4 mb-4"></div>');
+                        const card = $('<div class="card h-100"></div>');
+                        const cardHeader = $('<div class="card-header"></div>').text(symbolData.name);
+                        const cardBody = $('<div class="card-body"></div>');
+                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 250px;"></div>');
+                        const canvas = $('<canvas></canvas>').attr('id', 'price-chart-' + symbol);
+                        
+                        chartContainer.append(canvas);
+                        cardBody.append(chartContainer);
+                        card.append(cardHeader);
+                        card.append(cardBody);
+                        col.append(card);
+                        container.append(col);
+                        
+                        // Fetch price data for this symbol
+                        fetchPriceData(symbol, days);
+                    });
+                },
+                error: function(error) {
+                    container.html('<div class="alert alert-danger">Error loading symbols: ' + (error.responseJSON?.error || 'Unknown error') + '</div>');
+                }
+            });
+        }
+        
+        // Function to fetch price data for a specific symbol
+        function fetchPriceData(symbol, days) {
+            $.ajax({
+                url: '/dashboard/api/price',
+                method: 'GET',
+                data: {
+                    symbol: symbol,
+                    days: days
+                },
+                success: function(data) {
+                    createPriceChart(symbol, data);
+                },
+                error: function(error) {
+                    $('#price-chart-' + symbol).parent().html('<div class="alert alert-danger">Error loading price data: ' + (error.responseJSON?.error || 'Unknown error') + '</div>');
+                }
+            });
+        }
+        
+        // Function to create a price chart for a symbol
+        function createPriceChart(symbol, data) {
+            const ctx = document.getElementById('price-chart-' + symbol).getContext('2d');
+            
+            // Check if a chart already exists and destroy it
+            const chartInstance = Chart.getChart(ctx.canvas);
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: data.name + ' Price',
+                        data: data.prices,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1,
+                        pointRadius: 1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grace: '5%'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Set up price chart days change handler
+        $('#price-chart-days').change(function() {
+            updatePriceCharts();
+        });
+        
         // Initial updates
         populateSymbolDropdowns();
         updateBalance();
         updatePerformance();
-        updatePositions();
-        updateOrders();
         updateRank();
+        updatePriceCharts();
         
         // Set up auto-refresh
         setInterval(updateBalance, 60000);  // Every minute
         setInterval(updatePerformance, 60000);  // Every minute
-        setInterval(updatePositions, 60000);   // Every minute
+        setInterval(updateRank, 300000);  // Every 5 minutes
+        setInterval(updatePriceCharts, 300000);  // Every 5 minutes
 
         // Setup event listeners
         // Removed reference to updateChart
