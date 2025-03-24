@@ -845,11 +845,11 @@
                         const symbol = symbolData.symbol;
                         
                         // Create a column for each symbol
-                        const col = $('<div class="col-md-6 col-lg-4 mb-4"></div>');
+                        const col = $('<div class="col-md-6 col-lg-6 mb-4"></div>');
                         const card = $('<div class="card h-100"></div>');
                         const cardHeader = $('<div class="card-header"></div>').text(symbolData.name);
-                        const cardBody = $('<div class="card-body"></div>');
-                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 250px;"></div>');
+                        const cardBody = $('<div class="card-body p-2"></div>');
+                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 250px; width: 100%;"></div>');
                         const canvas = $('<canvas></canvas>').attr('id', 'price-chart-' + symbol);
                         
                         chartContainer.append(canvas);
@@ -899,6 +899,9 @@
                 chartInstance.destroy();
             }
             
+            // Set canvas parent width to 100%
+            $(ctx.canvas).parent().css('width', '100%');
+            
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -915,7 +918,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             display: false
@@ -937,6 +940,14 @@
                         y: {
                             beginAtZero: false,
                             grace: '5%'
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 10,
+                            bottom: 0
                         }
                     }
                 }
