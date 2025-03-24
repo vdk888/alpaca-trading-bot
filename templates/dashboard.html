@@ -105,10 +105,13 @@
                         <h5>Symbol Price Charts <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePriceCharts()"></i></h5>
                         <div>
                             <select class="form-select" id="price-chart-days">
-                                <option value="3">3 Days</option>
-                                <option value="7" selected>7 Days</option>
-                                <option value="14">14 Days</option>
-                                <option value="30">30 Days</option>
+                                <option value="3" {% if lookback_days == 3 %}selected{% endif %}>3 Days</option>
+                                <option value="7" {% if lookback_days == 7 %}selected{% endif %}>7 Days</option>
+                                <option value="14" {% if lookback_days == 14 %}selected{% endif %}>14 Days</option>
+                                <option value="30" {% if lookback_days == 30 %}selected{% endif %}>30 Days</option>
+                                {% if not (lookback_days == 3 or lookback_days == 7 or lookback_days == 14 or lookback_days == 30) %}
+                                <option value="{{ lookback_days }}" selected>{{ lookback_days }} Days (Trading Default)</option>
+                                {% endif %}
                             </select>
                         </div>
                     </div>

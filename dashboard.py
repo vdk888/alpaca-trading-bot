@@ -5,7 +5,7 @@ import logging
 from strategy import TradingStrategy
 from alpaca.trading.client import TradingClient
 from visualization import create_strategy_plot, create_multi_symbol_plot
-from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER
+from config import TRADING_SYMBOLS, default_backtest_interval, PER_SYMBOL_CAPITAL_MULTIPLIER, lookback_days_param
 from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
@@ -73,7 +73,7 @@ def get_best_params(symbol):
 def index():
     """Render dashboard template"""
     logger.info("Rendering dashboard template")
-    return render_template('dashboard.html', symbols=symbols)
+    return render_template('dashboard.html', symbols=symbols, lookback_days=int(lookback_days_param))
 
 @dashboard.route('/backtest')
 def backtest_page():
@@ -817,7 +817,7 @@ def get_price_data():
     """Get price data for a specific symbol"""
     logger.info("API call: /api/price-data")
     symbol = request.args.get('symbol', None)
-    days = request.args.get('days', 7, type=int)
+    days = request.args.get('days', int(lookback_days_param), type=int)
     logger.info(f"Fetching price data for {symbol} over {days} days")
     
     if not symbol:
