@@ -770,6 +770,76 @@ def get_price_data():
         logger.error(f"Error fetching price data for {symbol}: {str(e)}")
         return jsonify({"error": f"Error fetching price data: {str(e)}"}), 500
 
+@dashboard.route('/api/portfolio')
+def get_portfolio_data():
+    """Get portfolio backtest data for the dashboard"""
+    logger.info("API call: /api/portfolio")
+    try:
+        # Get days parameter, default to 30 days
+        days = request.args.get('days', default=30, type=int)
+        
+        # Validate days
+        if days <= 0 or days > default_backtest_interval:
+            return jsonify({"error": f"Days must be between 1 and {default_backtest_interval}"}), 400
+            
+        # Run portfolio backtest
+        result = run_portfolio_backtest(symbols, days)
+        
+        # Get the portfolio data
+        data = result['data']
+        
+        # Convert index to string format for JSON serialization
+        data_dict = data.reset_index().to_dict(orient='records')
+        
+        # Calculate benchmark (equal-weight portfolio) - same as in create_portfolio_backtest_plot
+        price_columns = [col for col in data.columns if col.endswith('_price')]
+        initial_prices = data[price_columns].iloc[0]
+        
+        # Calculate returns for each asset
+        asset_returns = data[price_columns].div(initial_prices) - 1
+        
+        # Equal-weight benchmark return
+        benchmark_return = asset_returns.mean(axis=1)
+        initial_capital = result['metrics']['initial_capital']
+        benchmark_value = (1 + benchmark_return) * initial_capital
+        
+        # Add benchmark to the response
+        benchmark_data = []
+        for i, (idx, val) in enumerate(zip(data.index, benchmark_value)):
+            benchmark_data.append({
+                'timestamp': idx.strftime('%Y-%m-%dT%H:%M:%S'),
+                'value': float(val)
+            })
+        
+        # Calculate allocations for each symbol
+        symbol_values = [col for col in data.columns if col.endswith('_value') 
+                        and not col.startswith('total')]
+        symbols_list = [col.replace('_value', '') for col in symbol_values]
+        
+        # Include both position values and cash in total
+        total_portfolio = data[symbol_values].sum(axis=1) + data['total_cash']
+        allocations = {}
+        
+        # Add cash allocation
+        cash_allocation = (data['total_cash'] / total_portfolio * 100).fillna(0)
+        allocations['Cash'] = cash_allocation.tolist()
+        
+        # Add symbol allocations
+        for symbol in symbols_list:
+            allocation = (data[f'{symbol}_value'] / total_portfolio * 100).fillna(0)
+            allocations[symbol] = allocation.tolist()
+        
+        return jsonify({
+            'portfolio_data': data_dict,
+            'benchmark_data': benchmark_data,
+            'allocations': allocations,
+            'timestamps': [idx.strftime('%Y-%m-%dT%H:%M:%S') for idx in data.index],
+            'metrics': result['metrics']
+        })
+    except Exception as e:
+        logger.error(f"Error generating portfolio data: {str(e)}")
+        return jsonify({"error": f"Error generating portfolio data: {str(e)}"}), 500
+
 @dashboard.route('/dashboard/download-symbol-data', methods=['GET'])
 def download_symbol_data():
     """

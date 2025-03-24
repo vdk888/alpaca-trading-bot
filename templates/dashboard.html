@@ -101,12 +101,39 @@
                     </div>
                 </div>
                 
+                <!-- Portfolio Graph -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Portfolio Performance <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePortfolioGraph()"></i></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="portfolio-chart-container" style="height: 400px;">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div id="allocation-chart-container" style="height: 300px;">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Symbol Price Charts -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5>Symbol Price Charts <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePriceCharts()"></i></h5>
                         <div>
-                            <select class="form-select" id="price-chart-days">
+                            <select class="form-select" id="chart-days">
                                 <option value="3" {% if lookback_days == 3 %}selected{% endif %}>3 Days</option>
                                 <option value="7" {% if lookback_days == 7 %}selected{% endif %}>7 Days</option>
                                 <option value="14" {% if lookback_days == 14 %}selected{% endif %}>14 Days</option>
@@ -346,7 +373,7 @@
         }
         
         function updateRank() {
-            const days = parseInt($('#price-chart-days').val());
+            const days = parseInt($('#chart-days').val());
             console.log('updateRank called with days:', days);
             $.get(`/dashboard/api/rank?days=${days}`, function(data) {
                 if (data.error) {
@@ -360,7 +387,7 @@
         }
         
         function updateCapitalMultiplier() {
-            const days = parseInt($('#price-chart-days').val());
+            const days = parseInt($('#chart-days').val());
             console.log('updateCapitalMultiplier called with days:', days);
             $.get(`/dashboard/api/capital-multiplier?days=${days}`, function(data) {
                 if (data.error) {
@@ -663,7 +690,7 @@
         }
         
         function updatePriceCharts() {
-            const days = parseInt($('#price-chart-days').val());
+            const days = parseInt($('#chart-days').val());
             console.log('updatePriceCharts called with days:', days);
             const container = $('#price-charts-container');
             container.html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
@@ -1304,18 +1331,265 @@
         }
         
         // Set up price chart days change handler
-        $('#price-chart-days').change(function() {
-            console.log('price-chart-days changed to:', $(this).val());
+        $('#chart-days').change(function() {
+            const days = $(this).val();
+            console.log('chart-days changed to:', days);
             updatePriceCharts();
+            updatePortfolioGraph();
         });
-
+        
+        // Function to update portfolio graph
+        function updatePortfolioGraph() {
+            showLoadingToast('Loading portfolio data...');
+            
+            const days = $('#chart-days').val();
+            
+            // Clear existing charts
+            $('#portfolio-chart-container').html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
+            $('#allocation-chart-container').html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
+            
+            // Fetch portfolio data
+            $.ajax({
+                url: `/dashboard/api/portfolio?days=${days}`,
+                method: 'GET',
+                success: function(data) {
+                    hideLoadingToast();
+                    
+                    if (data.error) {
+                        console.error('Error fetching portfolio data:', data.error);
+                        $('#portfolio-chart-container').html(`<div class="alert alert-danger">Error: ${data.error}</div>`);
+                        return;
+                    }
+                    
+                    // Create portfolio chart
+                    createPortfolioChart(data);
+                    
+                    // Create allocation chart
+                    createAllocationChart(data);
+                },
+                error: function(xhr, status, error) {
+                    hideLoadingToast();
+                    console.error('AJAX error:', error);
+                    $('#portfolio-chart-container').html(`<div class="alert alert-danger">Error: ${error}</div>`);
+                }
+            });
+        }
+        
+        // Function to create portfolio chart
+        function createPortfolioChart(data) {
+            // Prepare data for ApexCharts
+            const portfolioData = data.portfolio_data.map(item => ({
+                x: new Date(item.index),
+                y: item.portfolio_total
+            }));
+            
+            const benchmarkData = data.benchmark_data.map(item => ({
+                x: new Date(item.timestamp),
+                y: item.value
+            }));
+            
+            // Create ApexCharts options
+            const options = {
+                series: [
+                    {
+                        name: 'Portfolio Value',
+                        data: portfolioData
+                    },
+                    {
+                        name: 'Benchmark (Equal-Weight)',
+                        data: benchmarkData,
+                        type: 'line',
+                        dashArray: 5
+                    }
+                ],
+                chart: {
+                    type: 'area',
+                    height: 400,
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: [2, 2],
+                    dashArray: [0, 5]
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                colors: ['#0d6efd', '#dc3545'],
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        datetimeFormatter: {
+                            year: 'yyyy',
+                            month: "MMM 'yy",
+                            day: 'dd MMM',
+                            hour: 'HH:mm'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
+                    },
+                    title: {
+                        text: 'Portfolio Value ($)'
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy HH:mm'
+                    },
+                    y: {
+                        formatter: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top'
+                }
+            };
+            
+            // Clear container and create chart
+            $('#portfolio-chart-container').empty();
+            const chart = new ApexCharts(document.querySelector('#portfolio-chart-container'), options);
+            chart.render();
+        }
+        
+        // Function to create allocation chart
+        function createAllocationChart(data) {
+            // Prepare data for allocation chart
+            const timestamps = data.timestamps.map(ts => new Date(ts));
+            const allocations = data.allocations;
+            const symbols = Object.keys(allocations);
+            
+            // Prepare series data for stacked chart
+            const series = symbols.map(symbol => ({
+                name: symbol,
+                data: allocations[symbol].map((value, index) => ({
+                    x: timestamps[index],
+                    y: value
+                }))
+            }));
+            
+            // Create ApexCharts options
+            const options = {
+                series: series,
+                chart: {
+                    type: 'area',
+                    height: 300,
+                    stacked: true,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 1
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        opacityFrom: 0.8,
+                        opacityTo: 0.6
+                    }
+                },
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        datetimeFormatter: {
+                            year: 'yyyy',
+                            month: "MMM 'yy",
+                            day: 'dd MMM',
+                            hour: 'HH:mm'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value.toFixed(0) + '%';
+                        }
+                    },
+                    min: 0,
+                    max: 100,
+                    title: {
+                        text: 'Allocation (%)'
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy HH:mm'
+                    },
+                    y: {
+                        formatter: function(value) {
+                            return value.toFixed(2) + '%';
+                        }
+                    }
+                },
+                legend: {
+                    position: 'right'
+                }
+            };
+            
+            // Clear container and create chart
+            $('#allocation-chart-container').empty();
+            const chart = new ApexCharts(document.querySelector('#allocation-chart-container'), options);
+            chart.render();
+        }
+        
+        // Initialize portfolio graph on page load
+        $(document).ready(function() {
+            // Initial data loads
+            updateBalance();
+            updatePerformance();
+            updatePriceCharts();
+            updateRank();
+            updateCapitalMultiplier();
+            updatePortfolioGraph();
+            
+            // Set up auto-refresh
+            const intervalMs = parseInt($('#config-data').data('interval-ms'));
+            console.log(`Setting up auto-refresh every ${intervalMs}ms`);
+            
+            setInterval(function() {
+                updateBalance();
+                updatePerformance();
+                updatePriceCharts();
+            }, intervalMs);
+        });
+        
         // Function to download symbol data as CSV
         function downloadSymbolData(symbol, days) {
             console.log('Downloading data for symbol:', symbol, 'with days:', days);
             
             // Show loading indicator
-            const loadingToast = new bootstrap.Toast(document.getElementById('loading-toast'));
-            loadingToast.show();
+            showLoadingToast('Preparing your download...');
             
             $.ajax({
                 url: '/dashboard/download-symbol-data',
@@ -1329,7 +1603,7 @@
                 },
                 success: function(data, status, xhr) {
                     // Hide loading indicator
-                    loadingToast.hide();
+                    hideLoadingToast();
                     
                     // Create a blob URL and trigger download
                     const blob = new Blob([data], { type: 'text/csv' });
@@ -1359,7 +1633,7 @@
                 },
                 error: function(error) {
                     // Hide loading indicator
-                    loadingToast.hide();
+                    hideLoadingToast();
                     
                     console.error('Error downloading data:', error);
                     alert('Error downloading data: ' + (error.responseJSON?.error || 'Unknown error'));
@@ -1367,50 +1641,47 @@
             });
         }
         
-        // Add a loading toast notification
-        if (!document.getElementById('loading-toast')) {
-            const toastContainer = $('<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
-            const loadingToast = $(`
-                <div id="loading-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="toast-header">
-                        <strong class="me-auto">Downloading Data</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        <div class="d-flex align-items-center">
-                            <div class="spinner-border spinner-border-sm me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
+        // Helper function to show loading toast with custom message
+        function showLoadingToast(message) {
+            // Create toast if it doesn't exist
+            if (!document.getElementById('loading-toast')) {
+                const toastContainer = $('<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+                const loadingToast = $(`
+                    <div id="loading-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <strong class="me-auto">Loading</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span id="loading-message">Processing...</span>
                             </div>
-                            <span>Preparing your download...</span>
                         </div>
                     </div>
-                </div>
-            `);
-            toastContainer.append(loadingToast);
-            $('body').append(toastContainer);
+                `);
+                toastContainer.append(loadingToast);
+                $('body').append(toastContainer);
+            }
+            
+            // Update message and show toast
+            $('#loading-message').text(message || 'Processing...');
+            const loadingToast = new bootstrap.Toast(document.getElementById('loading-toast'));
+            loadingToast.show();
         }
         
-        // Initialize dashboard
-        $(document).ready(function() {
-            populateSymbolDropdowns();
-            updateBalance();
-            updatePerformance();
-            updatePriceCharts();
-            updateRank();
-            updateCapitalMultiplier();
-            
-            // Set up auto-refresh based on the interval from config
-            const updateInterval = parseInt($("#config-data").data("interval-ms"));
-            console.log("Setting up auto-refresh every " + updateInterval + "ms (" + (updateInterval/1000/60).toFixed(2) + " minutes)");
-            
-            setInterval(function() {
-                updateBalance();
-                updatePerformance();
-                updatePriceCharts();
-                updateRank();
-                updateCapitalMultiplier();
-            }, updateInterval);
-        });
+        // Helper function to hide loading toast
+        function hideLoadingToast() {
+            const loadingToastEl = document.getElementById('loading-toast');
+            if (loadingToastEl) {
+                const loadingToast = bootstrap.Toast.getInstance(loadingToastEl);
+                if (loadingToast) {
+                    loadingToast.hide();
+                }
+            }
+        }
     </script>
 </body>
 </html>
