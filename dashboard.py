@@ -20,6 +20,7 @@ import json
 from fetch import is_market_open, get_latest_data
 from helpers.alpaca_service import AlpacaService
 from datetime import timedelta
+from flask import make_response
 
 # Create blueprint instead of Flask app
 dashboard = Blueprint('dashboard', __name__, template_folder='templates')
@@ -284,162 +285,6 @@ def get_performance():
         })
     except Exception as e:
         return jsonify({"error": f"Error getting performance: {str(e)}"}), 500
-
-@dashboard.route('/api/indicators')
-def get_indicators():
-    """View current indicator values"""
-    logger.info("API call: /api/indicators")
-    symbol = request.args.get('symbol', None)
-    
-    if symbol and symbol not in symbols:
-        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
-        
-    symbols_to_check = [symbol] if symbol else symbols
-    indicators_data = {}
-    
-    for sym in symbols_to_check:
-        try:
-            analysis = strategies[sym].analyze()
-            if not analysis:
-                indicators_data[sym] = {"error": "No data available"}
-                continue
-                
-            # Get best parameters
-            params = get_best_params(sym)
-            
-            indicators_data[sym] = {
-                "daily_composite": analysis['daily_composite'],
-                "daily_upper_limit": analysis['daily_upper_limit'],
-                "daily_lower_limit": analysis['daily_lower_limit'],
-                "weekly_composite": analysis['weekly_composite'],
-                "weekly_upper_limit": analysis['weekly_upper_limit'],
-                "weekly_lower_limit": analysis['weekly_lower_limit'],
-                "price_change_5m": analysis['price_change_5m']*100,
-                "price_change_1h": analysis['price_change_1h']*100,
-                "params": params,
-                "name": TRADING_SYMBOLS[sym]['name']
-            }
-        except Exception as e:
-            indicators_data[sym] = {"error": f"Error analyzing {sym}: {str(e)}"}
-    
-    return jsonify(indicators_data)
-
-@dashboard.route('/api/plot')
-def get_plot():
-    """Generate strategy visualization"""
-    logger.info("API call: /api/plot")
-    symbol = request.args.get('symbol', None)
-    
-    if not symbol or symbol not in symbols:
-        return jsonify({"error": f"Invalid or missing symbol parameter"}), 400
-        
-    days = request.args.get('days', default=5, type=int)
-    
-    if days <= 0 or days > default_backtest_interval:
-        return jsonify({"error": f"Days must be between 1 and {default_backtest_interval}"}), 400
-    
-    try:
-        # Get best parameters
-        params = get_best_params(symbol)
-        
-        # Create plot
-        buf, stats = create_strategy_plot(symbol, days)
-        
-        # Convert plot to base64 image
-        buf.seek(0)
-        plot_url = base64.b64encode(buf.read()).decode()
-        
-        return jsonify({
-            'plot': plot_url,
-            'stats': {
-                'symbol': symbol,
-                'name': TRADING_SYMBOLS[symbol]['name'],
-                'days': days,
-                'params': params,
-                'trading_days': stats['trading_days'],
-                'price_change': stats['price_change'],
-                'buy_signals': stats['buy_signals'],
-                'sell_signals': stats['sell_signals']
-            }
-        })
-    except Exception as e:
-        logger.error(f"Error generating plot: {str(e)}")
-        return jsonify({"error": f"Error generating plot: {str(e)}"}), 500
-
-@dashboard.route('/api/signals')
-def get_signals():
-    """View latest signals for all symbols"""
-    logger.info("API call: /api/signals")
-    symbol = request.args.get('symbol', None)
-    
-    if symbol and symbol not in symbols:
-        return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
-        
-    symbols_to_check = [symbol] if symbol else symbols
-    signals_data = {}
-    
-    for sym in symbols_to_check:
-        try:
-            analysis = strategies[sym].analyze()
-            if not analysis:
-                signals_data[sym] = {"error": "No data available"}
-                continue
-                
-            # Get signal strength and direction
-            signal_strength = abs(analysis['daily_composite'])
-            strength_emoji = "🔥" if signal_strength > 0.8 else "💪" if signal_strength > 0.5 else "👍"
-            
-            # Format time since last signal with signal type
-            last_signal_info = None
-            if analysis.get('last_signal_time') is not None:
-                now = pd.Timestamp.now(tz=pytz.UTC)
-                last_time = analysis['last_signal_time']
-                time_diff = now - last_time
-                hours = int(time_diff.total_seconds() / 3600)
-                minutes = int((time_diff.total_seconds() % 3600) / 60)
-                # Get the signal type from the stored composite value
-                signal_type = "BUY" if analysis['daily_composite'] > 0 else "SELL"
-                last_signal_info = {
-                    "type": signal_type,
-                    "strength": strength_emoji,
-                    "time": last_time.strftime('%Y-%m-%d %H:%M'),
-                    "hours_ago": hours,
-                    "minutes_ago": minutes
-                }
-            
-            # Classify signals
-            signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
-            daily_signal = (
-                "STRONG BUY" if analysis['daily_composite'] > analysis['daily_upper_limit']
-                else "STRONG SELL" if analysis['daily_composite'] < analysis['daily_lower_limit']
-                else "WEAK " + signal_direction if signal_strength > 0.5
-                else "NEUTRAL"
-            )
-            
-            weekly_signal = (
-                "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
-                else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
-                else "WEAK BUY" if analysis['weekly_composite'] > 0
-                else "WEAK SELL" if analysis['weekly_composite'] < 0
-                else "NEUTRAL"
-            )
-            
-            # Get best parameters
-            params = get_best_params(sym)
-            
-            signals_data[sym] = {
-                "last_signal": last_signal_info,
-                "daily_signal": daily_signal,
-                "daily_composite": analysis['daily_composite'],
-                "weekly_signal": weekly_signal,
-                "weekly_composite": analysis['weekly_composite'],
-                "params": params,
-                "name": TRADING_SYMBOLS[sym]['name']
-            }
-        except Exception as e:
-            signals_data[sym] = {"error": f"Error analyzing {sym}: {str(e)}"}
-    
-    return jsonify(signals_data)
 
 @dashboard.route('/api/markets')
 def get_markets():
@@ -1175,6 +1020,110 @@ def get_price_data():
     except Exception as e:
         logger.error(f"Error fetching price data for {symbol}: {str(e)}")
         return jsonify({"error": f"Error fetching price data: {str(e)}"}), 500
+
+@dashboard.route('/dashboard/download-symbol-data', methods=['GET'])
+def download_symbol_data():
+    """
+    API endpoint to download all data for a specific symbol as CSV
+    """
+    try:
+        # Get parameters from request
+        symbol = request.args.get('symbol', 'BTCUSD')
+        days = int(request.args.get('days', 30))
+        
+        logging.info(f"Preparing CSV download for {symbol} with {days} days of data")
+        
+        # Get price data and indicators
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # Get market data with signals
+        price_data = get_price_data(symbol=symbol, start_date=start_date, end_date=end_date)
+        
+        if not price_data:
+            return jsonify({"error": f"No data available for {symbol}"}), 404
+            
+        # Create a DataFrame with all the data
+        df = pd.DataFrame()
+        
+        # Add timestamp and OHLCV data
+        timestamps = [item['x'] for item in price_data['ohlc']]
+        df['timestamp'] = timestamps
+        df['open'] = [item['o'] for item in price_data['ohlc']]
+        df['high'] = [item['h'] for item in price_data['ohlc']]
+        df['low'] = [item['l'] for item in price_data['ohlc']]
+        df['close'] = [item['c'] for item in price_data['ohlc']]
+        df['volume'] = [item['v'] for item in price_data['ohlc']]
+        
+        # Add indicator data
+        if 'daily_composite' in price_data and len(price_data['daily_composite']) == len(timestamps):
+            df['daily_composite'] = price_data['daily_composite']
+            df['daily_upper_limit'] = price_data['daily_up_lim']
+            df['daily_lower_limit'] = price_data['daily_low_lim']
+            
+        if 'weekly_composite' in price_data and len(price_data['weekly_composite']) == len(timestamps):
+            df['weekly_composite'] = price_data['weekly_composite']
+            df['weekly_upper_limit'] = price_data['weekly_up_lim']
+            df['weekly_lower_limit'] = price_data['weekly_low_lim']
+        
+        # Add portfolio value if available
+        if 'portfolio_values' in price_data and len(price_data['portfolio_values']) == len(timestamps):
+            df['portfolio_value'] = price_data['portfolio_values']
+        
+        # Add signals data
+        df['signal'] = 0  # Default: no signal
+        df['signal_price'] = None  # Default: no signal price
+        
+        # Process buy signals
+        if 'buy_signals' in price_data and price_data['buy_signals']:
+            for signal in price_data['buy_signals']:
+                signal_time = signal['time']
+                signal_idx = df[df['timestamp'] == signal_time].index
+                if len(signal_idx) > 0:
+                    df.loc[signal_idx, 'signal'] = 1  # Buy signal
+                    df.loc[signal_idx, 'signal_price'] = signal['price']
+        
+        # Process sell signals
+        if 'sell_signals' in price_data and price_data['sell_signals']:
+            for signal in price_data['sell_signals']:
+                signal_time = signal['time']
+                signal_idx = df[df['timestamp'] == signal_time].index
+                if len(signal_idx) > 0:
+                    df.loc[signal_idx, 'signal'] = -1  # Sell signal
+                    df.loc[signal_idx, 'signal_price'] = signal['price']
+        
+        # Generate CSV
+        csv_data = df.to_csv(index=False)
+        
+        # Create response with CSV data
+        response = make_response(csv_data)
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename={symbol}_data_{days}days.csv'
+        
+        logging.info(f"CSV download prepared for {symbol} with {len(df)} rows")
+        
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error generating CSV download: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+def get_price_data_for_symbol(symbol, days):
+    """
+    Helper function to get price data for a specific symbol
+    """
+    try:
+        # Get price data from Alpaca
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # Get market data
+        data = get_price_data_with_signals(symbol, start_date, end_date)
+        
+        return data
+    except Exception as e:
+        logging.error(f"Error getting price data for {symbol}: {str(e)}")
+        return None
 
 if __name__ == '__main__':
     app = dashboard
