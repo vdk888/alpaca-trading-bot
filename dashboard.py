@@ -706,6 +706,9 @@ def get_portfolio():
 def get_rank():
     """Display performance ranking of all assets"""
     logger.info("API call: /api/rank")
+    days = request.args.get('days', 7, type=int)
+    logger.info(f"Performance ranking for the last {days} days")
+    
     try:
         # Get performance data for all symbols
         rankings = {}
@@ -722,7 +725,7 @@ def get_rank():
                     continue
                 
                 # Calculate performance ranking like in the Telegram bot
-                rank, performance = executor.calculate_performance_ranking(analysis['current_price'])
+                rank, performance = executor.calculate_performance_ranking(analysis['current_price'], lookback_days=days)
                 rankings[symbol] = rank
                 performances[symbol] = performance
                 
@@ -750,7 +753,8 @@ def get_rank():
                     "daily_composite": analysis['daily_composite'],
                     "weekly_composite": analysis['weekly_composite'],
                     "rank": rank,
-                    "performance": performance
+                    "performance": performance,
+                    "days": days
                 })
             except Exception as e:
                 logger.error(f"Error processing {symbol} for ranking: {str(e)}")
@@ -761,7 +765,8 @@ def get_rank():
         
         return jsonify({
             "success": True,
-            "performance": performance_data
+            "performance": performance_data,
+            "days": days
         })
     except Exception as e:
         logger.error(f"Error getting performance ranking: {str(e)}", exc_info=True)
@@ -838,6 +843,7 @@ def get_price_data():
     logger.info("API call: /api/price")
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', 7, type=int)
+    logger.info(f"Fetching price data for {symbol} over {days} days")
     
     if not symbol:
         return jsonify({"error": "Symbol parameter is required"}), 400
@@ -849,7 +855,7 @@ def get_price_data():
         from fetch import get_latest_data
         
         # Fetch price data for the symbol
-        df = get_latest_data(symbol)
+        df = get_latest_data(symbol, days=days)
         
         # Limit to the requested number of days
         if days:
@@ -860,13 +866,15 @@ def get_price_data():
             # Filter for the last N days
             cutoff_date = datetime.now(pytz.UTC) - timedelta(days=days)
             df = df[df.index >= cutoff_date]
+            logger.info(f"Filtered data for {symbol} from {cutoff_date} to now, resulting in {len(df)} data points")
         
         # Format the data for Chart.js
         price_data = {
             'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
             'prices': df['close'].tolist(),
             'symbol': symbol,
-            'name': TRADING_SYMBOLS[symbol]['name']
+            'name': TRADING_SYMBOLS[symbol]['name'],
+            'days': days  # Include days in the response
         }
         
         return jsonify(price_data)

@@ -69,7 +69,7 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     
     return df
 
-def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: Optional[int] = None) -> pd.DataFrame:
+def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: Optional[int] = None, days: int = 3) -> pd.DataFrame:
     """
     Get the most recent data points
     
@@ -77,6 +77,7 @@ def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: 
         symbol: Stock symbol
         interval: Data interval
         limit: Number of data points to return (default: None = all available data)
+        days: Number of days of historical data to fetch (default: 3)
     
     Returns:
         DataFrame with the most recent data points
@@ -85,8 +86,9 @@ def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: 
     config_interval = TRADING_SYMBOLS[symbol].get('interval', interval)
     
     try:
-        # Fetch at least 3 days of data for proper weekly signal calculation
-        df = fetch_historical_data(symbol, config_interval, days=3)
+        # Fetch data for the specified number of days
+        logger.info(f"Fetching {days} days of data for {symbol}")
+        df = fetch_historical_data(symbol, config_interval, days=days)
         
         # Filter for market hours
         market_hours = TRADING_SYMBOLS[symbol]['market_hours']

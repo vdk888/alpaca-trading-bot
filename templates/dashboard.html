@@ -97,18 +97,6 @@
                     </div>
                 </div>
                 
-                <!-- Performance Ranking -->
-                <div class="card mt-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Performance Ranking <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateRank()"></i></h5>
-                    </div>
-                    <div class="card-body" id="rank-info">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- Symbol Price Charts -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -127,6 +115,18 @@
                             <div class="spinner-border" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Ranking -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Performance Ranking <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateRank()"></i></h5>
+                    </div>
+                    <div class="card-body" id="rank-info">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                 </div>
@@ -596,7 +596,10 @@
         }
         
         function updateRank() {
-            $.get('/dashboard/api/rank', function(data) {
+            const days = parseInt($('#price-chart-days').val());
+            console.log('updateRank called with days:', days);
+            $.get(`/dashboard/api/rank?days=${days}`, function(data) {
+                console.log('Rank data received with days:', data.days);
                 if (data.error) {
                     $('#rank-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                     return;
@@ -614,7 +617,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Symbol</th>
-                                    <th>Performance</th>
+                                    <th>Performance (${data.days} days)</th>
                                     <th>Percentile</th>
                                 </tr>
                             </thead>
@@ -641,7 +644,7 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        <h6>Performance Visualization</h6>
+                        <h6>Performance Visualization (${data.days} days)</h6>
                         <div id="performance-chart"></div>
                     </div>
                 `;
@@ -824,7 +827,8 @@
 
         // Function to update price charts for all symbols
         function updatePriceCharts() {
-            const days = $('#price-chart-days').val();
+            const days = parseInt($('#price-chart-days').val());
+            console.log('updatePriceCharts called with days:', days);
             const container = $('#price-charts-container');
             container.html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
             
@@ -855,7 +859,7 @@
                         col.append(card);
                         container.append(col);
                         
-                        // Fetch price data for this symbol
+                        // Fetch price data for this symbol with the current days value
                         fetchPriceData(symbol, days);
                     });
                 },
@@ -867,6 +871,7 @@
         
         // Function to fetch price data for a specific symbol
         function fetchPriceData(symbol, days) {
+            console.log('fetchPriceData called for symbol:', symbol, 'with days:', days);
             $.ajax({
                 url: '/dashboard/api/price',
                 method: 'GET',
@@ -875,6 +880,7 @@
                     days: days
                 },
                 success: function(data) {
+                    console.log('Price data received for', symbol, 'with days:', data.days);
                     createPriceChart(symbol, data);
                 },
                 error: function(error) {
@@ -939,7 +945,9 @@
 
         // Set up price chart days change handler
         $('#price-chart-days').change(function() {
+            console.log('price-chart-days changed to:', $(this).val());
             updatePriceCharts();
+            updateRank();
         });
         
         // Initial updates
