@@ -1046,6 +1046,7 @@ def get_price_data():
             signal_data = generate_signals(df, params)
             daily_data = signal_data[1]  # Daily composite data
             weekly_data = signal_data[2]  # Weekly composite data
+            signals = signal_data[0]  # Signal data with buy/sell signals
             logger.info(f"Generated indicators for {symbol}: {len(daily_data)} daily points, {len(weekly_data)} weekly points")
         except Exception as e:
             logger.error(f"Error generating indicators for {symbol}: {str(e)}")
@@ -1151,7 +1152,22 @@ def get_price_data():
             # Add backtest portfolio value data
             'portfolio_values': portfolio_values,
             'portfolio_dates': portfolio_dates,
-            'allocation_percentages': allocation_percentages
+            'allocation_percentages': allocation_percentages,
+            
+            # Add buy/sell signals data
+            'signals': signals['signal'].tolist(),
+            'buy_signals': [
+                {
+                    'time': idx.strftime('%Y-%m-%d %H:%M'),
+                    'price': float(df.loc[idx, 'close'])
+                } for idx in signals.index if signals.loc[idx, 'signal'] == 1
+            ],
+            'sell_signals': [
+                {
+                    'time': idx.strftime('%Y-%m-%d %H:%M'),
+                    'price': float(df.loc[idx, 'close'])
+                } for idx in signals.index if signals.loc[idx, 'signal'] == -1
+            ]
         }
         
         return jsonify(price_data)

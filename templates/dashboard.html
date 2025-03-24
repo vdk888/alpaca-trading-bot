@@ -623,12 +623,15 @@
                     },
                     scales: {
                         y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false,
+                            grace: '5%', // Add some space at the top and bottom
                             title: {
                                 display: true,
                                 text: 'Multiplier Value'
                             },
-                            min: 0.5,
-                            max: 3.0,
                             ticks: {
                                 callback: function(value) {
                                     return value.toFixed(1) + 'x';
@@ -772,14 +775,81 @@
                 };
             });
             
+            // Create series for buy and sell signals
+            const buySeries = [];
+            const sellSeries = [];
+            
+            // Process buy signals if available
+            if (data.buy_signals && data.buy_signals.length > 0) {
+                data.buy_signals.forEach(signal => {
+                    buySeries.push({
+                        x: new Date(signal.time).getTime(),
+                        y: signal.price,
+                        marker: {
+                            size: 8,
+                            fillColor: '#00B746',
+                            strokeColor: '#00B746',
+                            shape: 'triangle'
+                        },
+                        label: {
+                            text: '$' + signal.price.toFixed(2),
+                            style: {
+                                color: '#00B746',
+                                fontSize: '10px'
+                            },
+                            offsetY: 10
+                        }
+                    });
+                });
+            }
+            
+            // Process sell signals if available
+            if (data.sell_signals && data.sell_signals.length > 0) {
+                data.sell_signals.forEach(signal => {
+                    sellSeries.push({
+                        x: new Date(signal.time).getTime(),
+                        y: signal.price,
+                        marker: {
+                            size: 8,
+                            fillColor: '#FF4560',
+                            strokeColor: '#FF4560',
+                            shape: 'triangle',
+                            radius: 5,
+                            offsetY: -5
+                        },
+                        label: {
+                            text: '$' + signal.price.toFixed(2),
+                            style: {
+                                color: '#FF4560',
+                                fontSize: '10px'
+                            },
+                            offsetY: -10
+                        }
+                    });
+                });
+            }
+            
             const options = {
-                series: [{
-                    name: data.name,
-                    data: ohlcData
-                }],
+                series: [
+                    {
+                        name: data.name,
+                        type: 'candlestick',
+                        data: ohlcData
+                    },
+                    {
+                        name: 'Buy Signal',
+                        type: 'scatter',
+                        data: buySeries
+                    },
+                    {
+                        name: 'Sell Signal',
+                        type: 'scatter',
+                        data: sellSeries
+                    }
+                ],
                 chart: {
-                    type: 'candlestick',
                     height: 250,
+                    type: 'candlestick',
                     toolbar: {
                         show: false
                     }
@@ -814,8 +884,65 @@
                         colors: {
                             upward: '#3C90EB',
                             downward: '#DF7D46'
+                        },
+                        wick: {
+                            useFillColor: true
                         }
                     }
+                },
+                markers: {
+                    size: [0, 6, 6], // Size for each series: candlestick (0), buy (6), sell (6)
+                    shape: ['circle', 'triangle', 'triangle'],
+                    radius: 2
+                },
+                annotations: {
+                    points: [
+                        ...buySeries.map(point => ({
+                            x: point.x,
+                            y: point.y,
+                            marker: {
+                                size: 6,
+                                fillColor: '#00B746',
+                                strokeColor: '#00B746',
+                                shape: 'triangle'
+                            },
+                            label: {
+                                text: '$' + point.y.toFixed(2),
+                                style: {
+                                    color: '#00B746',
+                                    fontSize: '10px'
+                                },
+                                offsetY: 10
+                            }
+                        })),
+                        ...sellSeries.map(point => ({
+                            x: point.x,
+                            y: point.y,
+                            marker: {
+                                size: 6,
+                                fillColor: '#FF4560',
+                                strokeColor: '#FF4560',
+                                shape: 'triangle',
+                                radius: 2,
+                                offsetY: -5
+                            },
+                            label: {
+                                text: '$' + point.y.toFixed(2),
+                                style: {
+                                    color: '#FF4560',
+                                    fontSize: '10px'
+                                },
+                                offsetY: -10
+                            }
+                        }))
+                    ]
+                },
+                tooltip: {
+                    shared: false,
+                    intersect: true
+                },
+                legend: {
+                    show: true
                 }
             };
             
