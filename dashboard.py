@@ -621,7 +621,7 @@ def run_backtest_api():
             try:
                 logger.info(f"Running backtest for {sym}")
                 # Run backtest
-                result = run_backtest(sym, days)
+                result = run_backtest(sym, days=days)
                 
                 logger.info(f"Creating backtest plot for {sym}")
                 # Create plot - this returns a tuple of (buffer, stats)
@@ -1051,6 +1051,70 @@ def get_price_data():
             logger.error(f"Error generating indicators for {symbol}: {str(e)}")
             raise
         
+        # Run backtest for the symbol to get portfolio value data
+        backtest_data = None
+        portfolio_values = []
+        portfolio_dates = []
+        shares_owned = []
+        allocation_percentages = []
+        try:
+            logger.info(f"Running backtest for {symbol} over {days} days")
+            backtest_result = run_backtest(symbol, days=days)
+            
+            # Extract portfolio value data from backtest result
+            if backtest_result and 'portfolio_value' in backtest_result:
+                portfolio_values = backtest_result['portfolio_value']
+                
+                # Extract shares owned data from backtest result
+                if 'shares' in backtest_result:
+                    shares_owned = backtest_result['shares']
+                    
+                    # Calculate allocation percentages
+                    allocation_percentages = []
+                    for i in range(len(shares_owned)):
+                        if i < len(df.index) and i < len(portfolio_values):
+                            # Calculate the value of the position
+                            position_value = shares_owned[i] * df['close'].iloc[i] if i < len(df) else 0
+                            # Calculate the percentage of the portfolio
+                            if portfolio_values[i] > 0:
+                                allocation_pct = (position_value / portfolio_values[i]) * 100
+                            else:
+                                allocation_pct = 0
+                            allocation_percentages.append(allocation_pct)
+                    
+                    logger.info(f"Calculated allocation percentages for {symbol}: min={min(allocation_percentages) if allocation_percentages else 0}%, max={max(allocation_percentages) if allocation_percentages else 0}%")
+                    
+                    # Ensure allocation percentages match data length
+                    if len(allocation_percentages) > len(df.index):
+                        allocation_percentages = allocation_percentages[:len(df.index)]
+                    elif len(allocation_percentages) < len(df.index):
+                        # Pad with last value if needed
+                        allocation_percentages = list(allocation_percentages) + [allocation_percentages[-1] if allocation_percentages else 0] * (len(df.index) - len(allocation_percentages))
+                    
+                    # Ensure shares data matches data length (still keep this for reference)
+                    if len(shares_owned) > len(df.index):
+                        shares_owned = shares_owned[:len(df.index)]
+                    elif len(shares_owned) < len(df.index):
+                        # Pad with last value if needed
+                        shares_owned = list(shares_owned) + [shares_owned[-1] if shares_owned else 0] * (len(df.index) - len(shares_owned))
+                
+                # Ensure portfolio values match data length
+                if len(portfolio_values) > len(df.index):
+                    portfolio_values = portfolio_values[:len(df.index)]
+                elif len(portfolio_values) < len(df.index):
+                    # Pad with last value if needed
+                    portfolio_values = list(portfolio_values) + [portfolio_values[-1] if portfolio_values else 0] * (len(df.index) - len(portfolio_values))
+                
+                # Create dates matching the portfolio values
+                portfolio_dates = [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index]
+                
+                logger.info(f"Successfully extracted portfolio value data with {len(portfolio_values)} points and {len(allocation_percentages)} allocation percentage data points")
+            else:
+                logger.warning(f"Backtest for {symbol} did not return portfolio value data")
+        except Exception as e:
+            logger.error(f"Error running backtest for {symbol}: {str(e)}")
+            # Don't raise here, we'll continue with the rest of the data
+        
         # Format the data for Chart.js
         price_data = {
             'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
@@ -1082,7 +1146,12 @@ def get_price_data():
             'weekly_up_lim': weekly_data['Up_Lim'].tolist(),
             'weekly_down_lim': weekly_data['Down_Lim'].tolist(),
             'weekly_up_lim_2std': weekly_data['Up_Lim_2STD'].tolist(),
-            'weekly_down_lim_2std': weekly_data['Down_Lim_2STD'].tolist()
+            'weekly_down_lim_2std': weekly_data['Down_Lim_2STD'].tolist(),
+            
+            # Add backtest portfolio value data
+            'portfolio_values': portfolio_values,
+            'portfolio_dates': portfolio_dates,
+            'allocation_percentages': allocation_percentages
         }
         
         return jsonify(price_data)

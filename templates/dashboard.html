@@ -685,7 +685,7 @@
                         const card = $('<div class="card h-100"></div>');
                         const cardHeader = $('<div class="card-header"></div>').text(symbolData.name);
                         const cardBody = $('<div class="card-body p-2"></div>');
-                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 600px; width: 100%;"></div>');
+                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 800px; width: 100%;"></div>');
                         const canvas = $('<canvas></canvas>').attr('id', 'price-chart-' + safeSymbolId);
                         
                         chartContainer.append(canvas);
@@ -729,34 +729,40 @@
             const chartContainer = $('#price-chart-' + safeSymbolId).parent();
             chartContainer.empty();
             
-            // Increase the height of the chart container to fit all three charts
-            chartContainer.css('height', '600px');
+            // Increase the height of the chart container to fit all four charts with proper spacing
+            chartContainer.css('height', '800px');
             
             // Create div containers for each chart to ensure proper spacing
-            const priceChartDiv = $('<div style="height: 250px; margin-bottom: 10px;"></div>').attr('id', 'price-chart-container-' + safeSymbolId);
-            const dailyChartDiv = $('<div style="height: 150px; margin-bottom: 10px;"></div>');
-            const weeklyChartDiv = $('<div style="height: 150px;"></div>');
+            const priceChartDiv = $('<div style="height: 250px; margin-bottom: 20px;"></div>').attr('id', 'price-chart-container-' + safeSymbolId);
+            const dailyChartDiv = $('<div style="height: 140px; margin-bottom: 20px;"></div>');
+            const weeklyChartDiv = $('<div style="height: 140px; margin-bottom: 20px;"></div>');
+            const portfolioChartDiv = $('<div style="height: 160px; margin-bottom: 20px;"></div>');
             
             // Create canvas elements for indicator charts
             const dailyCanvas = $('<canvas></canvas>').attr('id', 'daily-indicator-chart-' + safeSymbolId);
             const weeklyCanvas = $('<canvas></canvas>').attr('id', 'weekly-indicator-chart-' + safeSymbolId);
+            const portfolioCanvas = $('<canvas></canvas>').attr('id', 'portfolio-backtest-chart-' + safeSymbolId);
             
             // Add canvases to their respective divs
             dailyChartDiv.append(dailyCanvas);
             weeklyChartDiv.append(weeklyCanvas);
+            portfolioChartDiv.append(portfolioCanvas);
             
             // Add all divs to the container
             chartContainer.append(priceChartDiv);
             chartContainer.append(dailyChartDiv);
             chartContainer.append(weeklyChartDiv);
+            chartContainer.append(portfolioChartDiv);
             
             // Add titles for each chart
-            const dailyTitle = $('<h6 class="text-center mt-2 mb-1">Daily Composite Indicator</h6>');
-            const weeklyTitle = $('<h6 class="text-center mt-2 mb-1">Weekly Composite Indicator</h6>');
+            const dailyTitle = $('<h6 class="text-center mt-3 mb-1">Daily Composite Indicator</h6>');
+            const weeklyTitle = $('<h6 class="text-center mt-3 mb-1">Weekly Composite Indicator</h6>');
+            const portfolioTitle = $('<h6 class="text-center mt-3 mb-1">Backtest Portfolio Value</h6>');
             
             // Insert titles before the charts
             dailyChartDiv.before(dailyTitle);
             weeklyChartDiv.before(weeklyTitle);
+            portfolioChartDiv.before(portfolioTitle);
             
             // 1. Create Price Chart with Candlesticks using ApexCharts
             const ohlcData = data.ohlc.map(item => {
@@ -873,16 +879,26 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 5,
+                            right: 10,
+                            bottom: 5,
+                            left: 10
+                        }
+                    },
                     plugins: {
                         title: {
                             display: false
                         },
                         legend: {
                             position: 'top',
+                            align: 'center',
                             labels: {
-                                boxWidth: 10,
+                                boxWidth: 8,
+                                padding: 5,
                                 font: {
-                                    size: 10
+                                    size: 9
                                 }
                             }
                         }
@@ -897,8 +913,9 @@
                             grace: '10%', // Add some space at the top and bottom
                             ticks: {
                                 font: {
-                                    size: 10
-                                }
+                                    size: 9
+                                },
+                                padding: 3
                             }
                         }
                     }
@@ -962,16 +979,26 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 5,
+                            right: 10,
+                            bottom: 5,
+                            left: 10
+                        }
+                    },
                     plugins: {
                         title: {
                             display: false
                         },
                         legend: {
                             position: 'top',
+                            align: 'center',
                             labels: {
-                                boxWidth: 10,
+                                boxWidth: 8,
+                                padding: 5,
                                 font: {
-                                    size: 10
+                                    size: 9
                                 }
                             }
                         }
@@ -986,15 +1013,158 @@
                             grace: '10%', // Add some space at the top and bottom
                             ticks: {
                                 font: {
-                                    size: 10
-                                }
+                                    size: 9
+                                },
+                                padding: 3
                             }
                         }
                     }
                 }
             });
+            
+            // 4. Create Portfolio Value Chart from Backtest
+            if (data.portfolio_values && data.portfolio_values.length > 0) {
+                const portfolioCtx = portfolioCanvas.get(0).getContext('2d');
+                
+                // Determine if we have allocation percentage data
+                const hasAllocationData = data.allocation_percentages && data.allocation_percentages.length > 0;
+                
+                // Create the chart with dual y-axes if we have allocation data
+                new Chart(portfolioCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.portfolio_dates || data.labels,
+                        datasets: [
+                            {
+                                label: 'Portfolio Value ($)',
+                                data: data.portfolio_values,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: true,
+                                yAxisID: 'y'
+                            },
+                            // Add allocation percentage dataset if available
+                            ...(hasAllocationData ? [{
+                                label: 'Allocation (%)',
+                                data: data.allocation_percentages,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: false,
+                                yAxisID: 'y1'
+                            }] : [])
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 5,
+                                right: 10,
+                                bottom: 5,
+                                left: 10
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: false
+                            },
+                            legend: {
+                                position: 'top',
+                                align: 'center',
+                                labels: {
+                                    boxWidth: 8,
+                                    padding: 5,
+                                    font: {
+                                        size: 9
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (context.dataset.label === 'Portfolio Value ($)') {
+                                            return 'Portfolio Value: $' + context.raw.toFixed(2);
+                                        } else if (context.dataset.label === 'Allocation (%)') {
+                                            return 'Allocation: ' + context.raw.toFixed(2) + '%';
+                                        }
+                                        return context.dataset.label + ': ' + context.raw;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: false // Hide x-axis labels as requested
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: false,
+                                grace: '5%', // Add some space at the top and bottom
+                                title: {
+                                    display: true,
+                                    text: 'Portfolio Value ($)',
+                                    font: {
+                                        size: 9
+                                    },
+                                    padding: {top: 0, bottom: 0}
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    },
+                                    font: {
+                                        size: 9
+                                    },
+                                    padding: 3
+                                }
+                            },
+                            // Only add secondary y-axis if we have allocation data
+                            ...(hasAllocationData ? {
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    max: 100, // Maximum percentage is 100%
+                                    grace: '5%',
+                                    grid: {
+                                        drawOnChartArea: false // Only show grid lines for left y-axis
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Allocation (%)',
+                                        font: {
+                                            size: 9
+                                        },
+                                        padding: {top: 0, bottom: 0}
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value.toFixed(0) + '%';
+                                        },
+                                        font: {
+                                            size: 9
+                                        },
+                                        padding: 3
+                                    }
+                                }
+                            } : {})
+                        }
+                    }
+                });
+            } else {
+                // If no portfolio data is available, show a message
+                portfolioChartDiv.html('<div class="alert alert-info py-2">No backtest portfolio data available</div>');
+            }
         }
-
+        
         // Set up price chart days change handler
         $('#price-chart-days').change(function() {
             console.log('price-chart-days changed to:', $(this).val());
