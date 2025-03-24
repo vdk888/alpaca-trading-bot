@@ -711,8 +711,6 @@ def get_rank():
     
     try:
         # Get performance data for all symbols
-        rankings = {}
-        performances = {}
         performance_data = []
         
         for symbol in symbols:
@@ -725,43 +723,20 @@ def get_rank():
                     continue
                 
                 # Calculate performance ranking like in the Telegram bot
-                rank, performance = executor.calculate_performance_ranking(analysis['current_price'], lookback_days=days)
-                rankings[symbol] = rank
-                performances[symbol] = performance
+                rank, return_pct = executor.calculate_performance_ranking(analysis['current_price'], lookback_days=days)
                 
-                # Get price changes
-                price_changes = {
-                    "5m": analysis['price_change_5m']*100,
-                    "1h": analysis['price_change_1h']*100
-                }
-                
-                # Try to get position details
-                try:
-                    position = trading_client.get_open_position(get_api_symbol(symbol))
-                    unrealized_pl = float(position.unrealized_pl)
-                    unrealized_plpc = float(position.unrealized_plpc)*100
-                except:
-                    unrealized_pl = 0
-                    unrealized_plpc = 0
-                
+                # Add to performance data
                 performance_data.append({
                     "symbol": symbol,
-                    "name": TRADING_SYMBOLS[symbol]['name'],
-                    "price_changes": price_changes,
-                    "unrealized_pl": unrealized_pl,
-                    "unrealized_plpc": unrealized_plpc,
-                    "daily_composite": analysis['daily_composite'],
-                    "weekly_composite": analysis['weekly_composite'],
-                    "rank": rank,
-                    "performance": performance,
-                    "days": days
+                    "return_pct": return_pct,
+                    "rank": rank
                 })
             except Exception as e:
                 logger.error(f"Error processing {symbol} for ranking: {str(e)}")
                 continue
         
-        # Sort by ranking (best to worst) like in the Telegram bot
-        performance_data.sort(key=lambda x: x['rank'], reverse=True)
+        # Sort by return percentage (best to worst)
+        performance_data.sort(key=lambda x: x['return_pct'], reverse=True)
         
         return jsonify({
             "success": True,
@@ -854,6 +829,9 @@ def get_price_data():
     try:
         from fetch import get_latest_data
         from indicators import generate_signals, get_default_params
+        import pytz
+        from datetime import timedelta
+        import pandas as pd
         
         # Fetch price data for the symbol
         df = get_latest_data(symbol, days=days)
@@ -894,10 +872,21 @@ def get_price_data():
         # Format the data for Chart.js
         price_data = {
             'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
-            'prices': df['close'].tolist(),
             'symbol': symbol,
             'name': TRADING_SYMBOLS[symbol]['name'],
             'days': days,  # Include days in the response
+            
+            # OHLC data for candlestick chart
+            'ohlc': [
+                {
+                    'x': idx.strftime('%Y-%m-%d %H:%M'),
+                    'o': float(row['open']),
+                    'h': float(row['high']),
+                    'l': float(row['low']),
+                    'c': float(row['close']),
+                    'v': float(row['volume'])
+                } for idx, row in df.iterrows()
+            ],
             
             # Add daily indicator data
             'daily_composite': daily_data['Composite'].tolist(),
