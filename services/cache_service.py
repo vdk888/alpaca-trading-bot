@@ -3,12 +3,15 @@ import redis
 import json
 from datetime import datetime, timedelta
 import logging
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
 class CacheService:
     def __init__(self):
         self.redis_client = None
+        self.memory_cache: Dict[str, Any] = {}
+        self.memory_ttl: Dict[str, datetime] = {}
         self.connect()
 
     def connect(self):
@@ -31,19 +34,30 @@ class CacheService:
     def set_with_ttl(self, key: str, data: dict, ttl_hours: int = 1):
         """Store data with TTL"""
         try:
-            self.redis_client.setex(
-                key,
-                timedelta(hours=ttl_hours),
-                json.dumps(data)
-            )
+            if self.redis_client:
+                self.redis_client.setex(
+                    key,
+                    timedelta(hours=ttl_hours),
+                    json.dumps(data)
+                )
+            else:
+                # Fallback to memory cache
+                self.memory_cache[key] = json.dumps(data)
+                self.memory_ttl[key] = datetime.now() + timedelta(hours=ttl_hours)
         except Exception as e:
             logger.error(f"Error setting cache for {key}: {str(e)}")
             
     def get(self, key: str) -> dict:
         """Get data from cache"""
         try:
-            data = self.redis_client.get(key)
-            return json.loads(data) if data else None
+            if self.redis_client:
+                data = self.redis_client.get(key)
+                return json.loads(data) if data else None
+            else:
+                # Fallback to memory cache
+                if key in self.memory_cache and datetime.now() < self.memory_ttl[key]:
+                    return json.loads(self.memory_cache[key])
+                return None
         except Exception as e:
             logger.error(f"Error getting cache for {key}: {str(e)}")
             return None
@@ -51,8 +65,15 @@ class CacheService:
     def is_fresh(self, key: str, max_age_hours: int = 1) -> bool:
         """Check if cached data exists and is fresh"""
         try:
-            ttl = self.redis_client.ttl(key)
-            return ttl > 0 and ttl > (max_age_hours * 3600 - 300)  # 5 min buffer
+            if self.redis_client:
+                ttl = self.redis_client.ttl(key)
+                return ttl > 0 and ttl > (max_age_hours * 3600 - 300)  # 5 min buffer
+            else:
+                # Fallback to memory cache
+                if key in self.memory_ttl:
+                    remaining = (self.memory_ttl[key] - datetime.now()).total_seconds()
+                    return remaining > 0 and remaining > (max_age_hours * 3600 - 300)
+                return False
         except Exception as e:
             logger.error(f"Error checking cache freshness for {key}: {str(e)}")
             return False
