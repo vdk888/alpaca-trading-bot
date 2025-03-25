@@ -126,7 +126,7 @@ def get_status():
     """Get current trading status for all symbols"""
     logger.info("API call: /api/status")
     symbol = request.args.get('symbol', None)
-
+    
     cache_key = get_cache_key('status', symbol=symbol if symbol else 'all')
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key):
@@ -187,13 +187,13 @@ def get_status():
 def get_balance():
     """Get account balance"""
     logger.info("API call: /api/balance")
-
+    
     cache_key = get_cache_key('balance')
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info("Returning cached balance data")
         return jsonify(cached_data)
-
+        
     try:
         account = trading_client.get_account()
         balance_data = {
@@ -211,13 +211,13 @@ def get_balance():
 def get_performance():
     """View today's performance"""
     logger.info("API call: /api/performance")
-
+    
     cache_key = get_cache_key('performance')
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info("Returning cached performance data")
         return jsonify(cached_data)
-
+        
     try:
         account = trading_client.get_account()
         today_pl = float(account.equity) - float(account.last_equity)
@@ -238,13 +238,13 @@ def get_performance():
 def get_markets():
     """View market hours for all symbols"""
     logger.info("API call: /api/markets")
-
+    
     cache_key = get_cache_key('markets')
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info("Returning cached market hours data")
         return jsonify(cached_data)
-
+        
     market_data = {}
 
     for symbol in symbols:
@@ -257,7 +257,7 @@ def get_markets():
             }
         except Exception as e:
             market_data[symbol] = {"error": f"Error checking market status: {str(e)}"}
-
+    
     cache_service.set_with_ttl(cache_key, market_data, ttl_hours=1)
     return jsonify(market_data)
 
@@ -265,13 +265,13 @@ def get_markets():
 def get_symbols():
     """List all trading symbols"""
     logger.info("API call: /api/symbols")
-
+    
     cache_key = get_cache_key('symbols')
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=24):
         logger.info("Returning cached symbols data")
         return jsonify(cached_data)
-
+        
     symbol_data = []
 
     for symbol in symbols:
@@ -282,7 +282,7 @@ def get_symbols():
             "display_symbol": get_display_symbol(symbol),
             "symbol": symbol  # Add the original symbol key
         })
-
+    
     cache_service.set_with_ttl(cache_key, symbol_data, ttl_hours=24)
     return jsonify(symbol_data)
 
@@ -294,10 +294,10 @@ def run_backtest_api():
     days = request.args.get('days', default=default_backtest_interval)
 
     logger.info(f"Backtest request: symbol={symbol}, days={days}")
-
+    
     # Generate cache key
     cache_key = get_cache_key('backtest', symbol=symbol if symbol else 'portfolio', days=days)
-
+    
     # Try to get from cache
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
@@ -441,13 +441,13 @@ def get_rank():
     """Display performance ranking of all assets"""
     logger.info("API call: /api/rank")
     days = request.args.get('days', 7, type=int)
-
+    
     cache_key = get_cache_key('rank', days=days)
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info("Returning cached ranking data")
         return jsonify(cached_data)
-
+        
     logger.info(f"Performance ranking for the last {days} days")
 
     try:
@@ -494,11 +494,11 @@ def get_rank():
 def get_capital_multiplier():
     """Calculate and return the capital multiplier history"""
     logger.info("API call: /api/capital-multiplier")
-
+    
     days = request.args.get('days', type=int)
     if days is None or days <= 0:
         days = int(lookback_days_param)
-
+        
     cache_key = get_cache_key('capital_multiplier', days=days)
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
@@ -679,16 +679,16 @@ def get_price_data():
     logger.info("API call: /api/price-data")
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', int(lookback_days_param), type=int)
-
+    
     # Generate cache key with days parameter
     cache_key = get_cache_key('price_data', symbol=symbol, days=days)
-
+    
     # Try to get from cache first
     cached_data = cache_service.get(cache_key)
     if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):  # Cache for 4 hours
         logger.info(f"Returning cached price data for {symbol}")
         return jsonify(cached_data)
-
+        
     logger.info(f"Fetching fresh price data for {symbol} over {days} days")
 
     if not symbol:
@@ -771,7 +771,7 @@ def get_price_data():
                     'price': float(data.loc[idx, 'close'])
                 } for idx in signals.index if signals.loc[idx, 'signal'] == 1
             ],
-'sell_signals': [
+            'sell_signals': [
                 {
                     'time': idx.strftime('%Y-%m-%d %H:%M'),
                     'price': float(data.loc[idx, 'close'])
@@ -792,12 +792,12 @@ def get_price_data():
 def get_portfolio_data():
     """Get portfolio backtest data for the dashboard"""
     logger.info("API call: /api/portfolio")
-
+    
     try:
         # Get days parameter and generate cache key
         days = request.args.get('days', default=30, type=int)
         cache_key = get_cache_key('portfolio', days=days)
-
+        
         # Try to get from cache
         cached_data = cache_service.get(cache_key)
         if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
@@ -870,58 +870,13 @@ def get_portfolio_data():
             'timestamps': [idx.strftime('%Y-%m-%dT%H:%M:%S') for idx in data.index],
             'metrics': result['metrics']
         })
-
+        
         # Cache results before returning
         cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=1)
         return jsonify(portfolio_data)
     except Exception as e:
         logger.error(f"Error generating portfolio data: {str(e)}")
         return jsonify({"error": f"Error generating portfolio data: {str(e)}"}), 500
-
-@dashboard.route('/api/download-portfolio-trades')
-def download_portfolio_trades():
-    """Download all trades from portfolio backtest as CSV"""
-    try:
-        days = request.args.get('days', default=30, type=int)
-
-        # Run portfolio backtest to get trades
-        result = run_portfolio_backtest(symbols, days)
-
-        # Create DataFrame with all trades
-        trades_data = []
-        for symbol in result['individual_results']:
-            symbol_trades = result['individual_results'][symbol]['trades']
-            for trade in symbol_trades:
-                trade_data = {
-                    'symbol': symbol,
-                    'time': trade['time'],
-                    'type': trade['type'],
-                    'shares': trade['shares'],
-                    'price': trade['price'],
-                    'value': trade['value'],
-                    'total_position': trade['total_position'],
-                    'trading_costs': trade.get('trading_costs', 0)
-                }
-                trades_data.append(trade_data)
-
-        # Convert to DataFrame and sort by time
-        df = pd.DataFrame(trades_data)
-        df = df.sort_values('time')
-
-        # Generate CSV
-        output = io.StringIO()
-        df.to_csv(output, index=False)
-
-        # Create response
-        response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv'
-        response.headers['Content-Disposition'] = f'attachment; filename=portfolio_trades_{days}days.csv'
-
-        return response
-
-    except Exception as e:
-        logger.error(f"Error generating portfolio trades CSV: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 @dashboard.route('/api/download-symbol-data', methods=['GET'])
 def download_symbol_data():
