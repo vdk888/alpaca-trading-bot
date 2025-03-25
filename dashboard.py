@@ -800,7 +800,7 @@ def get_portfolio_data():
         
         # Try to get from cache
         cached_data = cache_service.get(cache_key)
-        if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+        if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
             logger.info("Returning cached portfolio data")
             return jsonify(cached_data)
         try:
