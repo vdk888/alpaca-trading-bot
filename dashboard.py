@@ -669,12 +669,16 @@ def get_price_data():
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', int(lookback_days_param), type=int)
     
+    # Generate cache key with days parameter
     cache_key = get_cache_key('price_data', symbol=symbol, days=days)
+    
+    # Try to get from cache first
     cached_data = cache_service.get(cache_key)
-    if cached_data and cache_service.is_fresh(cache_key):
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):  # Cache for 4 hours
         logger.info(f"Returning cached price data for {symbol}")
         return jsonify(cached_data)
-    logger.info(f"Fetching price data for {symbol} over {days} days")
+        
+    logger.info(f"Fetching fresh price data for {symbol} over {days} days")
 
     if not symbol:
         return jsonify({"error": "Symbol parameter is required"}), 400
@@ -764,7 +768,9 @@ def get_price_data():
             ]
         }
 
-        cache_service.set_with_ttl(cache_key, price_data)
+        # Store in cache with 4 hour TTL before returning
+        cache_service.set_with_ttl(cache_key, price_data, ttl_hours=4)
+        logger.info(f"Cached price data for {symbol} with TTL of 4 hours")
         return jsonify(price_data)
 
     except Exception as e:
