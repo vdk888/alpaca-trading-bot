@@ -869,9 +869,6 @@ def get_portfolio_data():
             'allocations': allocations,
             'timestamps': [idx.strftime('%Y-%m-%dT%H:%M:%S') for idx in data.index],
             'metrics': result['metrics']
-        }
-        
-        'metrics': result['metrics']
         })
         
         # Cache results before returning
