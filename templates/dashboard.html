@@ -601,6 +601,24 @@
                             fill: false
                         },
                         {
+                            label: 'Upper 2STD',
+                            data: data.daily_up_lim_2std,
+                            borderColor: 'rgba(75, 192, 75, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [2, 2],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Lower 2STD',
+                            data: data.daily_down_lim_2std,
+                            borderColor: 'rgba(255, 99, 132, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [2, 2],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
                             label: 'Neutral (1.5x)',
                             data: neutralLine,
                             borderColor: 'rgba(128, 128, 128, 0.5)',
@@ -711,14 +729,12 @@
                         // Create a column for each symbol
                         const col = $('<div class="col-md-6 col-lg-6 mb-4"></div>');
                         const card = $('<div class="card h-100"></div>');
-                        const cardHeader = $('<div class="card-header"></div>').text(symbolData.name);
                         const cardBody = $('<div class="card-body p-2"></div>');
-                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 800px; width: 100%;"></div>');
+                        const chartContainer = $('<div class="chart-container" style="position: relative; height: 850px; width: 100%;"></div>');
                         const canvas = $('<canvas></canvas>').attr('id', 'price-chart-' + safeSymbolId);
                         
                         chartContainer.append(canvas);
                         cardBody.append(chartContainer);
-                        card.append(cardHeader);
                         card.append(cardBody);
                         col.append(card);
                         container.append(col);
@@ -757,8 +773,12 @@
             const chartContainer = $('#price-chart-' + safeSymbolId).parent();
             chartContainer.empty();
             
-            // Add a download button with emoji at the top right of the container
-            const downloadButton = $('<button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 mt-2 me-2" title="Download data as CSV"><i class="bi bi-download"></i> 📥</button>');
+            // Create a header div with title and download button
+            const headerDiv = $('<div class="d-flex justify-content-between align-items-center mb-2"></div>');
+            const titleElement = $('<h6 class="m-0">' + data.name + ' Price</h6>');
+            const downloadButton = $('<button class="btn btn-sm btn-outline-secondary" title="Download data as CSV"><i class="bi bi-download"></i> CSV</button>');
+            
+            // Add click handler to download button
             downloadButton.on('click', function() {
                 downloadSymbolData(symbol, data.days);
             });
@@ -768,18 +788,21 @@
                 $('head').append('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">');
             }
             
-            // Make the chart container position relative to allow absolute positioning of the button
-            chartContainer.css('position', 'relative');
-            chartContainer.append(downloadButton);
+            // Add title and button to header
+            headerDiv.append(titleElement);
+            headerDiv.append(downloadButton);
+            
+            // Add header to chart container
+            chartContainer.append(headerDiv);
             
             // Increase the height of the chart container to fit all four charts with proper spacing
-            chartContainer.css('height', '800px');
+            chartContainer.css('height', '850px');
             
             // Create div containers for each chart to ensure proper spacing
-            const priceChartDiv = $('<div style="height: 250px; margin-bottom: 20px;"></div>').attr('id', 'price-chart-container-' + safeSymbolId);
-            const dailyChartDiv = $('<div style="height: 140px; margin-bottom: 20px;"></div>');
-            const weeklyChartDiv = $('<div style="height: 140px; margin-bottom: 20px;"></div>');
-            const portfolioChartDiv = $('<div style="height: 160px; margin-bottom: 20px;"></div>');
+            const priceChartDiv = $('<div style="height: 220px; margin-bottom: 30px;"></div>').attr('id', 'price-chart-container-' + safeSymbolId);
+            const dailyChartDiv = $('<div style="height: 130px; margin-bottom: 30px;"></div>');
+            const weeklyChartDiv = $('<div style="height: 130px; margin-bottom: 30px;"></div>');
+            const portfolioChartDiv = $('<div style="height: 150px; margin-bottom: 20px;"></div>');
             
             // Create canvas elements for indicator charts
             const dailyCanvas = $('<canvas></canvas>').attr('id', 'daily-indicator-chart-' + safeSymbolId);
@@ -934,46 +957,7 @@
                     radius: 2
                 },
                 annotations: {
-                    points: [
-                        ...buySeries.map(point => ({
-                            x: point.x,
-                            y: point.y,
-                            marker: {
-                                size: 6,
-                                fillColor: '#00B746',
-                                strokeColor: '#00B746',
-                                shape: 'triangle'
-                            },
-                            label: {
-                                text: '$' + point.y.toFixed(2),
-                                style: {
-                                    color: '#00B746',
-                                    fontSize: '10px'
-                                },
-                                offsetY: 10
-                            }
-                        })),
-                        ...sellSeries.map(point => ({
-                            x: point.x,
-                            y: point.y,
-                            marker: {
-                                size: 6,
-                                fillColor: '#FF4560',
-                                strokeColor: '#FF4560',
-                                shape: 'triangle',
-                                radius: 2,
-                                offsetY: -5
-                            },
-                            label: {
-                                text: '$' + point.y.toFixed(2),
-                                style: {
-                                    color: '#FF4560',
-                                    fontSize: '10px'
-                                },
-                                offsetY: -10
-                            }
-                        }))
-                    ]
+                    points: []
                 },
                 tooltip: {
                     shared: false,
@@ -1591,54 +1575,24 @@
             // Show loading indicator
             showLoadingToast('Preparing your download...');
             
-            $.ajax({
-                url: '/dashboard/download-symbol-data',
-                method: 'GET',
-                data: {
-                    symbol: symbol,
-                    days: days
-                },
-                xhrFields: {
-                    responseType: 'blob' // Important for handling binary data
-                },
-                success: function(data, status, xhr) {
-                    // Hide loading indicator
-                    hideLoadingToast();
-                    
-                    // Create a blob URL and trigger download
-                    const blob = new Blob([data], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    
-                    // Get filename from Content-Disposition header or use default
-                    let filename = symbol + '_data_' + days + 'days.csv';
-                    const disposition = xhr.getResponseHeader('Content-Disposition');
-                    if (disposition && disposition.indexOf('attachment') !== -1) {
-                        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                        const matches = filenameRegex.exec(disposition);
-                        if (matches != null && matches[1]) {
-                            filename = matches[1].replace(/['"]/g, '');
-                        }
-                    }
-                    
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    console.log('Download complete for', symbol);
-                },
-                error: function(error) {
-                    // Hide loading indicator
-                    hideLoadingToast();
-                    
-                    console.error('Error downloading data:', error);
-                    alert('Error downloading data: ' + (error.responseJSON?.error || 'Unknown error'));
-                }
-            });
+            // Create a direct download link
+            const downloadUrl = `/dashboard/api/download-symbol-data?symbol=${encodeURIComponent(symbol)}&days=${encodeURIComponent(days)}`;
+            
+            // Create a temporary link element
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.setAttribute('download', `${symbol}_data_${days}days.csv`);
+            downloadLink.setAttribute('target', '_blank');
+            
+            // Add to document, click and remove
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            // Hide loading indicator after a short delay
+            setTimeout(function() {
+                hideLoadingToast();
+                document.body.removeChild(downloadLink);
+            }, 1000);
         }
         
         // Helper function to show loading toast with custom message

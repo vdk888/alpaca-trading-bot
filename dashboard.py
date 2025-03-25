@@ -840,7 +840,7 @@ def get_portfolio_data():
         logger.error(f"Error generating portfolio data: {str(e)}")
         return jsonify({"error": f"Error generating portfolio data: {str(e)}"}), 500
 
-@dashboard.route('/dashboard/download-symbol-data', methods=['GET'])
+@dashboard.route('/api/download-symbol-data', methods=['GET'])
 def download_symbol_data():
     """
     API endpoint to download all data for a specific symbol as CSV
@@ -852,12 +852,15 @@ def download_symbol_data():
         
         logging.info(f"Preparing CSV download for {symbol} with {days} days of data")
         
-        # Get price data and indicators
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
+        # Get price data directly from the API function
+        price_data_response = get_price_data()
         
-        # Get market data with signals
-        price_data = get_price_data(symbol=symbol, days=days)
+        # Check if the response is a tuple (error response)
+        if isinstance(price_data_response, tuple):
+            return price_data_response
+            
+        # Get the JSON data from the response
+        price_data = price_data_response.get_json()
         
         if not price_data:
             return jsonify({"error": f"No data available for {symbol}"}), 404
@@ -878,16 +881,28 @@ def download_symbol_data():
         if 'daily_composite' in price_data and len(price_data['daily_composite']) == len(timestamps):
             df['daily_composite'] = price_data['daily_composite']
             df['daily_upper_limit'] = price_data['daily_up_lim']
-            df['daily_lower_limit'] = price_data['daily_low_lim']
+            df['daily_lower_limit'] = price_data['daily_down_lim']
+            # Add 2STD limits if available
+            if 'daily_up_lim_2std' in price_data and len(price_data['daily_up_lim_2std']) == len(timestamps):
+                df['daily_upper_limit_2std'] = price_data['daily_up_lim_2std']
+                df['daily_lower_limit_2std'] = price_data['daily_down_lim_2std']
             
         if 'weekly_composite' in price_data and len(price_data['weekly_composite']) == len(timestamps):
             df['weekly_composite'] = price_data['weekly_composite']
             df['weekly_upper_limit'] = price_data['weekly_up_lim']
-            df['weekly_lower_limit'] = price_data['weekly_low_lim']
+            df['weekly_lower_limit'] = price_data['weekly_down_lim']
+            # Add 2STD limits if available
+            if 'weekly_up_lim_2std' in price_data and len(price_data['weekly_up_lim_2std']) == len(timestamps):
+                df['weekly_upper_limit_2std'] = price_data['weekly_up_lim_2std']
+                df['weekly_lower_limit_2std'] = price_data['weekly_down_lim_2std']
         
         # Add portfolio value if available
         if 'portfolio_values' in price_data and len(price_data['portfolio_values']) == len(timestamps):
             df['portfolio_value'] = price_data['portfolio_values']
+            
+        # Add allocation percentages if available
+        if 'allocation_percentages' in price_data and len(price_data['allocation_percentages']) == len(timestamps):
+            df['allocation_percentage'] = price_data['allocation_percentages']
         
         # Add signals data
         df['signal'] = 0  # Default: no signal

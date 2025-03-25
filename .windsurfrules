@@ -1,2 +1,4 @@
 entry point is python run_market_hours.py
 activate venv before running commands
+do not run run_market_hours.py yourself, tell me to do it.
+always solve problems with minimal code changes.
