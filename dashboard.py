@@ -872,7 +872,7 @@ def get_portfolio_data():
         }
         
         # Cache results before returning
-        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=4)
+        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=1)
         return jsonify(portfolio_data)
     except Exception as e:
         logger.error(f"Error generating portfolio data: {str(e)}")
