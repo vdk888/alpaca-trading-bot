@@ -13,7 +13,6 @@ import matplotlib.dates as mdates
 from matplotlib.dates import HourLocator, num2date
 import json
 from backtest_individual import run_backtest as run_individual_backtest
-from config import calculate_capital_multiplier
 
 def is_market_hours(timestamp, market_hours):
     """Check if given timestamp is within market hours"""
@@ -159,10 +158,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     """Run backtest simulation for multiple symbols as a portfolio"""
     # Set much higher per-symbol capital to allow for greater exposure
     initial_capital = 100000  # Total portfolio capital
-    base_per_symbol_capital = initial_capital / len(symbols)
-
-    # Calculate capital multipliers for each date
-    multipliers = calculate_capital_multiplier(days)
+    per_symbol_capital = initial_capital / len(symbols) * PER_SYMBOL_CAPITAL_MULTIPLIER
 
     # Run individual backtests
     individual_results = {}
@@ -172,7 +168,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
         if progress_callback:
             progress_callback(symbol)
 
-        result = run_backtest(symbol, days, initial_capital=base_per_symbol_capital)
+        result = run_backtest(symbol, days, initial_capital=per_symbol_capital)
         individual_results[symbol] = result
         all_dates.update(result['data'].index)
 
@@ -192,33 +188,16 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
         # Forward fill symbol data to match portfolio timeline
         symbol_data = symbol_data.reindex(timeline).ffill()
 
-        # Add symbol-specific columns with dynamic capital scaling
+        # Add symbol-specific columns
         portfolio_data[f'{symbol}_price'] = symbol_data['close']
-
-        # Apply dynamic multiplier to position sizes
-        symbol_shares = symbol_data['shares'].copy()
-        symbol_position_value = symbol_data['position_value'].copy()
-        symbol_cash = symbol_data['cash'].copy()
-
-        for date in symbol_data.index:
-            # Get multiplier for this date (use nearest available date)
-            nearest_date = min(multipliers.keys(), key=lambda x: abs((date.date() - x).days))
-            current_multiplier = multipliers[nearest_date]
-
-            # Scale position sizes by the current multiplier relative to base allocation
-            scaling_factor = current_multiplier
-            symbol_shares.loc[date] *= scaling_factor
-            symbol_position_value.loc[date] *= scaling_factor
-            symbol_cash.loc[date] = (symbol_cash.loc[date] - base_per_symbol_capital) * scaling_factor + base_per_symbol_capital
-
-        portfolio_data[f'{symbol}_shares'] = symbol_shares
-        portfolio_data[f'{symbol}_value'] = symbol_position_value
-        portfolio_data[f'{symbol}_cash'] = symbol_cash
+        portfolio_data[f'{symbol}_shares'] = symbol_data['shares']
+        portfolio_data[f'{symbol}_value'] = symbol_data['position_value']
+        portfolio_data[f'{symbol}_cash'] = symbol_data['cash']
         portfolio_data[f'{symbol}_signal'] = symbol_data['signal']
 
         # Add to portfolio totals
         portfolio_data['total_value'] += symbol_data['position_value']
-        portfolio_data['total_cash'] += symbol_data['cash'] - (base_per_symbol_capital - initial_capital / len(symbols))
+        portfolio_data['total_cash'] += symbol_data['cash'] - (per_symbol_capital - initial_capital / len(symbols))
 
     # Calculate portfolio metrics
     portfolio_data['portfolio_total'] = portfolio_data['total_value'] + portfolio_data['total_cash']
@@ -242,7 +221,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
             'max_drawdown': portfolio_data['drawdown'].min(),
             'symbol_returns': {
                 symbol: (individual_results[symbol]['data']['portfolio_value'].iloc[-1] -
-                        base_per_symbol_capital) / base_per_symbol_capital * 100
+                        per_symbol_capital) / per_symbol_capital * 100
                 for symbol in symbols
             }
         }
@@ -543,6 +522,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
     plt.close()
+    buf.seek(0)
 
     return buf, backtest_result['stats']
 
@@ -693,7 +673,7 @@ def create_portfolio_with_prices_plot(backtest_result: dict) -> io.BytesIO:
         portfolio_idx = labels.index('Portfolio Value')
         handles = [handles[portfolio_idx]] + handles[:portfolio_idx] + handles[portfolio_idx+1:]
         labels = [labels[portfolio_idx]] + labels[:portfolio_idx] + labels[portfolio_idx+1:]
-    ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1,0.5), ncol=1)
+    ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5), ncol=1)
 
     # Adjust layout to prevent overlapping
     plt.tight_layout()

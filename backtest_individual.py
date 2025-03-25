@@ -144,7 +144,7 @@ def find_best_params(symbol: str,
 
     # Determine if we need to run simulations
     if last_update_date:
-        if datetime.now() - last_update_date < timedelta(weeks=1):
+        if datetime.now() - last_update_date < timedelta(weeks=15):
             print(
                 f"Using existing best parameters for {symbol} (last updated on {last_update_date_str})."
             )
