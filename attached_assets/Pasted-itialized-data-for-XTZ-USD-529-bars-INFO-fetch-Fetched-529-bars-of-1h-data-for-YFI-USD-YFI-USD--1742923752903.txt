@@ -1,0 +1,47 @@
+itialized data for XTZ/USD: 529 bars
+INFO:fetch:Fetched 529 bars of 1h data for YFI/USD (YFI-USD)
+INFO:fetch:Date range: 2025-03-03 17:00:00+00:00 to 2025-03-25 17:00:00+00:00
+INFO:strategy:Initialized data for YFI/USD: 529 bars
+INFO:fetch:Fetched 529 bars of 1h data for XRP/USD (XRP-USD)
+INFO:fetch:Date range: 2025-03-03 17:00:00+00:00 to 2025-03-25 17:00:00+00:00
+INFO:strategy:Initialized data for XRP/USD: 529 bars
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 357, in connect
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/retry.py", line 62, in call_with_retry
+    return do()
+           ^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 358, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 730, in _connect
+    raise err
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 718, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/run_market_hours.py", line 23, in <module>
+    from dashboard import dashboard, register_blueprints
+  File "/home/runner/workspace/dashboard.py", line 114, in <module>
+    cache_service = CacheService()
+                    ^^^^^^^^^^^^^^
+  File "/home/runner/workspace/services/cache_service.py", line 18, in __init__
+    self.redis_client.config_set('appendonly', 'yes')
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/commands/core.py", line 864, in config_set
+    return self.execute_command("CONFIG SET", name, value, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/client.py", line 559, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/client.py", line 565, in _execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 1422, in get_connection
+    connection.connect()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/redis/connection.py", line 363, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to 0.0.0.0:6379. Connection refused.
