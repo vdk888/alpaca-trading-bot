@@ -590,7 +590,7 @@ def get_capital_multiplier():
 
 @dashboard.route('/api/price-data')
 def get_price_data():
-    """Get price data for a specific symbol"""
+    """Get price data for a specific symbol using backtest output"""
     logger.info("API call: /api/price-data")
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', int(lookback_days_param), type=int)
@@ -603,119 +603,38 @@ def get_price_data():
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
     
     try:
-        from fetch import get_latest_data
-        from indicators import generate_signals, get_default_params
-        import pytz
-        from datetime import timedelta
-        import pandas as pd
+        # Run backtest for the symbol
+        logger.info(f"Running backtest for {symbol}")
+        backtest_result = run_backtest(symbol, days=days)
         
-        # Fetch price data for the symbol
-        df = get_latest_data(symbol, days=days)
+        # Extract data from backtest result
+        data = backtest_result['data']
+        signals = backtest_result['signals']
+        daily_data = backtest_result['daily_data']
+        weekly_data = backtest_result['weekly_data']
+        portfolio_values = backtest_result['portfolio_value']
+        shares = backtest_result['shares']
         
-        # Limit to the requested number of days
-        if days:
-            # Convert index to datetime if it's not already
-            if not isinstance(df.index, pd.DatetimeIndex):
-                df.index = pd.to_datetime(df.index)
-                
-            # Filter for the last N days
-            cutoff_date = datetime.now(pytz.UTC) - timedelta(days=days)
-            df = df[df.index >= cutoff_date]
-            logger.info(f"Filtered data for {symbol} from {cutoff_date} to now, resulting in {len(df)} data points")
-        
-        # Get parameters for indicators
-        try:
-            # Try to get best parameters for the symbol
-            best_params = get_best_params(symbol)
-            if isinstance(best_params, str):  # If it returns a message string instead of params
-                params = get_default_params()
-            else:
-                params = best_params
-        except Exception as e:
-            logger.warning(f"Error getting parameters for {symbol}: {str(e)}. Using default parameters.")
-            params = get_default_params()
-            
-        # Calculate indicators
-        try:
-            signal_data = generate_signals(df, params)
-            daily_data = signal_data[1]  # Daily composite data
-            weekly_data = signal_data[2]  # Weekly composite data
-            signals = signal_data[0]  # Signal data with buy/sell signals
-            logger.info(f"Generated indicators for {symbol}: {len(daily_data)} daily points, {len(weekly_data)} weekly points")
-        except Exception as e:
-            logger.error(f"Error generating indicators for {symbol}: {str(e)}")
-            raise
-        
-        # Run backtest for the symbol to get portfolio value data
-        backtest_data = None
-        portfolio_values = []
-        portfolio_dates = []
-        shares_owned = []
+        # Calculate allocation percentages
         allocation_percentages = []
-        try:
-            logger.info(f"Running backtest for {symbol} over {days} days")
-            backtest_result = run_backtest(symbol, days=days)
-            
-            # Extract portfolio value data from backtest result
-            if backtest_result and 'portfolio_value' in backtest_result:
-                portfolio_values = backtest_result['portfolio_value']
+        for i in range(len(shares)):
+            if i < len(data.index):
+                position_value = shares[i] * data['close'].iloc[i]
+                if portfolio_values[i] > 0:
+                    allocation_pct = (position_value / portfolio_values[i]) * 100
+                else:
+                    allocation_pct = 0
+                allocation_percentages.append(allocation_pct)
                 
-                # Extract shares owned data from backtest result
-                if 'shares' in backtest_result:
-                    shares_owned = backtest_result['shares']
-                    
-                    # Calculate allocation percentages
-                    allocation_percentages = []
-                    for i in range(len(shares_owned)):
-                        if i < len(df.index) and i < len(portfolio_values):
-                            # Calculate the value of the position
-                            position_value = shares_owned[i] * df['close'].iloc[i] if i < len(df) else 0
-                            # Calculate the percentage of the portfolio
-                            if portfolio_values[i] > 0:
-                                allocation_pct = (position_value / portfolio_values[i]) * 100
-                            else:
-                                allocation_pct = 0
-                            allocation_percentages.append(allocation_pct)
-                    
-                    logger.info(f"Calculated allocation percentages for {symbol}: min={min(allocation_percentages) if allocation_percentages else 0}%, max={max(allocation_percentages) if allocation_percentages else 0}%")
-                    
-                    # Ensure allocation percentages match data length
-                    if len(allocation_percentages) > len(df.index):
-                        allocation_percentages = allocation_percentages[:len(df.index)]
-                    elif len(allocation_percentages) < len(df.index):
-                        # Pad with last value if needed
-                        allocation_percentages = list(allocation_percentages) + [allocation_percentages[-1] if allocation_percentages else 0] * (len(df.index) - len(allocation_percentages))
-                    
-                    # Ensure shares data matches data length (still keep this for reference)
-                    if len(shares_owned) > len(df.index):
-                        shares_owned = shares_owned[:len(df.index)]
-                    elif len(shares_owned) < len(df.index):
-                        # Pad with last value if needed
-                        shares_owned = list(shares_owned) + [shares_owned[-1] if shares_owned else 0] * (len(df.index) - len(shares_owned))
-                
-                # Ensure portfolio values match data length
-                if len(portfolio_values) > len(df.index):
-                    portfolio_values = portfolio_values[:len(df.index)]
-                elif len(portfolio_values) < len(df.index):
-                    # Pad with last value if needed
-                    portfolio_values = list(portfolio_values) + [portfolio_values[-1] if portfolio_values else 0] * (len(df.index) - len(portfolio_values))
-                
-                # Create dates matching the portfolio values
-                portfolio_dates = [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index]
-                
-                logger.info(f"Successfully extracted portfolio value data with {len(portfolio_values)} points and {len(allocation_percentages)} allocation percentage data points")
-            else:
-                logger.warning(f"Backtest for {symbol} did not return portfolio value data")
-        except Exception as e:
-            logger.error(f"Error running backtest for {symbol}: {str(e)}")
-            # Don't raise here, we'll continue with the rest of the data
+        # Format dates
+        dates = [idx.strftime('%Y-%m-%d %H:%M') for idx in data.index]
         
-        # Format the data for Chart.js
+        # Format data for Chart.js
         price_data = {
-            'labels': [idx.strftime('%Y-%m-%d %H:%M') for idx in df.index],
+            'labels': dates,
             'symbol': symbol,
             'name': TRADING_SYMBOLS[symbol]['name'],
-            'days': days,  # Include days in the response
+            'days': days,
             
             # OHLC data for candlestick chart
             'ohlc': [
@@ -726,7 +645,7 @@ def get_price_data():
                     'l': float(row['low']),
                     'c': float(row['close']),
                     'v': float(row['volume'])
-                } for idx, row in df.iterrows()
+                } for idx, row in data.iterrows()
             ],
             
             # Add daily indicator data
@@ -745,22 +664,22 @@ def get_price_data():
             
             # Add backtest portfolio value data
             'portfolio_values': portfolio_values,
-            'portfolio_dates': portfolio_dates,
+            'portfolio_dates': dates,
             'allocation_percentages': allocation_percentages,
-            'shares_owned': shares_owned,
+            'shares_owned': shares,
             
             # Add buy/sell signals data
             'signals': signals['signal'].tolist(),
             'buy_signals': [
                 {
                     'time': idx.strftime('%Y-%m-%d %H:%M'),
-                    'price': float(df.loc[idx, 'close'])
+                    'price': float(data.loc[idx, 'close'])
                 } for idx in signals.index if signals.loc[idx, 'signal'] == 1
             ],
             'sell_signals': [
                 {
                     'time': idx.strftime('%Y-%m-%d %H:%M'),
-                    'price': float(df.loc[idx, 'close'])
+                    'price': float(data.loc[idx, 'close'])
                 } for idx in signals.index if signals.loc[idx, 'signal'] == -1
             ]
         }
@@ -768,8 +687,8 @@ def get_price_data():
         return jsonify(price_data)
         
     except Exception as e:
-        logger.error(f"Error fetching price data for {symbol}: {str(e)}")
-        return jsonify({"error": f"Error fetching price data: {str(e)}"}), 500
+        logger.error(f"Error getting price data for {symbol}: {str(e)}")
+        return jsonify({"error": f"Error getting price data: {str(e)}"}), 500
 
 @dashboard.route('/api/portfolio')
 def get_portfolio_data():
