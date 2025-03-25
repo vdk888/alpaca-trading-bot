@@ -27,7 +27,7 @@ def get_orders():
     logger.info("API call: /api/orders")
     symbol = request.args.get('symbol', None)
     limit_str = request.args.get('limit', '10')
-    limit = None if limit_str == 'all' else int(limit_str)
+    limit = None if limit_str == '10000' else int(limit_str)
     
     if symbol and symbol not in symbols:
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
