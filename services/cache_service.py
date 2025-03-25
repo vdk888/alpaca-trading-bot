@@ -8,15 +8,25 @@ logger = logging.getLogger(__name__)
 
 class CacheService:
     def __init__(self):
-        self.redis_client = redis.Redis(
-            host='0.0.0.0',  # Use 0.0.0.0 instead of localhost
-            port=6379,
-            db=0,
-            decode_responses=True
-        )
-        # Enable AOF persistence
-        self.redis_client.config_set('appendonly', 'yes')
-        self.redis_client.config_set('appendfsync', 'everysec')
+        self.redis_client = None
+        self.connect()
+
+    def connect(self):
+        try:
+            self.redis_client = redis.Redis(
+                host='0.0.0.0',
+                port=6379,
+                db=0,
+                decode_responses=True
+            )
+            # Test connection
+            self.redis_client.ping()
+            # Enable AOF persistence
+            self.redis_client.config_set('appendonly', 'yes')
+            self.redis_client.config_set('appendfsync', 'everysec')
+        except redis.ConnectionError:
+            logging.warning("Redis connection failed - falling back to in-memory cache")
+            self.redis_client = None
         
     def set_with_ttl(self, key: str, data: dict, ttl_hours: int = 1):
         """Store data with TTL"""
