@@ -92,10 +92,8 @@
         `);
         
         $.ajax({
-            url: '/dashboard/api/backtest',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ symbol, days }),
+            url: `/dashboard/api/backtest?symbol=${symbol}&days=${days}`,
+            type: 'GET',
             success: function(data) {
                 if (data.error) {
                     $('#backtest-results').html(`<div class="alert alert-danger">${data.error}</div>`);
