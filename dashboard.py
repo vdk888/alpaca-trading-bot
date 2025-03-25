@@ -211,17 +211,26 @@ def get_balance():
 def get_performance():
     """View today's performance"""
     logger.info("API call: /api/performance")
+    
+    cache_key = get_cache_key('performance')
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
+        logger.info("Returning cached performance data")
+        return jsonify(cached_data)
+        
     try:
         account = trading_client.get_account()
         today_pl = float(account.equity) - float(account.last_equity)
         today_pl_pct = (today_pl / float(account.last_equity)) * 100
 
-        return jsonify({
+        performance_data = {
             'today_pl': today_pl,
             'today_pl_pct': today_pl_pct,
             'starting_equity': float(account.last_equity),
             'current_equity': float(account.equity)
-        })
+        }
+        cache_service.set_with_ttl(cache_key, performance_data, ttl_hours=1)
+        return jsonify(performance_data)
     except Exception as e:
         return jsonify({"error": f"Error getting performance: {str(e)}"}), 500
 
@@ -229,6 +238,13 @@ def get_performance():
 def get_markets():
     """View market hours for all symbols"""
     logger.info("API call: /api/markets")
+    
+    cache_key = get_cache_key('markets')
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
+        logger.info("Returning cached market hours data")
+        return jsonify(cached_data)
+        
     market_data = {}
 
     for symbol in symbols:
@@ -241,13 +257,21 @@ def get_markets():
             }
         except Exception as e:
             market_data[symbol] = {"error": f"Error checking market status: {str(e)}"}
-
+    
+    cache_service.set_with_ttl(cache_key, market_data, ttl_hours=1)
     return jsonify(market_data)
 
 @dashboard.route('/api/symbols')
 def get_symbols():
     """List all trading symbols"""
     logger.info("API call: /api/symbols")
+    
+    cache_key = get_cache_key('symbols')
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=24):
+        logger.info("Returning cached symbols data")
+        return jsonify(cached_data)
+        
     symbol_data = []
 
     for symbol in symbols:
@@ -258,7 +282,8 @@ def get_symbols():
             "display_symbol": get_display_symbol(symbol),
             "symbol": symbol  # Add the original symbol key
         })
-
+    
+    cache_service.set_with_ttl(cache_key, symbol_data, ttl_hours=24)
     return jsonify(symbol_data)
 
 @dashboard.route('/api/backtest', methods=['GET']) #Changed to accept GET requests
@@ -405,6 +430,13 @@ def get_rank():
     """Display performance ranking of all assets"""
     logger.info("API call: /api/rank")
     days = request.args.get('days', 7, type=int)
+    
+    cache_key = get_cache_key('rank', days=days)
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
+        logger.info("Returning cached ranking data")
+        return jsonify(cached_data)
+        
     logger.info(f"Performance ranking for the last {days} days")
 
     try:
@@ -436,11 +468,13 @@ def get_rank():
         # Sort by return percentage (best to worst)
         performance_data.sort(key=lambda x: x['return_pct'], reverse=True)
 
-        return jsonify({
+        rank_data = {
             "success": True,
             "performance": performance_data,
             "days": days
-        })
+        }
+        cache_service.set_with_ttl(cache_key, rank_data)
+        return jsonify(rank_data)
     except Exception as e:
         logger.error(f"Error getting performance ranking: {str(e)}", exc_info=True)
         return jsonify({"error": f"Error getting performance ranking: {str(e)}"}), 500
@@ -449,6 +483,16 @@ def get_rank():
 def get_capital_multiplier():
     """Calculate and return the capital multiplier history"""
     logger.info("API call: /api/capital-multiplier")
+    
+    days = request.args.get('days', type=int)
+    if days is None or days <= 0:
+        days = int(lookback_days_param)
+        
+    cache_key = get_cache_key('capital_multiplier', days=days)
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+        logger.info("Returning cached capital multiplier data")
+        return jsonify(cached_data)
 
     try:
         from config import calculate_capital_multiplier
@@ -604,14 +648,16 @@ def get_capital_multiplier():
         # Calculate the current capital multiplier using the same parameters as trading implementation
         current_multiplier = calculate_capital_multiplier(lookback_days_param/2)
 
-        return jsonify({
+        multiplier_data = {
             "success": True,
             "dates": dates,
             "multiplier": multiplier_history,
             "std": std_history,
             "current_multiplier": round(current_multiplier, 2),
             "lookback_days": lookback_days_param/2  # Include the actual lookback days used in trading
-        })
+        }
+        cache_service.set_with_ttl(cache_key, multiplier_data, ttl_hours=4)
+        return jsonify(multiplier_data)
     except Exception as e:
         logger.error(f"Error calculating capital multiplier history: {str(e)}", exc_info=True)
         return jsonify({"error": f"Error calculating capital multiplier history: {str(e)}"}), 500
