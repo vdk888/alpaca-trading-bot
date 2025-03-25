@@ -1,0 +1,69 @@
+ring: 1992 data points for YFI/USD
+Fetching XRP-USD data...
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:36] "GET / HTTP/1.1" 302 -
+INFO:dashboard:Rendering dashboard
+INFO:dashboard:Using update interval: 1h (3600000ms)
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:37] "GET /dashboard/ HTTP/1.1" 200 -
+Retrieved 1992 data points for XRP/USD
+After market hours filtering: 1992 data points for XRP/USD
+Successfully loaded best parameters from Object Storage
+INFO:dashboard:API call: /api/balance
+ERROR:services.cache_service:Error getting cache for dashboard:balance: 'NoneType' object has no attribute 'get'
+Debug: Starting signal generation with 769 data points
+INFO:dashboard:API call: /api/performance
+ERROR:services.cache_service:Error getting cache for dashboard:performance: 'NoneType' object has no attribute 'get'
+INFO:httpx:HTTP Request: POST https://api.telegram.org/bot7879737482:AAE2kOMWiPBO9UeSy3vT1ktxaFOAtSKxUdM/getUpdates "HTTP/1.1 200 OK"
+ERROR:services.cache_service:Error setting cache for dashboard:balance: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:37] "GET /dashboard/api/balance HTTP/1.1" 200 -
+ERROR:services.cache_service:Error setting cache for dashboard:performance: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:37] "GET /dashboard/api/performance HTTP/1.1" 200 -
+INFO:dashboard:API call: /api/symbols
+ERROR:services.cache_service:Error getting cache for dashboard:symbols: 'NoneType' object has no attribute 'get'
+ERROR:services.cache_service:Error setting cache for dashboard:symbols: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:37] "GET /dashboard/api/symbols HTTP/1.1" 200 -
+INFO:dashboard:API call: /api/rank
+ERROR:services.cache_service:Error getting cache for dashboard:rank:days:83: 'NoneType' object has no attribute 'get'
+INFO:dashboard:API call: /api/portfolio
+INFO:dashboard:Performance ranking for the last 83 days
+ERROR:services.cache_service:Error getting cache for dashboard:portfolio:days:83: 'NoneType' object has no attribute 'get'
+ERROR:dashboard:Error generating portfolio data: calculate_capital_multiplier() takes from 0 to 1 positional arguments but 2 were given
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:37:37] "GET /dashboard/api/portfolio?days=83 HTTP/1.1" 500 -
+INFO:dashboard:API call: /api/capital-multiplier
+ERROR:services.cache_service:Error getting cache for dashboard:capital_multiplier:days:83: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Calculating capital multiplier history for the last 83 days
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:BTC/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for BTC/USD over 83 days
+INFO:dashboard:Running backtest for BTC/USD
+
+Fetching data for BTC/USD from 2025-01-01 19:37:37.881005+00:00 to 2025-03-25 19:37:37.881005+00:00
+Fetching BTC-USD data...
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:SOL/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for SOL/USD over 83 days
+INFO:dashboard:Running backtest for SOL/USD
+
+Fetching data for SOL/USD from 2025-01-01 19:37:37.909539+00:00 to 2025-03-25 19:37:37.909539+00:00
+Fetching BTC-USD data...
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:ETH/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for ETH/USD over 83 days
+INFO:dashboard:Running backtest for ETH/USD
+
+Fetching data for ETH/USD from 2025-01-01 19:37:37.949820+00:00 to 2025-03-25 19:37:37.949820+00:00
+Fetching BTC-USD data...
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:AVAX/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for AVAX/USD over 83 days
+INFO:dashboard:Running backtest for AVAX/USD
+
+Fetching data for AVAX/USD from 2025-01-01 19:37:37.950874+00:00 to 2025-03-25 19:37:37.950874+00:00
+Fetching BTC-USD data...
+Debug: calculate_composite_indicator input stats:
+Data points: 769
+Date range: 2025-02-21 19:00:00+00:00 to 2025-03-25 19:00:00+00:00
+MACD range: -32.5169 to 31.5577
+RSI range: 6.0562 to 97.0331
+Stochastic range: -47.2089 to 46.1348
+Normalized MACD range: -3.9257 to 3.8099
+Normalized RSI range: -1.7578 to 1.8813
