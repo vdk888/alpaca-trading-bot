@@ -747,6 +747,7 @@ def get_price_data():
             'portfolio_values': portfolio_values,
             'portfolio_dates': portfolio_dates,
             'allocation_percentages': allocation_percentages,
+            'shares_owned': shares_owned,
             
             # Add buy/sell signals data
             'signals': signals['signal'].tolist(),
@@ -899,6 +900,10 @@ def download_symbol_data():
         # Add portfolio value if available
         if 'portfolio_values' in price_data and len(price_data['portfolio_values']) == len(timestamps):
             df['portfolio_value'] = price_data['portfolio_values']
+            
+        # Add shares owned if available
+        if 'shares_owned' in price_data and len(price_data['shares_owned']) == len(timestamps):
+            df['shares_owned'] = price_data['shares_owned']
             
         # Add allocation percentages if available
         if 'allocation_percentages' in price_data and len(price_data['allocation_percentages']) == len(timestamps):

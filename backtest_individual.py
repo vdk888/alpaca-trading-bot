@@ -144,7 +144,7 @@ def find_best_params(symbol: str,
 
     # Determine if we need to run simulations
     if last_update_date:
-        if datetime.now() - last_update_date < timedelta(weeks=1):
+        if datetime.now() - last_update_date < timedelta(weeks=15):
             print(
                 f"Using existing best parameters for {symbol} (last updated on {last_update_date_str})."
             )
@@ -174,7 +174,7 @@ def find_best_params(symbol: str,
                               days=days,
                               params=default_params,
                               is_simulating=True,
-                              lookback_days_param=lookback_days_param)
+                              lookback_days_param=default_backtest_interval)
         performance = result['stats'][
             'total_return']  # Use total return as the performance metric
         win_rate = result['stats']['win_rate']  # Example metric
@@ -264,7 +264,7 @@ def run_backtest(symbol: str,
                  days: int = 5,
                  params: dict = None,
                  is_simulating: bool = False,
-                 lookback_days_param: int = 5) -> dict:
+                 lookback_days_param: int = default_backtest_interval) -> dict:
     """Run a single backtest simulation for a given symbol and parameter set."""
 
     # Fetch price data for all symbols
