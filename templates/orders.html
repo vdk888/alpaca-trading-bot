@@ -5,7 +5,16 @@
     <!-- Open Orders -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5>Open Orders <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateOrders()"></i></h5>
+            <div class="d-flex align-items-center">
+                <h5 class="me-3">Open Orders</h5>
+                <select id="orderLimit" class="form-select form-select-sm" style="width: auto;" onchange="updateOrders()">
+                    <option value="10">Show 10</option>
+                    <option value="25">Show 25</option>
+                    <option value="50">Show 50</option>
+                    <option value="100">Show 100</option>
+                </select>
+            </div>
+            <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateOrders()"></i>
         </div>
         <div class="card-body" id="orders-info">
             <div class="spinner-border" role="status">
@@ -19,7 +28,8 @@
 {% block scripts %}
 <script>
     function updateOrders() {
-        $.get('/dashboard/api/orders', function(data) {
+        const limit = document.getElementById('orderLimit').value;
+        $.get('/dashboard/api/orders?limit=' + limit, function(data) {
             if (data.error) {
                 $('#orders-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                 return;
