@@ -105,8 +105,17 @@
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5>Portfolio Performance <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePortfolioGraph()"></i></h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPortfolioTrades()">
+                            <i class="bi bi-download"></i> Download Trades
+                        </button>
                     </div>
                     <div class="card-body">
+                        <!-- Metrics display -->
+                        <div class="row mb-4" id="portfolio-metrics">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading metrics...</span>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-12">
                                 <div id="portfolio-chart-container" style="height: 400px;">
@@ -1360,7 +1369,57 @@
         }
         
         // Function to create portfolio chart
+        function downloadPortfolioTrades() {
+            const days = $('#chart-days').val();
+            window.location.href = `/dashboard/api/download-portfolio-trades?days=${days}`;
+        }
+
+        function displayPortfolioMetrics(data) {
+            const metrics = data.metrics;
+            const metricsHtml = `
+                <div class="col-md-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Returns</h6>
+                            <p class="mb-0">Total: <span class="${metrics.total_return > 0 ? 'text-success' : 'text-danger'}">${metrics.total_return.toFixed(2)}%</span></p>
+                            <p class="mb-0">Annualized: <span class="${metrics.annualized_return > 0 ? 'text-success' : 'text-danger'}">${metrics.annualized_return.toFixed(2)}%</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Portfolio Value</h6>
+                            <p class="mb-0">Initial: $${metrics.initial_capital.toLocaleString()}</p>
+                            <p class="mb-0">Final: $${metrics.final_value.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Risk Metrics</h6>
+                            <p class="mb-0">Sharpe Ratio: ${metrics.sharpe_ratio.toFixed(2)}</p>
+                            <p class="mb-0">Max Drawdown: ${metrics.max_drawdown.toFixed(2)}%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Trading Costs</h6>
+                            <p class="mb-0">Total: $${metrics.trading_costs.toLocaleString()}</p>
+                            <p class="mb-0">Turnover: ${(metrics.turnover * 100).toFixed(2)}%</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#portfolio-metrics').html(metricsHtml);
+        }
+
         function createPortfolioChart(data) {
+            // Display metrics
+            displayPortfolioMetrics(data);
             // Prepare data for ApexCharts
             const portfolioData = data.portfolio_data.map(item => ({
                 x: new Date(item.index),
