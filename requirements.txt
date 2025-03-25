@@ -11,3 +11,4 @@ flask
 requests
 telegram
 replit-object-storage
+redis

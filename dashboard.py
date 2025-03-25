@@ -110,11 +110,19 @@ def orders_page():
     logger.info("Rendering orders template")
     return render_template('orders.html', symbols=symbols)
 
-@dashboard.route('/api/status')
+from services.cache_service import CacheService
+cache_service = CacheService()
+
+@dashboard.route('/api/status') 
 def get_status():
     """Get current trading status for all symbols"""
     logger.info("API call: /api/status")
     symbol = request.args.get('symbol', None)
+    
+    # Try to get from cache first
+    cache_key = f"status_{symbol if symbol else 'all'}"
+    if cache_service.is_fresh(cache_key):
+        return jsonify(cache_service.get(cache_key))
 
     if symbol and symbol not in symbols:
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
