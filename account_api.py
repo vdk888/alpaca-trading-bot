@@ -26,7 +26,8 @@ def get_orders():
     """View past orders from Alpaca account"""
     logger.info("API call: /api/orders")
     symbol = request.args.get('symbol', None)
-    limit = request.args.get('limit', 10, type=int)
+    limit_str = request.args.get('limit', '10')
+    limit = None if limit_str == 'all' else int(limit_str)
     
     if symbol and symbol not in symbols:
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
@@ -37,7 +38,7 @@ def get_orders():
         logger.info(f"Getting orders with limit: {limit}")
         
         # Get all orders using get_recent_trades method
-        orders = alpaca_service.get_recent_trades(limit=limit)
+        orders = alpaca_service.get_recent_trades(limit=limit if limit else None)
         logger.info(f"Retrieved {len(orders)} orders")
         
         # Filter by symbol if specified
