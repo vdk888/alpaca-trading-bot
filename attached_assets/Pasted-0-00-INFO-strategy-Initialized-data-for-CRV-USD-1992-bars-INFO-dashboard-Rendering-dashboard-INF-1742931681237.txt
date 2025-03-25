@@ -1,0 +1,71 @@
+0:00
+INFO:strategy:Initialized data for CRV/USD: 1992 bars
+INFO:dashboard:Rendering dashboard
+INFO:dashboard:Using update interval: 1h (3600000ms)
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:40:35] "GET /dashboard/ HTTP/1.1" 200 -
+INFO:fetch:Fetched 1992 bars of 1h data for GRT/USD (GRT6719-USD)
+INFO:fetch:Date range: 2025-01-01 19:00:00+00:00 to 2025-03-25 19:00:00+00:00
+INFO:strategy:Initialized data for GRT/USD: 1992 bars
+INFO:fetch:Fetched 1992 bars of 1h data for MKR/USD (MKR-USD)
+INFO:fetch:Date range: 2025-01-01 19:00:00+00:00 to 2025-03-25 19:00:00+00:00
+INFO:strategy:Initialized data for MKR/USD: 1992 bars
+INFO:dashboard:API call: /api/rank
+ERROR:services.cache_service:Error getting cache for dashboard:rank:days:83: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Performance ranking for the last 83 days
+INFO:dashboard:API call: /api/performance
+ERROR:services.cache_service:Error getting cache for dashboard:performance: 'NoneType' object has no attribute 'get'
+INFO:dashboard:API call: /api/balance
+ERROR:services.cache_service:Error getting cache for dashboard:balance: 'NoneType' object has no attribute 'get'
+INFO:dashboard:API call: /api/portfolio
+ERROR:services.cache_service:Error getting cache for dashboard:portfolio:days:83: 'NoneType' object has no attribute 'get'
+INFO:dashboard:API call: /api/capital-multiplier
+ERROR:services.cache_service:Error getting cache for dashboard:capital_multiplier:days:83: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Calculating capital multiplier history for the last 83 days
+INFO:dashboard:API call: /api/symbols
+ERROR:services.cache_service:Error getting cache for dashboard:symbols: 'NoneType' object has no attribute 'get'
+ERROR:services.cache_service:Error setting cache for dashboard:symbols: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:40:35] "GET /dashboard/api/symbols HTTP/1.1" 200 -
+ERROR:services.cache_service:Error setting cache for dashboard:performance: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:40:35] "GET /dashboard/api/performance HTTP/1.1" 200 -
+ERROR:services.cache_service:Error setting cache for dashboard:balance: 'NoneType' object has no attribute 'setex'
+INFO:werkzeug:172.31.128.23 - - [25/Mar/2025 19:40:35] "GET /dashboard/api/balance HTTP/1.1" 200 -
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:BTC/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for BTC/USD over 83 days
+INFO:dashboard:Running backtest for BTC/USD
+
+Fetching data for BTC/USD from 2025-01-01 19:40:35.772638+00:00 to 2025-03-25 19:40:35.772638+00:00
+Fetching BTC-USD data...
+INFO:fetch:Fetched 1992 bars of 1h data for SUSHI/USD (SUSHI-USD)
+INFO:fetch:Date range: 2025-01-01 19:00:00+00:00 to 2025-03-25 19:00:00+00:00
+INFO:strategy:Initialized data for SUSHI/USD: 1992 bars
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:DOT/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for DOT/USD over 83 days
+INFO:dashboard:Running backtest for DOT/USD
+
+Fetching data for DOT/USD from 2025-01-01 19:40:35.844717+00:00 to 2025-03-25 19:40:35.844717+00:00
+Fetching BTC-USD data...
+INFO:dashboard:API call: /api/price-data
+ERROR:services.cache_service:Error getting cache for dashboard:price_data:days:83_symbol:LINK/USD: 'NoneType' object has no attribute 'get'
+INFO:dashboard:Fetching fresh price data for LINK/USD over 83 days
+INFO:dashboard:Running backtest for LINK/USD
+
+Fetching data for LINK/USD from 2025-01-01 19:40:35.867465+00:00 to 2025-03-25 19:40:35.867465+00:00
+Fetching BTC-USD data...
+Retrieved 1992 data points for BTC/USD
+After market hours filtering: 1992 data points for BTC/USD
+Fetching ETH-USD data...
+Using best parameters for BTC/USD: {'percent_increase_buy': 0.02, 'percent_decrease_sell': 0.02, 'sell_down_lim': 2.0, 'sell_rolling_std': 20, 'buy_up_lim': -2.0, 'buy_rolling_std': 20, 'macd_fast': 12, 'macd_slow': 26, 'macd_signal': 9, 'rsi_period': 14, 'stochastic_k_period': 14, 'stochastic_d_period': 3, 'fractal_window': 100, 'fractal_lags': [15, 30, 60], 'reactivity': 1.0, 'weights': {'weekly_macd_weight': 0.15, 'weekly_rsi_weight': 0.15, 'weekly_stoch_weight': 0.15, 'weekly_complexity_weight': 0.55, 'macd_weight': 0.15, 'rsi_weight': 0.15, 'stoch_weight': 0.15, 'complexity_weight': 0.55}}
+Debug: Starting signal generation with 1992 data points
+INFO:fetch:Fetched 1992 bars of 1h data for XTZ/USD (XTZ-USD)
+INFO:fetch:Date range: 2025-01-01 19:00:00+00:00 to 2025-03-25 19:00:00+00:00
+INFO:strategy:Initialized data for XTZ/USD: 1992 bars
+Retrieved 1992 data points for BTC/USD
+After market hours filtering: 1992 data points for BTC/USD
+Fetching ETH-USD data...
+Retrieved 1992 data points for BTC/USD
+After market hours filtering: 1992 data points for BTC/USD
+Fetching ETH-USD data...
+INFO:fetch:Fetched 1992 bars of 1h data for YFI/USD (YFI-USD)
+INFO:fetch:Date range: 2025-01-01 19:00:

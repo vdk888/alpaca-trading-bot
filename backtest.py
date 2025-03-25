@@ -162,7 +162,7 @@ def run_portfolio_backtest(symbols: list, days: int = default_backtest_interval,
     base_per_symbol_capital = initial_capital / len(symbols)
 
     # Calculate capital multipliers for each date
-    multipliers = calculate_capital_multiplier(symbols, days)
+    multipliers = calculate_capital_multiplier(days)
 
     # Run individual backtests
     individual_results = {}
