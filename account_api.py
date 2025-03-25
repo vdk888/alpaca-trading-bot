@@ -180,8 +180,8 @@ def get_position():
     
     return jsonify(position_data)
 
-@account_api.route('/api/portfolio')
-def get_portfolio():
+@account_api.route('/api/account/portfolio')
+def get_account_portfolio():
     """Get portfolio history graph"""
     logger.info("API call: /api/portfolio")
     timeframe = request.args.get('interval', '1D')  # This is passed as 'interval' from frontend
