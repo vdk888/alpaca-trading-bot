@@ -490,7 +490,7 @@ def get_capital_multiplier():
         
     cache_key = get_cache_key('capital_multiplier', days=days)
     cached_data = cache_service.get(cache_key)
-    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info("Returning cached capital multiplier data")
         return jsonify(cached_data)
 
@@ -674,7 +674,7 @@ def get_price_data():
     
     # Try to get from cache first
     cached_data = cache_service.get(cache_key)
-    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):  # Cache for 4 hours
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):  # Cache for 4 hours
         logger.info(f"Returning cached price data for {symbol}")
         return jsonify(cached_data)
         
