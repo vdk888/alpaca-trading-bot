@@ -113,16 +113,25 @@ def orders_page():
 from services.cache_service import CacheService
 cache_service = CacheService()
 
+def get_cache_key(endpoint: str, **params) -> str:
+    """Generate standardized cache key"""
+    key = f"dashboard:{endpoint}"
+    if params:
+        param_str = "_".join(f"{k}:{v}" for k, v in sorted(params.items()))
+        key += f":{param_str}"
+    return key
+
 @dashboard.route('/api/status') 
 def get_status():
     """Get current trading status for all symbols"""
     logger.info("API call: /api/status")
     symbol = request.args.get('symbol', None)
     
-    # Try to get from cache first
-    cache_key = f"status_{symbol if symbol else 'all'}"
-    if cache_service.is_fresh(cache_key):
-        return jsonify(cache_service.get(cache_key))
+    cache_key = get_cache_key('status', symbol=symbol if symbol else 'all')
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key):
+        logger.info(f"Returning cached status data for {symbol if symbol else 'all symbols'}")
+        return jsonify(cached_data)
 
     if symbol and symbol not in symbols:
         return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
@@ -170,20 +179,31 @@ def get_status():
         except Exception as e:
             status_data[sym] = {"error": f"Error analyzing {sym}: {str(e)}"}
 
+    # Cache the result before returning
+    cache_service.set_with_ttl(cache_key, status_data)
     return jsonify(status_data)
 
 @dashboard.route('/api/balance')
 def get_balance():
     """Get account balance"""
     logger.info("API call: /api/balance")
+    
+    cache_key = get_cache_key('balance')
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
+        logger.info("Returning cached balance data")
+        return jsonify(cached_data)
+        
     try:
         account = trading_client.get_account()
-        return jsonify({
+        balance_data = {
             'cash': float(account.cash),
             'portfolio_value': float(account.portfolio_value),
             'buying_power': float(account.buying_power),
             'today_pl': float(account.equity) - float(account.last_equity)
-        })
+        }
+        cache_service.set_with_ttl(cache_key, balance_data)
+        return jsonify(balance_data)
     except Exception as e:
         return jsonify({"error": f"Error getting balance: {str(e)}"}), 500
 
@@ -602,6 +622,12 @@ def get_price_data():
     logger.info("API call: /api/price-data")
     symbol = request.args.get('symbol', None)
     days = request.args.get('days', int(lookback_days_param), type=int)
+    
+    cache_key = get_cache_key('price_data', symbol=symbol, days=days)
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key):
+        logger.info(f"Returning cached price data for {symbol}")
+        return jsonify(cached_data)
     logger.info(f"Fetching price data for {symbol} over {days} days")
 
     if not symbol:
@@ -692,6 +718,7 @@ def get_price_data():
             ]
         }
 
+        cache_service.set_with_ttl(cache_key, price_data)
         return jsonify(price_data)
 
     except Exception as e:
