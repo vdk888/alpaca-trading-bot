@@ -7,11 +7,12 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <h5 class="me-3">Open Orders</h5>
-                <select id="orderLimit" class="form-select form-select-sm" style="width: auto;" onchange="updateOrders()">
+                <select id="orderLimit" class="form-select form-select-sm" style="width: auto; min-width: 100px;" onchange="updateOrders()">
                     <option value="10">Show 10</option>
                     <option value="25">Show 25</option>
                     <option value="50">Show 50</option>
                     <option value="100">Show 100</option>
+                    <option value="all">Show All</option>
                 </select>
             </div>
             <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateOrders()"></i>
@@ -29,7 +30,8 @@
 <script>
     function updateOrders() {
         const limit = document.getElementById('orderLimit').value;
-        $.get('/dashboard/api/orders?limit=' + limit, function(data) {
+        const url = limit === 'all' ? '/dashboard/api/orders' : '/dashboard/api/orders?limit=' + limit;
+        $.get(url, function(data) {
             if (data.error) {
                 $('#orders-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                 return;
