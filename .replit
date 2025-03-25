@@ -14,12 +14,11 @@ channel = "stable-24_05"
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
+externalPort = 80
 
 [[ports]]
 localPort = 6379
-externalPort = 80
-
+externalPort = 6379
 
 [objectStorage]
 defaultBucketID = "replit-objstore-2927bac7-9a77-4731-9fd7-61c199e7357c"
