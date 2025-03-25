@@ -871,6 +871,9 @@ def get_portfolio_data():
             'metrics': result['metrics']
         }
         
+        'metrics': result['metrics']
+        })
+        
         # Cache results before returning
         cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=1)
         return jsonify(portfolio_data)
