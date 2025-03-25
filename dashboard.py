@@ -294,6 +294,15 @@ def run_backtest_api():
     days = request.args.get('days', default=default_backtest_interval)
 
     logger.info(f"Backtest request: symbol={symbol}, days={days}")
+    
+    # Generate cache key
+    cache_key = get_cache_key('backtest', symbol=symbol if symbol else 'portfolio', days=days)
+    
+    # Try to get from cache
+    cached_data = cache_service.get(cache_key)
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+        logger.info(f"Returning cached backtest data for {symbol if symbol else 'portfolio'}")
+        return jsonify(cached_data)
 
     try:
         days = int(days)
@@ -396,6 +405,8 @@ def run_backtest_api():
                     "error": f"Error running backtest: {str(e)}"
                 }
 
+        # Cache the results before returning
+        cache_service.set_with_ttl(cache_key, results, ttl_hours=4)
         return jsonify(results)
 
 @dashboard.route('/api/backtest/info')
@@ -781,7 +792,17 @@ def get_price_data():
 def get_portfolio_data():
     """Get portfolio backtest data for the dashboard"""
     logger.info("API call: /api/portfolio")
+    
     try:
+        # Get days parameter and generate cache key
+        days = request.args.get('days', default=30, type=int)
+        cache_key = get_cache_key('portfolio', days=days)
+        
+        # Try to get from cache
+        cached_data = cache_service.get(cache_key)
+        if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+            logger.info("Returning cached portfolio data")
+            return jsonify(cached_data)
         try:
             # Get days parameter, default to 30 days
             days = request.args.get('days', default=30, type=int)
@@ -848,7 +869,11 @@ def get_portfolio_data():
             'allocations': allocations,
             'timestamps': [idx.strftime('%Y-%m-%dT%H:%M:%S') for idx in data.index],
             'metrics': result['metrics']
-        })
+        }
+        
+        # Cache results before returning
+        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=4)
+        return jsonify(portfolio_data)
     except Exception as e:
         logger.error(f"Error generating portfolio data: {str(e)}")
         return jsonify({"error": f"Error generating portfolio data: {str(e)}"}), 500
