@@ -1,3 +1,6 @@
+
+from services.cache_service import CacheService
+
 def test_object_storage():
     cache_service = CacheService()
 
@@ -22,7 +25,7 @@ def test_object_storage():
         print(f"The data under key '{test_key}' is fresh.")
     else:
         print(f"The data under key '{test_key}' is not fresh or does not exist.")
-
+    
 # Run the test function
 if __name__ == "__main__":
     test_object_storage()
