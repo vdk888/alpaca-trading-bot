@@ -1,82 +1,93 @@
 
-import redis
 import json
 from datetime import datetime, timedelta
 import logging
 from typing import Dict, Any
+from replit.object_storage import Client
 
 logger = logging.getLogger(__name__)
 
 class CacheService:
     def __init__(self):
-        self.redis_client = None
-        self.memory_cache: Dict[str, Any] = {}
-        self.memory_ttl: Dict[str, datetime] = {}
+        self.storage_client = None
         self.connect()
 
     def connect(self):
         try:
-            self.redis_client = redis.Redis(
-                host='0.0.0.0',
-                port=6379,
-                db=0,
-                decode_responses=True,
-                socket_timeout=5,
-                socket_connect_timeout=5,
-                retry_on_timeout=True
-            )
-            # Test connection
-            self.redis_client.ping()
-            # Enable AOF persistence
-            self.redis_client.config_set('appendonly', 'yes')
-            self.redis_client.config_set('appendfsync', 'everysec')
-        except redis.ConnectionError:
-            logging.warning("Redis connection failed - falling back to in-memory cache")
-            self.redis_client = None
-        
+            self.storage_client = Client()
+            logger.info("Successfully connected to Replit Object Storage")
+        except Exception as e:
+            logger.error(f"Error connecting to Object Storage: {str(e)}")
+            self.storage_client = None
+
     def set_with_ttl(self, key: str, data: dict, ttl_hours: int = 1):
         """Store data with TTL"""
         try:
-            if self.redis_client:
-                self.redis_client.setex(
-                    key,
-                    timedelta(hours=ttl_hours),
-                    json.dumps(data)
-                )
-            else:
-                # Fallback to memory cache
-                self.memory_cache[key] = json.dumps(data)
-                self.memory_ttl[key] = datetime.now() + timedelta(hours=ttl_hours)
+            if not self.storage_client:
+                logger.error("No Object Storage connection available")
+                return
+
+            # Add TTL info to the data
+            cache_data = {
+                'data': data,
+                'expires_at': (datetime.now() + timedelta(hours=ttl_hours)).isoformat()
+            }
+            
+            # Store in Object Storage
+            self.storage_client.upload_from_text(key, json.dumps(cache_data))
+            
         except Exception as e:
             logger.error(f"Error setting cache for {key}: {str(e)}")
-            
+
     def get(self, key: str) -> dict:
         """Get data from cache"""
         try:
-            if self.redis_client:
-                data = self.redis_client.get(key)
-                return json.loads(data) if data else None
-            else:
-                # Fallback to memory cache
-                if key in self.memory_cache and datetime.now() < self.memory_ttl[key]:
-                    return json.loads(self.memory_cache[key])
+            if not self.storage_client:
+                logger.error("No Object Storage connection available")
                 return None
+
+            try:
+                # Get data from Object Storage
+                cache_data = json.loads(self.storage_client.download_from_text(key))
+                
+                # Check expiration
+                expires_at = datetime.fromisoformat(cache_data['expires_at'])
+                if datetime.now() > expires_at:
+                    # Delete expired data
+                    try:
+                        self.storage_client.delete(key)
+                    except:
+                        pass
+                    return None
+                    
+                return cache_data['data']
+            except:
+                return None
+
         except Exception as e:
             logger.error(f"Error getting cache for {key}: {str(e)}")
             return None
-            
+
     def is_fresh(self, key: str, max_age_hours: int = 1) -> bool:
         """Check if cached data exists and is fresh"""
         try:
-            if self.redis_client:
-                ttl = self.redis_client.ttl(key)
-                return ttl > 0 and ttl > (max_age_hours * 3600 - 300)  # 5 min buffer
-            else:
-                # Fallback to memory cache
-                if key in self.memory_ttl:
-                    remaining = (self.memory_ttl[key] - datetime.now()).total_seconds()
-                    return remaining > 0 and remaining > (max_age_hours * 3600 - 300)
+            if not self.storage_client:
+                logger.error("No Object Storage connection available")
                 return False
+
+            try:
+                # Get data from Object Storage
+                cache_data = json.loads(self.storage_client.download_from_text(key))
+                
+                # Check expiration
+                expires_at = datetime.fromisoformat(cache_data['expires_at'])
+                remaining = (expires_at - datetime.now()).total_seconds()
+                
+                # Consider fresh if more than 5 min remaining
+                return remaining > 300
+            except:
+                return False
+
         except Exception as e:
             logger.error(f"Error checking cache freshness for {key}: {str(e)}")
             return False

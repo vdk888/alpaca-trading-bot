@@ -12,3 +12,4 @@ requests
 telegram
 replit-object-storage
 redis
+replit
