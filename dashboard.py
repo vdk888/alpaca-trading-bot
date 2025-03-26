@@ -63,13 +63,29 @@ def debug_cache():
     # Get cache freshness
     is_fresh = cache_service.is_fresh(test_key)
 
+    # Get all Redis keys if Redis is connected
+    all_keys = {}
+    if cache_service.redis_client:
+        try:
+            redis_keys = cache_service.redis_client.keys('*')
+            for key in redis_keys:
+                value = cache_service.redis_client.get(key)
+                ttl = cache_service.redis_client.ttl(key)
+                all_keys[key] = {
+                    'value': json.loads(value) if value else None,
+                    'ttl_seconds': ttl
+                }
+        except Exception as e:
+            all_keys = {'error': str(e)}
+
     return jsonify({
         "cache_test_write": test_data,
         "cache_test_read": cached_data,
         "is_fresh": is_fresh,
         "using_redis": cache_service.redis_client is not None,
         "memory_cache_size": len(cache_service.memory_cache),
-        "memory_ttl_size": len(cache_service.memory_ttl)
+        "memory_ttl_size": len(cache_service.memory_ttl),
+        "redis_keys": all_keys
     })
 
 strategies = {symbol: TradingStrategy(symbol) for symbol in symbols}
