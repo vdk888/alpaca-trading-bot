@@ -392,42 +392,6 @@ def run_backtest_api():
 
             # Calculate Sharpe ratio if available
             if 'sharpe_ratio' in results['metrics']:
-
-@dashboard.route('/api/cached-backtest')
-def get_cached_backtest():
-    """Get the most recent portfolio backtest results from cache"""
-    logger.info("API call: /api/cached-backtest")
-
-    cache_key = get_cache_key('portfolio_backtest_latest')
-    cached_data = cache_service.get(cache_key)
-    
-    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=24):
-        logger.info("Returning cached portfolio backtest results")
-        return jsonify(cached_data)
-        
-    # If no cached data, run a new backtest with default days
-    try:
-        days = 30  # Default period
-        result = run_portfolio_backtest(symbols, days)
-        
-        # Extract key metrics
-        metrics = {
-            "total_return_pct": result['metrics']['total_return'],
-            "max_drawdown_pct": result['metrics']['max_drawdown'],
-            "final_value": result['metrics']['final_value'],
-            "initial_capital": result['metrics']['initial_capital'],
-            "trading_costs": result['metrics']['trading_costs']
-        }
-        
-        # Cache the results
-        cache_service.set_with_ttl(cache_key, metrics, ttl_hours=24)
-        return jsonify(metrics)
-        
-    except Exception as e:
-        logger.error(f"Error getting cached backtest results: {str(e)}")
-        return jsonify({"error": f"Error getting cached backtest results: {str(e)}"}), 500
-
-
                 metrics["sharpe_ratio"] = results['metrics']['sharpe_ratio']
             else:
                 metrics["sharpe_ratio"] = 0

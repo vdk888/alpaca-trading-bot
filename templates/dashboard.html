@@ -71,17 +71,6 @@
         <div class="tab-content" id="myTabContent">
             <!-- Overview Tab -->
             <div class="tab-pane fade {% if not active_tab or active_tab == 'overview' %}show active{% endif %}" id="overview" role="tabpanel" aria-labelledby="overview-tab">
-                <!-- Cached Portfolio Results -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Last Portfolio Backtest Results <i class="bi bi-arrow-clockwise refresh-btn" onclick="updateCachedBacktest()"></i></h5>
-                    </div>
-                    <div class="card-body" id="cached-backtest-info">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
                 <div class="row">
                     <!-- Account Balance -->
                     <div class="col-md-6">
@@ -1558,39 +1547,10 @@
             chart.render();
         }
         
-        // Function to update cached backtest results
-        function updateCachedBacktest() {
-            $.get('/dashboard/api/cached-backtest', function(data) {
-                if (data.error) {
-                    $('#cached-backtest-info').html(`<div class="alert alert-danger">${data.error}</div>`);
-                    return;
-                }
-                
-                const resultsHtml = `
-                    <div class="row">
-                        <div class="col-md-3">
-                            <p>Initial Capital: ${formatCurrency(data.initial_capital)}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <p>Final Value: ${formatCurrency(data.final_value)}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <p>Total Return: <span class="${getValueClass(data.total_return_pct)}">${formatPercentage(data.total_return_pct)}</span></p>
-                        </div>
-                        <div class="col-md-3">
-                            <p>Max Drawdown: <span class="negative">${formatPercentage(data.max_drawdown_pct)}</span></p>
-                        </div>
-                    </div>
-                `;
-                $('#cached-backtest-info').html(resultsHtml);
-            });
-        }
-
         // Initialize portfolio graph on page load
         $(document).ready(function() {
             // Initial data loads
             updateBalance();
-            updateCachedBacktest();
             updatePerformance();
             updatePriceCharts();
             updateRank();
