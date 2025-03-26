@@ -838,13 +838,15 @@ def get_portfolio_data():
     logger.info("API call: /api/portfolio")
 
     try:
-        # Get days parameter and generate cache key
+        # Get days parameter, default to 30 days
         days = request.args.get('days', default=30, type=int)
+
+        # Generate cache key 
         cache_key = get_cache_key('portfolio', days=days)
 
         # Try to get from cache
         cached_data = cache_service.get(cache_key)
-        if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
+        if cached_data and cache_service.is_fresh(cache_key):
             logger.info("Returning cached portfolio data")
             return jsonify(cached_data)
         try:
@@ -907,16 +909,16 @@ def get_portfolio_data():
             allocation = (data[f'{symbol}_value'] / total_portfolio * 100).fillna(0)
             allocations[symbol] = allocation.tolist()
 
-        return jsonify({
+        portfolio_data = {
             'portfolio_data': data_dict,
             'benchmark_data': benchmark_data,
             'allocations': allocations,
             'timestamps': [idx.strftime('%Y-%m-%dT%H:%M:%S') for idx in data.index],
             'metrics': result['metrics']
-        })
+        }
 
         # Cache results before returning
-        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=1)
+        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=4)
         return jsonify(portfolio_data)
     except Exception as e:
         logger.error(f"Error generating portfolio data: {str(e)}")
