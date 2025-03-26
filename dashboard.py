@@ -51,6 +51,9 @@ executors = {symbol: TradingExecutor(trading_client, symbol) for symbol in symbo
 @dashboard.route('/api/debug/cache')
 def debug_cache():
     """Debug endpoint to check cache functionality"""
+    # Re-initialize cache connection 
+    cache_service.connect()
+    
     # Test writing to cache
     test_key = "test_data"
     test_data = {"timestamp": str(datetime.now()), "test": "data"}
