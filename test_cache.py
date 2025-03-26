@@ -31,7 +31,7 @@ def test_object_storage():
 
     # Try to read it directly from storage
     try:
-        raw_data = cache_service.storage_client.download_from_text(test_key)
+        raw_data = cache_service.storage_client.download_as_text(test_key)
         print(f"\nRaw storage data: {raw_data}")
     except Exception as e:
         print(f"Error reading directly from storage: {str(e)}")
