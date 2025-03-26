@@ -1,4 +1,3 @@
-
 import json
 from datetime import datetime, timedelta
 import logging
@@ -35,10 +34,10 @@ class CacheService:
                 'expires_at': (datetime.now() + timedelta(hours=ttl_hours)).isoformat(),
                 'created_at': datetime.now().isoformat()
             }
-            
+
             # Store in Object Storage
             self.storage_client.upload_from_text(key, json.dumps(cache_data))
-            
+
         except Exception as e:
             logger.error(f"Error setting cache for {key}: {str(e)}")
 
@@ -53,8 +52,8 @@ class CacheService:
 
             try:
                 # Get data from Object Storage
-                cache_data = json.loads(self.storage_client.download_from_text(key))
-                
+                cache_data = json.loads(self.storage_client.download_as_text(key))
+
                 # Check expiration
                 expires_at = datetime.fromisoformat(cache_data['expires_at'])
                 if datetime.now() > expires_at:
@@ -64,7 +63,7 @@ class CacheService:
                     except Exception as e:
                         logger.error(f"Error deleting expired cache for {key}: {str(e)}")
                     return None
-                    
+
                 return cache_data['data']
             except Exception as e:
                 logger.debug(f"Cache miss for {key}: {str(e)}")
@@ -83,12 +82,12 @@ class CacheService:
 
             try:
                 # Get data from Object Storage
-                cache_data = json.loads(self.storage_client.download_from_text(key))
-                
+                cache_data = json.loads(self.storage_client.download_as_text(key))
+
                 # Check expiration
                 expires_at = datetime.fromisoformat(cache_data['expires_at'])
                 remaining = (expires_at - datetime.now()).total_seconds()
-                
+
                 # Consider fresh if more than 5 min remaining
                 return remaining > 300
             except:
