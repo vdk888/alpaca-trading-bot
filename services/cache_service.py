@@ -24,13 +24,16 @@ class CacheService:
         """Store data with TTL"""
         try:
             if not self.storage_client:
-                logger.error("No Object Storage connection available")
-                return
+                self.connect()
+                if not self.storage_client:
+                    logger.error("No Object Storage connection available")
+                    return
 
             # Add TTL info to the data
             cache_data = {
                 'data': data,
-                'expires_at': (datetime.now() + timedelta(hours=ttl_hours)).isoformat()
+                'expires_at': (datetime.now() + timedelta(hours=ttl_hours)).isoformat(),
+                'created_at': datetime.now().isoformat()
             }
             
             # Store in Object Storage
@@ -43,8 +46,10 @@ class CacheService:
         """Get data from cache"""
         try:
             if not self.storage_client:
-                logger.error("No Object Storage connection available")
-                return None
+                self.connect()
+                if not self.storage_client:
+                    logger.error("No Object Storage connection available")
+                    return None
 
             try:
                 # Get data from Object Storage
@@ -56,12 +61,13 @@ class CacheService:
                     # Delete expired data
                     try:
                         self.storage_client.delete(key)
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error(f"Error deleting expired cache for {key}: {str(e)}")
                     return None
                     
                 return cache_data['data']
-            except:
+            except Exception as e:
+                logger.debug(f"Cache miss for {key}: {str(e)}")
                 return None
 
         except Exception as e:
