@@ -587,6 +587,33 @@ def get_capital_multiplier():
                 # Convert index to date objects for comparison
                 date_indices = [d.date() if hasattr(d, 'date') else d for d in data.index]
 
+
+
+@dashboard.route('/api/debug/cache')
+def debug_cache():
+    """Debug endpoint to check cache functionality"""
+    # Test writing to cache
+    test_key = "test_data"
+    test_data = {"timestamp": str(datetime.now()), "test": "data"}
+    
+    cache_service.set_with_ttl(test_key, test_data, ttl_hours=1)
+    
+    # Read back the data
+    cached_data = cache_service.get(test_key)
+    
+    # Get cache freshness
+    is_fresh = cache_service.is_fresh(test_key)
+    
+    return jsonify({
+        "cache_test_write": test_data,
+        "cache_test_read": cached_data,
+        "is_fresh": is_fresh,
+        "using_redis": cache_service.redis_client is not None,
+        "memory_cache_size": len(cache_service.memory_cache),
+        "memory_ttl_size": len(cache_service.memory_ttl)
+    })
+
+
                 # Find data up to current date
                 valid_indices = [j for j, date in enumerate(date_indices) if date <= current_date]
                 if len(valid_indices) >= min_data_points:
