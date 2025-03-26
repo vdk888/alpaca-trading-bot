@@ -63,7 +63,7 @@ INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_D
 
 # Default backtest interval based on DEFAULT_INTERVAL
 default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 0.4  # Default to 2 years if no limit
-default_backtest_interval=default_backtest_interval /4# for test
+default_backtest_interval=default_backtest_interval# for test
 lookback_days_param = default_backtest_interval
 
 #1-minute interval: Maximum of 7 days of historical data.
