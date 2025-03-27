@@ -78,7 +78,13 @@ class TradingStrategy:
             
             # Check if we already generated a signal for this bar
             # Convert interval string to pandas offset
-            interval_str = self.interval.replace('min', 'T').replace('h', 'H').replace('d', 'D')
+            interval_str = self.interval.lower()
+            if 'min' in interval_str:
+                interval_str = interval_str.replace('min', 'T')
+            elif 'h' in interval_str:
+                interval_str = interval_str.replace('h', 'h')
+            elif 'd' in interval_str:
+                interval_str = interval_str.replace('d', 'D')
             interval_offset = pd.Timedelta(interval_str)
             if (self.last_signal_time is not None and 
                 current_bar_time.floor(interval_offset) == self.last_signal_time.floor(interval_offset)):
