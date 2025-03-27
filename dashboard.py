@@ -386,7 +386,7 @@ def run_backtest_api():
             }
 
             # Cache the results
-            cache_service.set_with_ttl(cache_key, response_data, ttl_hours=4)
+            cache_service.set_with_ttl(cache_key, response_data, ttl_hours=1)
 
             # Extract key metrics for the frontend
             metrics = {
@@ -468,7 +468,7 @@ def run_backtest_api():
                 }
 
         # Cache the results before returning
-        cache_service.set_with_ttl(cache_key, results, ttl_hours=4)
+        cache_service.set_with_ttl(cache_key, results, ttl_hours=1)
         return jsonify(results)
 
 @dashboard.route('/api/backtest/info')
@@ -729,7 +729,7 @@ def get_capital_multiplier():
             "current_multiplier": round(current_multiplier, 2),
             "lookback_days": lookback_days_param/2  # Include the actual lookback days used in trading
         }
-        cache_service.set_with_ttl(cache_key, multiplier_data, ttl_hours=4)
+        cache_service.set_with_ttl(cache_key, multiplier_data, ttl_hours=1)
         return jsonify(multiplier_data)
     except Exception as e:
         logger.error(f"Error calculating capital multiplier history: {str(e)}", exc_info=True)
@@ -842,7 +842,7 @@ def get_price_data():
         }
 
         # Store in cache with 4 hour TTL before returning
-        cache_service.set_with_ttl(cache_key, price_data, ttl_hours=4)
+        cache_service.set_with_ttl(cache_key, price_data, ttl_hours=1)
         logger.info(f"Cached price data for {symbol} with TTL of 4 hours")
         return jsonify(price_data)
 
@@ -970,7 +970,7 @@ def get_portfolio_data():
         }
 
         # Cache results before returning
-        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=4)
+        cache_service.set_with_ttl(cache_key, portfolio_data, ttl_hours=1)
         return jsonify(portfolio_data)
     except Exception as e:
         logger.error(f"Error generating portfolio data: {str(e)}")
