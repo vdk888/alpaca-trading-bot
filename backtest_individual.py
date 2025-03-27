@@ -219,7 +219,7 @@ def find_best_params(symbol: str,
                 # Get existing history or create new one
                 if 'history' in existing_data[symbol]:
                     history = existing_data[symbol]['history']
-
+                
                 # Append current best params to history
                 history.append({
                     'params': existing_data[symbol]['best_params'],
@@ -285,14 +285,14 @@ def run_backtest(symbol: str,
 
         print(f"Fetching {sym} data...")
         data = fetch_historical_data(sym, interval=default_interval_yahoo, days=(end_date - start_date).days)
-
+        
         # Convert index to datetime if it isn't already
         data.index = pd.to_datetime(data.index)
-
+        
         # Localize timezone like yfinance does
         if data.index.tz is None:
             data.index = data.index.tz_localize('America/New_York').tz_convert('UTC')
-
+        
         print(f"Retrieved {len(data)} data points for {sym}")
 
         if len(data) == 0:
@@ -326,7 +326,7 @@ def run_backtest(symbol: str,
     # Load the best parameters from Object Storage or local file
     best_params_file = "best_params.json"
     best_params_data = {}
-
+    
     try:
         # Try to get parameters from Replit Object Storage first
         try:
@@ -381,10 +381,10 @@ def run_backtest(symbol: str,
     data = fetch_historical_data(symbol, 
                                interval=symbol_config.get('interval', DEFAULT_INTERVAL),
                                days=(end_date - start_date).days)
-
+                               
     # Convert index to datetime if it isn't already
     data.index = pd.to_datetime(data.index)
-
+    
     # Localize timezone like yfinance does
     if data.index.tz is None:
         data.index = data.index.tz_localize('America/New_York').tz_convert('UTC')
@@ -655,7 +655,7 @@ def run_backtest(symbol: str,
     current_price = data['close'].iloc[-1]
     final_value = cash + (position * current_price)
     total_return = ((final_value - initial_capital) / initial_capital) * 100
-
+    
     # Debug info for return calculation
     print(f"\nReturn calculation details:")
     print(f"Initial capital: ${initial_capital:.2f}")
@@ -710,7 +710,7 @@ def run_backtest(symbol: str,
                                                    excess_returns.std())
         else:
             sharpe_ratio = 0
-
+            
         # Calculate portfolio turnover
         turnover = 0
         if len(portfolio_value) > 1:
@@ -718,7 +718,7 @@ def run_backtest(symbol: str,
             sells = sum(t.get('value', t.get('gross_value', 0)) for t in trades if t['type'] == 'sell')
             avg_portfolio_value = np.mean(portfolio_value)
             turnover = min(buys, sells) / avg_portfolio_value if avg_portfolio_value > 0 else 0
-
+            
         # Calculate total trading costs
         total_trading_costs = sum(t.get('trading_costs', 0) for t in trades)
     else:
@@ -755,66 +755,76 @@ def run_backtest(symbol: str,
     # Store in cache
     cache_key = f"backtest_result:{symbol}:{days}"
     cache_service.set_with_ttl(cache_key, result, ttl_hours=2)
-
+    
     return result
 
 
 def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
-    """Calculate performance ranking of all symbols based on backtest results."""
+    """Calculate performance ranking of all symbols over the last N days."""
     performance_dict = {}
-    lookback_days = lookback_daysparam
+    lookback_days = lookback_days_param
     lookback_time = current_time - pd.Timedelta(days=lookback_days)
 
     print(f"\n{'='*80}")
     print(f"Calculating rankings at {current_time}")
     print(f"Looking back to {lookback_time}")
+    #print(
+    #    f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12} {'Source':>10}"
+    #)
+    #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12} {'-'*10:>10}")
 
-    # Try to load best_params.json for optimal parameters
+    # Try to load best_params.json for strategy performance data
     best_params_data = {}
     try:
+        # Use absolute path to best_params.json
         params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
         with open(params_file, "r") as f:
             best_params_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         print("Warning: Could not load best_params.json or file is invalid")
 
-    # Initialize cache service
-    from services.cache_service import CacheService
-    cache_service = CacheService()
-
     for symbol, data in prices_dataset.items():
         try:
-            # Generate cache key for backtest results
-            cache_key = f"portfolio_value:{symbol}:{lookback_days}"
-            cached_data = cache_service.get(cache_key)
-
-            if cached_data and cache_service.is_fresh(cache_key):
-                # Use cached backtest results if available
-                portfolio_values = cached_data
-                if len(portfolio_values) >= 2:
-                    initial_value = portfolio_values[0]
-                    final_value = portfolio_values[-1]
-                    performance = ((final_value - initial_value) / initial_value) * 100
-                    performance_dict[symbol] = performance
-                    continue
-
             # Get data up until current time and within lookback period
             mask = (data.index <= current_time) & (data.index >= lookback_time)
             symbol_data = data[mask]
 
-            if len(symbol_data) >= 2:
-                # Run a quick backtest for the period
-                params = best_params_data.get(symbol, {}).get('best_params') if symbol in best_params_data else None
-                backtest_result = run_backtest(symbol, days=lookback_days, params=params, is_simulating=True)
+            if len(symbol_data) >= 2:  # Need at least 2 points to calculate performance
+                # Make column names lowercase if they aren't already
+                symbol_data.columns = symbol_data.columns.str.lower()
 
-                if backtest_result and 'stats' in backtest_result:
-                    # Use total return from backtest
-                    performance = backtest_result['stats']['total_return']
-                    performance_dict[symbol] = performance
+                if 'close' not in symbol_data.columns:
+                    print(
+                        f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}"
+                    )
+                    continue
 
-                    # Cache the portfolio values for future use
-                    cache_service.set_with_ttl(cache_key, backtest_result['portfolio_value'], ttl_hours=1)
+                # Calculate standard performance from price data
+                start_price = symbol_data['close'].iloc[0]
+                end_price = symbol_data['close'].iloc[-1]
+                performance = ((end_price - start_price) / start_price) * 100
+                performance_source = "price"
 
+                # Check if we should use strategy performance instead
+                if symbol in best_params_data:
+                    symbol_entry = best_params_data[symbol]
+                    
+                    # Check if entry is recent (less than a week old)
+                    if 'date' in symbol_entry:
+                        entry_date = datetime.strptime(symbol_entry['date'], "%Y-%m-%d")
+                        is_recent = (datetime.now() - entry_date) < timedelta(weeks=1)
+                        
+                        # Use strategy performance if entry is recent and has performance data
+                        if is_recent and 'metrics' in symbol_entry and 'performance' in symbol_entry['metrics']:
+                            performance = symbol_entry['metrics']['performance']
+                            performance_source = "strategy"
+
+                # Store the final performance value
+                performance_dict[symbol] = performance
+
+                #print(
+                #    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}% {performance_source:>10}"
+                #)
         except Exception as e:
             print(f"Error processing {symbol}: {str(e)}")
             continue
@@ -825,7 +835,15 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                                          orient='index',
                                          columns=['performance'])
         perf_df['rank'] = perf_df['performance'].rank(
-            ascending=False)  # Rank in descending order (best performer gets rank 1)
+            pct=True)  # Percentile ranking
+
+        #print("\nFinal Rankings:")
+        #print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
+        #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
+        #for idx in perf_df.index:
+        #    print(
+        #        f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}"
+        #    )
 
         return perf_df
     return None
@@ -867,7 +885,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Plot 1: Price and Signals
     ax1 = plt.subplot(gs[0])
     ax1_volume = ax1.twinx()
-
+    
     # Plot price data directly without splitting into sessions
     logger.info(f"Plotting price data: {len(data)} points")
     logger.info(f"First price: {data['close'].iloc[0]}, Last price: {data['close'].iloc[-1]}")
@@ -877,14 +895,14 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                          alpha=0.7,
                          linewidth=2,
                          label='Price')
-
+    
     # Plot volume
     volume_data = data['volume'].rolling(window=5).mean()
     ax1_volume.fill_between(data.index,
                             volume_data,
                             color='gray',
                             alpha=0.3)
-
+    
     # Create timestamp mapping for signals
     original_to_shifted = {}
     for orig_time in signals.index:
@@ -957,7 +975,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
 
     # Plot 2: Daily Composite
     ax2 = plt.subplot(gs[1])
-
+    
     # Plot daily composite
     ax2.plot(daily_data.index,
              daily_data['Composite'],
@@ -992,16 +1010,16 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                      daily_data['Down_Lim'],
                      color='gray',
                      alpha=0.1)
-
+    
     ax2.set_title('Daily Composite Indicator')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     ax2.xaxis.set_major_formatter(plt.FuncFormatter(format_date))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
-
+    
     # Plot 3: Weekly Composite
     ax3 = plt.subplot(gs[2])
-
+    
     # Plot weekly composite
     ax3.plot(weekly_data.index,
              weekly_data['Composite'],
@@ -1036,7 +1054,7 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
                      weekly_data['Down_Lim'],
                      color='gray',
                      alpha=0.1)
-
+    
     ax3.set_title('Weekly Composite Indicator')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
@@ -1046,13 +1064,13 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     # Plot 4: Portfolio Value and Shares Owned
     ax4 = plt.subplot(gs[3])
     ax4_shares = ax4.twinx()
-
+    
     # Ensure portfolio values match data length
     if len(portfolio_value) > len(data.index):
         portfolio_value = portfolio_value[:len(data.index)]
     elif len(portfolio_value) < len(data.index):
         portfolio_value = np.append(portfolio_value, [portfolio_value[-1]] * (len(data.index) - len(portfolio_value)))
-
+    
     # Create DataFrame with both portfolio and shares data
     portfolio_df = pd.DataFrame(
         {
@@ -1060,20 +1078,20 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
             'shares': shares[:len(portfolio_value)]
         },
         index=data.index)
-
+    
     # Plot portfolio value
     ax4.plot(portfolio_df.index,
              portfolio_df['value'],
              color='green',
              label='Portfolio Value')
-
+    
     # Plot shares
     ax4_shares.plot(portfolio_df.index,
                     portfolio_df['shares'],
                     color='blue',
                     alpha=0.5,
                     label='Shares')
-
+    
     ax4.set_title('Portfolio Value and Position Size')
     ax4.set_ylabel('Portfolio Value ($)')
     ax4_shares.set_ylabel('Shares Owned')
