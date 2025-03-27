@@ -860,7 +860,20 @@ def download_portfolio_data():
         result = run_portfolio_backtest(symbols, days)
         data = result['data']
         
-        # Create response with CSV data
+        # Calculate allocation percentages
+        symbol_values = [col for col in data.columns if col.endswith('_value') 
+                        and not col.startswith('total')]
+        symbols_list = [col.replace('_value', '') for col in symbol_values]
+        
+        # Include both position values and cash in total
+        total_portfolio = data[symbol_values].sum(axis=1) + data['total_cash']
+        
+        # Calculate and add allocation percentages to the dataframe
+        for symbol in symbols_list:
+            data[f'{symbol}_allocation'] = (data[f'{symbol}_value'] / total_portfolio * 100).fillna(0)
+        data['cash_allocation'] = (data['total_cash'] / total_portfolio * 100).fillna(0)
+
+        # Create response with CSV data including allocations
         csv_data = data.to_csv(index=True)
         response = make_response(csv_data)
         response.headers['Content-Type'] = 'text/csv'
