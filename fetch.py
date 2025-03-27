@@ -75,8 +75,8 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
         df = ticker.history(start=start, end=end, interval=interval)
 
     # Clean and format the data
+    df = df[['Open', 'High', 'Low', 'Close', 'Volume']]
     df.columns = [col.lower() for col in df.columns]
-    df = df[['open', 'high', 'low', 'close', 'volume']]
 
     # Add logging for data quality
     logger.info(f"Fetched {len(df)} bars of {interval} data for {symbol} ({yf_symbol})")

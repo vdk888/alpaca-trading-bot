@@ -536,7 +536,7 @@ def create_portfolio_backtest_plot(backtest_result: dict) -> io.BytesIO:
 
     # Calculate benchmark (equal-weight portfolio)
     price_columns = [col for col in data.columns if col.endswith('_price')]
-    initial_prices = data[price_columns].iloc[0]
+    initial_prices = data[price_columns].iloc[0] if not data.empty else pd.Series()
 
     # Calculate returns for each asset
     asset_returns = data[price_columns].div(initial_prices) - 1
