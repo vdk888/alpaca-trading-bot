@@ -810,7 +810,7 @@ def get_price_data():
             'daily_up_lim': daily_data['Up_Lim'].tolist(),
             'daily_down_lim': daily_data['Down_Lim'].tolist(),
             'daily_up_lim_2std': daily_data['Up_Lim_2STD'].tolist(),
-            'daily_down_lim2std': daily_data['Down_Lim_2STD'].tolist(),
+            'daily_down_lim_2std': daily_data['Down_Lim_2STD'].tolist(), # Corrected key name
 
             # Add weekly indicator data
             'weekly_composite': weekly_data['Composite'].tolist(),
@@ -1018,19 +1018,27 @@ def download_symbol_data():
             df['daily_composite'] = price_data['daily_composite']
             df['daily_upper_limit'] = price_data['daily_up_lim']
             df['daily_lower_limit'] = price_data['daily_down_lim']
-            # Add 2STD limits if available
-            if 'daily_up_lim_2std' in price_data and len(price_data['daily_up_lim_2std']) == len(timestamps):
+            # Add 2STD limits if available and both keys exist
+            if ('daily_up_lim_2std' in price_data and len(price_data['daily_up_lim_2std']) == len(timestamps) and
+                    'daily_down_lim_2std' in price_data and len(price_data['daily_down_lim_2std']) == len(timestamps)):
                 df['daily_upper_limit_2std'] = price_data['daily_up_lim_2std']
                 df['daily_lower_limit_2std'] = price_data['daily_down_lim_2std']
+            else:
+                logger.warning(f"2STD daily limits not fully available or length mismatch for {symbol}. Skipping.")
+
 
         if 'weekly_composite' in price_data and len(price_data['weekly_composite']) == len(timestamps):
             df['weekly_composite'] = price_data['weekly_composite']
             df['weekly_upper_limit'] = price_data['weekly_up_lim']
             df['weekly_lower_limit'] = price_data['weekly_down_lim']
-            # Add 2STD limits if available
-            if 'weekly_up_lim_2std' in price_data and len(price_data['weekly_up_lim_2std']) == len(timestamps):
+            # Add 2STD limits if available and both keys exist
+            if ('weekly_up_lim_2std' in price_data and len(price_data['weekly_up_lim_2std']) == len(timestamps) and
+                    'weekly_down_lim_2std' in price_data and len(price_data['weekly_down_lim_2std']) == len(timestamps)):
                 df['weekly_upper_limit_2std'] = price_data['weekly_up_lim_2std']
                 df['weekly_lower_limit_2std'] = price_data['weekly_down_lim_2std']
+            else:
+                logger.warning(f"2STD weekly limits not fully available or length mismatch for {symbol}. Skipping.")
+
 
         # Add portfolio value if available
         if 'portfolio_values' in price_data and len(price_data['portfolio_values']) == len(timestamps):

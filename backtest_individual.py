@@ -8,7 +8,8 @@ cache_service = CacheService()
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
-from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, lookback_days_param
+# Import RANKING_LOOKBACK_DAYS from config
+from config import TRADING_SYMBOLS, TRADING_COSTS, DEFAULT_RISK_PERCENT, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval, lookback_days_param, RANKING_LOOKBACK_DAYS
 import matplotlib.pyplot as plt
 import io
 import matplotlib.dates as mdates
@@ -433,9 +434,10 @@ def run_backtest(symbol: str,
 
             # Process signals
             if signal == 1:  # Buy signal
-                # Calculate performance ranking
+                # Calculate performance ranking using the specific RANKING_LOOKBACK_DAYS
+                # Pass the full backtest 'days' for cache key retrieval, and RANKING_LOOKBACK_DAYS for the calculation period
                 perf_rankings = calculate_performance_ranking(
-                    prices_dataset, current_time, lookback_days_param)
+                    prices_dataset, current_time, days, RANKING_LOOKBACK_DAYS)
 
                 if perf_rankings is not None and symbol in perf_rankings.index:
                     # Get percentile rank (0 to 1)
@@ -526,9 +528,10 @@ def run_backtest(symbol: str,
                     f"Current position: {position:.8f} shares at ${current_price:.2f}"
                 )
 
-                # Calculate performance ranking
+                # Calculate performance ranking using the specific RANKING_LOOKBACK_DAYS
+                # Pass the full backtest 'days' for cache key retrieval, and RANKING_LOOKBACK_DAYS for the calculation period
                 perf_rankings = calculate_performance_ranking(
-                    prices_dataset, current_time, lookback_days_param)
+                    prices_dataset, current_time, days, RANKING_LOOKBACK_DAYS)
 
                 if perf_rankings is not None and symbol in perf_rankings.index:
                     # Get percentile rank (0 to 1)
@@ -763,10 +766,12 @@ def run_backtest(symbol: str,
                  result_for_cache[key]['index'] = [ts.isoformat() for ts in result_for_cache[key]['index']]
 
     # Store the serializable version in cache
+    # Use the 'days' parameter of this specific run for the cache key
     cache_key = f"backtest_result:{symbol}:{days}"
     try:
-        cache_service.set_with_ttl(cache_key, result_for_cache, ttl_hours=0)
-        logger.info(f"Successfully cached backtest result for {symbol}")
+        # Set a non-zero TTL (e.g., 2 hours) to prevent immediate expiration
+        cache_service.set_with_ttl(cache_key, result_for_cache, ttl_hours=2)
+        logger.info(f"Successfully cached backtest result for {symbol} with key {cache_key}")
     except TypeError as e:
         logger.error(f"Failed to cache backtest result for {symbol}: {e}")
         # Optionally log the problematic data structure for debugging
@@ -776,36 +781,37 @@ def run_backtest(symbol: str,
     return result
 
 
-def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
+# Modify function signature to accept ranking_lookback_days
+def calculate_performance_ranking(prices_dataset, current_time, backtest_days, ranking_lookback_days):
     """Calculate performance ranking of all symbols over the last N days based on backtest portfolio values."""
     performance_dict = {}
-    lookback_days = lookback_days_param
-    lookback_time = current_time - pd.Timedelta(days=lookback_days)
+    # Use the shorter ranking lookback for the performance calculation window
+    ranking_lookback_time = current_time - pd.Timedelta(days=ranking_lookback_days)
 
     print(f"\n{'='*80}")
     print(f"Calculating rankings at {current_time}")
-    print(f"Looking back to {lookback_time}")
+    # Log both the full backtest period (for cache key) and the ranking period
+    print(f"Using cache from full backtest ({backtest_days} days)")
+    print(f"Calculating performance over last {ranking_lookback_days} days (since {ranking_lookback_time})")
 
-    # Get the cache key for backtest results
-    def get_backtest_cache_key(symbol, days):
-        # Extract base symbol (e.g., BTC from BTC/USD)
-        base_symbol = symbol.split('/')[0]
-        # Match the format observed in Object Storage (e.g., backtest_result:BTC)
-        # Note: We are removing the ':days' part as it wasn't present in the screenshot keys
-        return f"backtest_result:{base_symbol}"
+    # Get the cache key for backtest results using the FULL backtest duration
+    def get_backtest_cache_key(symbol, full_backtest_days):
+        return f"backtest_result:{symbol}:{full_backtest_days}"
 
     for symbol, data in prices_dataset.items():
         try:
-            # Get data up until current time and within lookback period
-            mask = (data.index <= current_time) & (data.index >= lookback_time)
+            # Get data up until current time and within the RANKING lookback period
+            mask = (data.index <= current_time) & (data.index >= ranking_lookback_time) # Use ranking_lookback_time
             symbol_data = data[mask]
 
             if len(symbol_data) < 2:  # Need at least 2 points to calculate performance
                 continue
 
-            # Try to get cached backtest result for this symbol
-            cache_key = get_backtest_cache_key(symbol, lookback_days)
+            # Try to get cached backtest result for this symbol using the full backtest duration
+            cache_key = get_backtest_cache_key(symbol, backtest_days) # Use backtest_days here
+            logger.info(f"Attempting to get cache for key: {cache_key}") # ADDED LOGGING
             cached_result = cache_service.get(cache_key)
+            logger.info(f"Cache result for {cache_key}: {'Found' if cached_result else 'Not Found (None)'}") # ADDED LOGGING
             
             fallback_reason = None # Variable to store the reason for fallback
 
@@ -849,12 +855,14 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                             # Find indices closest to our target times within the valid timeframe
                             start_idx = 0
                             end_idx = len(valid_timestamps) - 1
-                            
-                            # Find index closest to lookback_time
+
+                            # Find index closest to the SHORTER ranking_lookback_time
                             for i, ts in enumerate(valid_timestamps):
-                                if ts >= lookback_time:
+                                if ts >= ranking_lookback_time: # Use ranking_lookback_time
                                     start_idx = i
                                     break
+                            else: # Handle case where no timestamp is >= ranking_lookback_time (should use first valid)
+                                start_idx = 0
                             
                             # The end index is the last valid timestamp <= current_time
                             
@@ -875,7 +883,8 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                                         # Successfully calculated performance
                                         performance = ((end_value - start_value) / start_value) * 100
                                         performance_dict[symbol] = performance
-                                        print(f"{symbol}: Using backtest portfolio values - Start: ${start_value:.2f} at {valid_timestamps[start_idx]}, End: ${end_value:.2f} at {valid_timestamps[end_idx]}, Performance: {performance:.2f}%")
+                                        # Log clearly that this is the RANKING performance over the shorter window
+                                        print(f"{symbol}: Using backtest portfolio values for RANKING ({ranking_lookback_days} days) - Start: ${start_value:.2f} at {valid_timestamps[start_idx]}, End: ${end_value:.2f} at {valid_timestamps[end_idx]}, Performance: {performance:.2f}%")
                                         continue # Skip fallback if successful
                             except ValueError as e:
                                  fallback_reason = f"Error finding index in original timestamps: {e}"
@@ -889,21 +898,29 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
                  # This case should ideally not happen if logic is correct, but log just in case
                  logger.warning(f"{symbol}: Falling back to price data for unknown reason.")
 
-            # Fallback logic starts here
-            symbol_data.columns = symbol_data.columns.str.lower()
+            # Fallback logic starts here - use the SHORTER ranking lookback period on price data
+            fallback_lookback_time = current_time - pd.Timedelta(days=ranking_lookback_days)
+            fallback_mask = (data.index <= current_time) & (data.index >= fallback_lookback_time)
+            fallback_symbol_data = data[fallback_mask]
 
-            if 'close' not in symbol_data.columns:
+            if len(fallback_symbol_data) < 2:
+                 logger.warning(f"{symbol}: Not enough data points ({len(fallback_symbol_data)}) in fallback window ({ranking_lookback_days} days) to calculate performance.")
+                 continue # Skip if not enough data for fallback calculation either
+
+            fallback_symbol_data.columns = fallback_symbol_data.columns.str.lower()
+
+            if 'close' not in fallback_symbol_data.columns:
                 print(
                     f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}"
                 )
                 continue
 
-            # Calculate standard performance from price data as fallback
-            start_price = symbol_data['close'].iloc[0]
-            end_price = symbol_data['close'].iloc[-1]
+            # Calculate standard performance from price data over the SHORTER ranking lookback period as fallback
+            start_price = fallback_symbol_data['close'].iloc[0]
+            end_price = fallback_symbol_data['close'].iloc[-1]
             performance = ((end_price - start_price) / start_price) * 100
             performance_dict[symbol] = performance
-            print(f"{symbol}: Using price data (fallback) - Start: ${start_price:.2f}, End: ${end_price:.2f}, Performance: {performance:.2f}%")
+            print(f"{symbol}: Using price data (fallback over {ranking_lookback_days} days) - Start: ${start_price:.2f}, End: ${end_price:.2f}, Performance: {performance:.2f}%")
         except Exception as e:
             print(f"Error processing {symbol}: {str(e)}")
             continue
@@ -1262,6 +1279,6 @@ if __name__ == "__main__":
     final_result = run_backtest(symbol="SPY",
                                 days=10,
                                 params=best_params,
-                                is_simulating=False,
-                                lookback_days_param=lookback_days_param)
+                                is_simulating=False)
+                                # lookback_days_param is no longer needed here for cache consistency
     print(f"Final Backtest Results: {final_result}")

@@ -63,8 +63,12 @@ INTERVAL_MAX_DAYS = {interval: get_max_days(interval) for interval in BARS_PER_D
 
 # Default backtest interval based on DEFAULT_INTERVAL
 default_backtest_interval = INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) if INTERVAL_MAX_DAYS.get(DEFAULT_INTERVAL.replace('min', 'm')) else 365 * 0.4  # Default to 2 years if no limit
-default_backtest_interval=default_backtest_interval /4 #/4 for test
+# Ensure the result is an integer after division for testing
+default_backtest_interval = int(default_backtest_interval / 4) #/4 for test
 lookback_days_param = default_backtest_interval
+
+# Lookback period specifically for the performance ranking calculation
+RANKING_LOOKBACK_DAYS = int(default_backtest_interval / 4) # e.g., rank based on last 5 days performance
 
 #1-minute interval: Maximum of 7 days of historical data.
 #5-minute interval: Maximum of 60 days of historical data.
