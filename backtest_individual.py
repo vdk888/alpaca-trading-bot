@@ -281,7 +281,11 @@ def run_backtest(symbol: str,
 
         print(f"Fetching {sym} data...")
         data = fetch_historical_data(sym, interval=default_interval_yahoo, days=(end_date - start_date).days)
-
+        
+        # Ensure timezone matches original yfinance behavior
+        if data.index.tz is None:
+            data.index = data.index.tz_localize('UTC')
+        
         print(f"Retrieved {len(data)} data points for {sym}")
 
         if len(data) == 0:
@@ -370,6 +374,10 @@ def run_backtest(symbol: str,
     data = fetch_historical_data(symbol, 
                                interval=symbol_config.get('interval', DEFAULT_INTERVAL),
                                days=(end_date - start_date).days)
+                               
+    # Ensure timezone matches original yfinance behavior
+    if data.index.tz is None:
+        data.index = data.index.tz_localize('UTC')
 
     if len(data) == 0:
         raise ValueError(
