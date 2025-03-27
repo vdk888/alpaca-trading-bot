@@ -803,55 +803,89 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
             cache_key = get_backtest_cache_key(symbol, lookback_days)
             cached_result = cache_service.get(cache_key)
             
-            if cached_result and 'portfolio_value' in cached_result and 'data' in cached_result:
+            fallback_reason = None # Variable to store the reason for fallback
+
+            if not cached_result:
+                fallback_reason = "Cache miss"
+            elif 'portfolio_value' not in cached_result:
+                 fallback_reason = "Cached result missing 'portfolio_value'"
+            elif 'data' not in cached_result:
+                 fallback_reason = "Cached result missing 'data' (for timestamps)"
+            else:
                 # Use portfolio values from backtest for performance calculation
                 portfolio_values = cached_result['portfolio_value']
                 
-                # Find portfolio values closest to our lookback_time and current_time
-                if len(portfolio_values) >= 2:
+                if len(portfolio_values) < 2:
+                    fallback_reason = f"Not enough portfolio values in cache ({len(portfolio_values)})"
+                else:
                     # Get the timestamps from the data
-                    timestamps = cached_result['data'].index
-                    
-                    # Important: Only use data up to the current simulation time
-                    # This ensures we're only using data that would have been available at that point
-                    valid_timestamps = [ts for ts in timestamps if ts <= current_time]
-                    
-                    if len(valid_timestamps) < 2:
-                        # Not enough data points up to current_time, fall back to price data
-                        print(f"{symbol}: Not enough backtest data up to {current_time}, falling back to price data")
+                    # Need to reconstruct DataFrame if cached as dict
+                    if isinstance(cached_result['data'], dict):
+                        try:
+                            cached_data_df = pd.DataFrame(cached_result['data']['data'], 
+                                                          index=pd.to_datetime(cached_result['data']['index']), 
+                                                          columns=cached_result['data']['columns'])
+                            timestamps = cached_data_df.index
+                        except Exception as e:
+                             fallback_reason = f"Error reconstructing DataFrame from cached data: {e}"
+                             timestamps = None # Ensure fallback if reconstruction fails
+                    elif isinstance(cached_result['data'], pd.DataFrame):
+                         timestamps = cached_result['data'].index
                     else:
-                        # Find indices closest to our target times within the valid timeframe
-                        start_idx = 0
-                        end_idx = len(valid_timestamps) - 1
+                         fallback_reason = "Cached 'data' is not a dict or DataFrame"
+                         timestamps = None
+
+                    if timestamps is not None:
+                        # Important: Only use data up to the current simulation time
+                        valid_timestamps = [ts for ts in timestamps if ts <= current_time]
                         
-                        # Find index closest to lookback_time
-                        for i, ts in enumerate(valid_timestamps):
-                            if ts >= lookback_time:
-                                start_idx = i
-                                break
-                        
-                        # The end index is the last valid timestamp before or equal to current_time
-                        # We've already filtered for timestamps <= current_time
-                    
-                        # Map these indices back to the original portfolio_values array
-                        # We need to find the corresponding indices in the full timestamps list
-                        orig_start_idx = list(timestamps).index(valid_timestamps[start_idx])
-                        orig_end_idx = list(timestamps).index(valid_timestamps[end_idx])
-                        
-                        # Get portfolio values at these indices
-                        if orig_start_idx < len(portfolio_values) and orig_end_idx < len(portfolio_values):
-                            start_value = portfolio_values[orig_start_idx]
-                            end_value = portfolio_values[orig_end_idx]
+                        if len(valid_timestamps) < 2:
+                            fallback_reason = f"Not enough valid timestamps up to {current_time} ({len(valid_timestamps)})"
+                        else:
+                            # Find indices closest to our target times within the valid timeframe
+                            start_idx = 0
+                            end_idx = len(valid_timestamps) - 1
                             
-                            # Calculate performance based on portfolio values
-                            if start_value > 0:  # Avoid division by zero
-                                performance = ((end_value - start_value) / start_value) * 100
-                                performance_dict[symbol] = performance
-                                print(f"{symbol}: Using backtest portfolio values - Start: ${start_value:.2f} at {valid_timestamps[start_idx]}, End: ${end_value:.2f} at {valid_timestamps[end_idx]}, Performance: {performance:.2f}%")
-                                continue
-            
-            # Fallback to price-based performance if we couldn't get portfolio values
-            # Make column names lowercase if they aren't already
+                            # Find index closest to lookback_time
+                            for i, ts in enumerate(valid_timestamps):
+                                if ts >= lookback_time:
+                                    start_idx = i
+                                    break
+                            
+                            # The end index is the last valid timestamp <= current_time
+                            
+                            try:
+                                # Map these indices back to the original portfolio_values array
+                                orig_start_idx = list(timestamps).index(valid_timestamps[start_idx])
+                                orig_end_idx = list(timestamps).index(valid_timestamps[end_idx])
+                                
+                                if not (orig_start_idx < len(portfolio_values) and orig_end_idx < len(portfolio_values)):
+                                     fallback_reason = f"Mapped indices out of bounds (Start: {orig_start_idx}, End: {orig_end_idx}, Len: {len(portfolio_values)})"
+                                else:
+                                    start_value = portfolio_values[orig_start_idx]
+                                    end_value = portfolio_values[orig_end_idx]
+                                    
+                                    if start_value <= 0:
+                                        fallback_reason = f"Start value is zero or negative (${start_value:.2f})"
+                                    else:
+                                        # Successfully calculated performance
+                                        performance = ((end_value - start_value) / start_value) * 100
+                                        performance_dict[symbol] = performance
+                                        print(f"{symbol}: Using backtest portfolio values - Start: ${start_value:.2f} at {valid_timestamps[start_idx]}, End: ${end_value:.2f} at {valid_timestamps[end_idx]}, Performance: {performance:.2f}%")
+                                        continue # Skip fallback if successful
+                            except ValueError as e:
+                                 fallback_reason = f"Error finding index in original timestamps: {e}"
+                            except Exception as e:
+                                 fallback_reason = f"Unexpected error during index mapping or calculation: {e}"
+
+            # If we reached here, it means we need to fall back
+            if fallback_reason:
+                 logger.warning(f"{symbol}: Falling back to price data. Reason: {fallback_reason}")
+            else:
+                 # This case should ideally not happen if logic is correct, but log just in case
+                 logger.warning(f"{symbol}: Falling back to price data for unknown reason.")
+
+            # Fallback logic starts here
             symbol_data.columns = symbol_data.columns.str.lower()
 
             if 'close' not in symbol_data.columns:
