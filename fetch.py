@@ -94,6 +94,9 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     # Store in cache if enabled
     if use_cache:
         cache_key = get_cache_key(symbol, interval, days)
+        # Ensure timezone awareness before caching
+        if df.index.tz is None:
+            df.index = df.index.tz_localize('UTC')
         # Convert DataFrame to dict with string timestamps
         df_dict = df.copy()
         df_dict.index = df_dict.index.strftime('%Y-%m-%d %H:%M:%S%z')
