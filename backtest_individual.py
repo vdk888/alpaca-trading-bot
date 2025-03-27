@@ -754,7 +754,7 @@ def run_backtest(symbol: str,
 
     # Store in cache
     cache_key = f"backtest_result:{symbol}:{days}"
-    cache_service.set_with_ttl(cache_key, result, ttl_hours=4)
+    cache_service.set_with_ttl(cache_key, result, ttl_hours=2)
     
     return result
 
