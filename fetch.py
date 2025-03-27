@@ -33,7 +33,10 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
         cached_data = cache_service.get(cache_key)
         if cached_data and cache_service.is_fresh(cache_key):
             logger.debug(f"Using cached data for {symbol}")
-            return pd.DataFrame.from_dict(cached_data)
+            df = pd.DataFrame.from_dict(cached_data['data'])
+            # Convert string timestamps back to datetime with timezone
+            df.index = pd.to_datetime(cached_data['index']).tz_localize('UTC')
+            return df
 
     # Get the correct Yahoo Finance symbol
     yf_symbol = TRADING_SYMBOLS[symbol]['yfinance']
