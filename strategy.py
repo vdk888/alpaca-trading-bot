@@ -78,7 +78,7 @@ class TradingStrategy:
             
             # Check if we already generated a signal for this bar
             if (self.last_signal_time is not None and 
-                current_bar_time.floor(pd.Timedelta(self.interval)) == self.last_signal_time.floor(pd.Timedelta(self.interval))):
+                current_bar_time.floor(self.interval) == self.last_signal_time.floor(self.interval)):
                 # Return the last analysis but with signal=0 to prevent duplicate signals
                 if hasattr(self, '_last_analysis'):
                     no_signal_analysis = self._last_analysis.copy()
@@ -161,7 +161,7 @@ class TradingStrategy:
                 'data_points': len(self.data),
                 'weekly_bars': len(self.data.resample(config.DEFAULT_INTERVAL_WEEKLY).last()),
                 'last_signal_time': self.last_signal_time,
-                'bar_time': current_bar_time.floor(pd.Timedelta(config.DEFAULT_INTERVAL))
+                'bar_time': current_bar_time.floor(config.DEFAULT_INTERVAL)
             }
             
             # Store the analysis for reference
