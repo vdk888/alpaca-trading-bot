@@ -760,7 +760,7 @@ def run_backtest(symbol: str,
 
 
 def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
-    """Calculate performance ranking of all symbols over the last N days."""
+    """Calculate performance ranking of all symbols over the last N days based on backtest portfolio values."""
     performance_dict = {}
     lookback_days = lookback_days_param
     lookback_time = current_time - pd.Timedelta(days=lookback_days)
@@ -768,20 +768,10 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
     print(f"\n{'='*80}")
     print(f"Calculating rankings at {current_time}")
     print(f"Looking back to {lookback_time}")
-    #print(
-    #    f"{'Symbol':<10} {'Start Price':>12} {'End Price':>12} {'Performance':>12} {'Source':>10}"
-    #)
-    #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*12:>12} {'-'*12:>12} {'-'*10:>10}")
 
-    # Try to load best_params.json for strategy performance data
-    best_params_data = {}
-    try:
-        # Use absolute path to best_params.json
-        params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
-        with open(params_file, "r") as f:
-            best_params_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        print("Warning: Could not load best_params.json or file is invalid")
+    # Get the cache key for backtest results
+    def get_backtest_cache_key(symbol, days):
+        return f"backtest_result:{symbol}:{days}"
 
     for symbol, data in prices_dataset.items():
         try:
@@ -789,42 +779,76 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
             mask = (data.index <= current_time) & (data.index >= lookback_time)
             symbol_data = data[mask]
 
-            if len(symbol_data) >= 2:  # Need at least 2 points to calculate performance
-                # Make column names lowercase if they aren't already
-                symbol_data.columns = symbol_data.columns.str.lower()
+            if len(symbol_data) < 2:  # Need at least 2 points to calculate performance
+                continue
 
-                if 'close' not in symbol_data.columns:
-                    print(
-                        f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}"
-                    )
-                    continue
-
-                # Calculate standard performance from price data
-                start_price = symbol_data['close'].iloc[0]
-                end_price = symbol_data['close'].iloc[-1]
-                performance = ((end_price - start_price) / start_price) * 100
-                performance_source = "price"
-
-                # Check if we should use strategy performance instead
-                if symbol in best_params_data:
-                    symbol_entry = best_params_data[symbol]
+            # Try to get cached backtest result for this symbol
+            cache_key = get_backtest_cache_key(symbol, lookback_days)
+            cached_result = cache_service.get(cache_key)
+            
+            if cached_result and 'portfolio_value' in cached_result and 'data' in cached_result:
+                # Use portfolio values from backtest for performance calculation
+                portfolio_values = cached_result['portfolio_value']
+                
+                # Find portfolio values closest to our lookback_time and current_time
+                if len(portfolio_values) >= 2:
+                    # Get the timestamps from the data
+                    timestamps = cached_result['data'].index
                     
-                    # Check if entry is recent (less than a week old)
-                    if 'date' in symbol_entry:
-                        entry_date = datetime.strptime(symbol_entry['date'], "%Y-%m-%d")
-                        is_recent = (datetime.now() - entry_date) < timedelta(weeks=1)
+                    # Important: Only use data up to the current simulation time
+                    # This ensures we're only using data that would have been available at that point
+                    valid_timestamps = [ts for ts in timestamps if ts <= current_time]
+                    
+                    if len(valid_timestamps) < 2:
+                        # Not enough data points up to current_time, fall back to price data
+                        print(f"{symbol}: Not enough backtest data up to {current_time}, falling back to price data")
+                    else:
+                        # Find indices closest to our target times within the valid timeframe
+                        start_idx = 0
+                        end_idx = len(valid_timestamps) - 1
                         
-                        # Use strategy performance if entry is recent and has performance data
-                        if is_recent and 'metrics' in symbol_entry and 'performance' in symbol_entry['metrics']:
-                            performance = symbol_entry['metrics']['performance']
-                            performance_source = "strategy"
+                        # Find index closest to lookback_time
+                        for i, ts in enumerate(valid_timestamps):
+                            if ts >= lookback_time:
+                                start_idx = i
+                                break
+                        
+                        # The end index is the last valid timestamp before or equal to current_time
+                        # We've already filtered for timestamps <= current_time
+                    
+                        # Map these indices back to the original portfolio_values array
+                        # We need to find the corresponding indices in the full timestamps list
+                        orig_start_idx = list(timestamps).index(valid_timestamps[start_idx])
+                        orig_end_idx = list(timestamps).index(valid_timestamps[end_idx])
+                        
+                        # Get portfolio values at these indices
+                        if orig_start_idx < len(portfolio_values) and orig_end_idx < len(portfolio_values):
+                            start_value = portfolio_values[orig_start_idx]
+                            end_value = portfolio_values[orig_end_idx]
+                            
+                            # Calculate performance based on portfolio values
+                            if start_value > 0:  # Avoid division by zero
+                                performance = ((end_value - start_value) / start_value) * 100
+                                performance_dict[symbol] = performance
+                                print(f"{symbol}: Using backtest portfolio values - Start: ${start_value:.2f} at {valid_timestamps[start_idx]}, End: ${end_value:.2f} at {valid_timestamps[end_idx]}, Performance: {performance:.2f}%")
+                                continue
+            
+            # Fallback to price-based performance if we couldn't get portfolio values
+            # Make column names lowercase if they aren't already
+            symbol_data.columns = symbol_data.columns.str.lower()
 
-                # Store the final performance value
-                performance_dict[symbol] = performance
+            if 'close' not in symbol_data.columns:
+                print(
+                    f"Warning: 'close' column not found for {symbol}. Available columns: {symbol_data.columns.tolist()}"
+                )
+                continue
 
-                #print(
-                #    f"{symbol:<10} {start_price:>12.2f} {end_price:>12.2f} {performance:>12.2f}% {performance_source:>10}"
-                #)
+            # Calculate standard performance from price data as fallback
+            start_price = symbol_data['close'].iloc[0]
+            end_price = symbol_data['close'].iloc[-1]
+            performance = ((end_price - start_price) / start_price) * 100
+            performance_dict[symbol] = performance
+            print(f"{symbol}: Using price data (fallback) - Start: ${start_price:.2f}, End: ${end_price:.2f}, Performance: {performance:.2f}%")
         except Exception as e:
             print(f"Error processing {symbol}: {str(e)}")
             continue
@@ -837,13 +861,13 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
         perf_df['rank'] = perf_df['performance'].rank(
             pct=True)  # Percentile ranking
 
-        #print("\nFinal Rankings:")
-        #print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
-        #print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
-        #for idx in perf_df.index:
-        #    print(
-        #        f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}"
-        #    )
+        print("\nFinal Rankings:")
+        print(f"{'Symbol':<10} {'Performance':>12} {'Rank':>8}")
+        print(f"{'-'*10:<10} {'-'*12:>12} {'-'*8:>8}")
+        for idx in perf_df.index:
+            print(
+                f"{idx:<10} {perf_df.loc[idx, 'performance']:>12.2f}% {perf_df.loc[idx, 'rank']:>8.2f}"
+            )
 
         return perf_df
     return None
