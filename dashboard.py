@@ -344,7 +344,7 @@ def run_backtest_api():
 
     # Try to get from cache
     cached_data = cache_service.get(cache_key)
-    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+    if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
         logger.info(f"Returning cached backtest data for {symbol if symbol else 'portfolio'}")
         return jsonify(cached_data)
 
@@ -364,7 +364,7 @@ def run_backtest_api():
             cache_key = get_cache_key('portfolio_backtest', days=days)
             cached_data = cache_service.get(cache_key)
             
-            if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+            if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
                 logger.info("Returning cached portfolio backtest data")
                 return jsonify(cached_data)
 
