@@ -37,6 +37,8 @@ class CacheService:
                     return [convert_timestamps(item) for item in obj]
                 elif isinstance(obj, pd.Timestamp):
                     return obj.isoformat()
+                elif isinstance(obj, pd.DatetimeIndex):
+                    return [ts.isoformat() for ts in obj]
                 elif isinstance(obj, pd.Index):
                     return list(map(str, obj))
                 return obj
