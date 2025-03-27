@@ -1,3 +1,7 @@
+
+from services.cache_service import CacheService
+cache_service = CacheService()
+
 import asyncio
 import datetime
 import pytz
@@ -335,8 +339,18 @@ Bar Time: {analysis['bar_time']}
 async def run_and_send_backtest(symbol: str, trading_bot, days: int = lookback_days_param):
     """Run a backtest for the symbol and send the results through telegram"""
     try:
-        # Run backtest
-        backtest_result = run_backtest(symbol, days=days)
+        # Generate cache key
+        cache_key = f"backtest_result:{symbol}:{days}"
+        
+        # Try to get from cache first
+        cached_result = cache_service.get(cache_key)
+        if cached_result and cache_service.is_fresh(cache_key, max_age_hours=4):
+            logger.info(f"Using cached backtest results for {symbol}")
+            backtest_result = cached_result
+        else:
+            # Run backtest and cache results
+            backtest_result = run_backtest(symbol, days=days)
+            cache_service.set_with_ttl(cache_key, backtest_result, ttl_hours=4)
         
         # Create plot and get stats
         plot_buffer, stats = create_backtest_plot(backtest_result)
