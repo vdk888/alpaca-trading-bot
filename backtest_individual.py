@@ -765,7 +765,7 @@ def run_backtest(symbol: str,
     # Store the serializable version in cache
     cache_key = f"backtest_result:{symbol}:{days}"
     try:
-        cache_service.set_with_ttl(cache_key, result_for_cache, ttl_hours=2)
+        cache_service.set_with_ttl(cache_key, result_for_cache, ttl_hours=0)
         logger.info(f"Successfully cached backtest result for {symbol}")
     except TypeError as e:
         logger.error(f"Failed to cache backtest result for {symbol}: {e}")
