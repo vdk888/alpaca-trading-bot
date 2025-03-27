@@ -218,7 +218,7 @@ async def run_bot():
                     try:
                         # Check if 5 minutes have passed since last check for this symbol
                         if (symbol_last_check[symbol] is not None and 
-                            (current_time - symbol_last_check[symbol]).total_seconds() < 300):
+                            (current_time - symbol_last_check[symbol]).total_seconds() < 3600):
                             continue
                             
                         # Generate signals
