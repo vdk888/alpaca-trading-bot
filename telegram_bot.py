@@ -27,19 +27,19 @@ class TradingBot:
         self.symbols = symbols
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.chat_id = os.getenv('CHAT_ID')
-        
+
         if not self.bot_token:
             raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
         if not self.chat_id:
             raise ValueError("CHAT_ID not found in environment variables")
-            
+
         # Initialize trading executors for each symbol
         self.executors = {symbol: TradingExecutor(trading_client, symbol) for symbol in symbols}
-            
+
         # Initialize the application
         self.application = Application.builder().token(self.bot_token).build()
         self._bot = None  # Will be initialized when application starts
-        
+
         # Setup command handlers
         self.setup_handlers(self.application)
 
@@ -47,11 +47,11 @@ class TradingBot:
             """Get best parameters for a symbol from Object Storage"""
             try:
                 from replit.object_storage import Client
-                
+
                 # Initialize Object Storage client
                 try:
                     client = Client()
-                    
+
                     # Try to get parameters from Object Storage
                     try:
                         json_content = client.download_as_text("best_params.json")
@@ -71,7 +71,7 @@ class TradingBot:
                 logger.info("Falling back to local file")
                 params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
                 logger.info(f"Looking for file at: {params_file}")
-                
+
                 if os.path.exists(params_file):
                     logger.info(f"File exists at {params_file}")
                     with open(params_file, "r") as f:
@@ -80,12 +80,12 @@ class TradingBot:
                 else:
                     logger.error(f"Best parameters file not found at {params_file}")
                     raise FileNotFoundError(f"Best parameters file not found at {params_file}")
-                
+
             if symbol in best_params_data:
                 return best_params_data[symbol]['best_params']
             else:
                 return "Using default parameters"
-                
+
     def setup_handlers(self, application: Application):
         """Setup all command handlers"""
         application.add_handler(CommandHandler("start", self.start_command))
@@ -107,7 +107,7 @@ class TradingBot:
         application.add_handler(CommandHandler("rank", self.rank_command))
         application.add_handler(CommandHandler("bestparams", self.best_params_command))
         application.add_handler(CommandHandler("orders", self.orders_command))
-        
+
         # Add callback query handler for inline buttons
         application.add_handler(CallbackQueryHandler(self.button_callback))
 
@@ -125,15 +125,15 @@ class TradingBot:
             await self.application.initialize()
             await self.application.start()
             await self.application.updater.start_polling()
-            
+
             # Send startup message
             await self.send_message("🤖 Trading Bot started successfully!")
-            
+
             # Log startup
             logger.info(f"Starting trading bot for {', '.join(self.symbols)}")
             print(f"Starting trading bot for {', '.join(self.symbols)}...")
             print("Telegram bot initialized. Use /start to begin.")
-            
+
         except Exception as e:
             logger.error(f"Error starting bot: {e}")
             raise
@@ -144,14 +144,14 @@ class TradingBot:
             if self._bot:
                 await self._bot.close()
                 self._bot = None
-                
+
             if hasattr(self.application, 'updater'):
                 await self.application.updater.stop()
             await self.application.stop()
             await self.application.shutdown()
         except Exception as e:
             logger.error(f"Error stopping bot: {e}")
-            
+
     async def send_message(self, message: str):
         """Send message to Telegram"""
         try:
@@ -176,7 +176,7 @@ class TradingBot:
             )
         except Exception as e:
             logger.error(f"Failed to send Telegram photo: {e}")
-            
+
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start the bot and show available commands"""
         commands = """
@@ -221,29 +221,29 @@ class TradingBot:
         try:
             # Check if a specific symbol was requested
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-                
+
             symbols_to_check = [symbol] if symbol else self.symbols
             has_data = False
-            
+
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
                 chunk_messages = []
                 chunk_symbols = symbols_to_check[i:i+3]
-                
+
                 for sym in chunk_symbols:
                     try:
                         analysis = self.strategies[sym].analyze()
                         if not analysis:
                             chunk_messages.append(f"No data available for {sym}")
                             continue
-                            
+
                         has_data = True
                         position = "LONG" if self.strategies[sym].current_position == 1 else "SHORT" if self.strategies[sym].current_position == -1 else "NEUTRAL"
-                        
+
                         # Get best parameters
                         params = self.get_best_params(sym)
                         params_message = f"\nParameters: {params}"
@@ -254,7 +254,7 @@ class TradingBot:
                             pos_pnl = f"P&L: ${float(pos.unrealized_pl):.2f} ({float(pos.unrealized_plpc)*100:.2f}%)"
                         except:
                             pos_pnl = "No open position"
-                        
+
                         chunk_messages.append(f"""
 📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Status:
 Position: {position}
@@ -274,14 +274,14 @@ Price Changes:
 • 1hr: {analysis['price_change_1h']*100:.2f}%""")
                     except Exception as e:
                         chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
-                
+
                 # Send this chunk of messages
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
-            
+
             if not has_data:
                 await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
-                
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting status: {str(e)}")
 
@@ -290,18 +290,18 @@ Price Changes:
         try:
             # Check if a specific symbol was requested
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-                
+
             symbols_to_check = [symbol] if symbol else self.symbols
-            
+
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
                 chunk_messages = []
                 chunk_symbols = symbols_to_check[i:i+3]
-                
+
                 for sym in chunk_symbols:
                     try:
                         position = self.trading_client.get_open_position(get_api_symbol(sym))
@@ -310,7 +310,7 @@ Price Changes:
                         equity = float(account.equity)
                         market_value = float(position.market_value)
                         exposure_percentage = (market_value / equity) * 100
-                        
+
                         message = f"""
 📈 {sym} ({TRADING_SYMBOLS[sym]['name']}) Position Details:
 Side: {position.side.upper()}
@@ -324,11 +324,11 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                         logger.error(f"Error getting position for {sym} (API symbol: {get_api_symbol(sym)}): {str(e)}")
                         message = f"No open position for {sym} ({TRADING_SYMBOLS[sym]['name']})"
                     chunk_messages.append(message)
-                
+
                 # Send this chunk of messages
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
-        
+
             # Add summary of all positions if not looking at a specific symbol
             if not symbol:
                 try:
@@ -337,7 +337,7 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                     total_market_value = 0
                     total_pnl = 0
                     positions_summary = []
-                    
+
                     # Calculate totals and collect position details
                     for sym in self.symbols:
                         try:
@@ -354,13 +354,13 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                             })
                         except Exception:
                             continue
-                    
+
                     if total_market_value > 0:
                         total_exposure = (total_market_value / equity) * 100
-                        
+
                         # Sort positions by market value
                         positions_summary.sort(key=lambda x: abs(x['market_value']), reverse=True)
-                        
+
                         # Build positions text with weights
                         positions_text = []
                         for pos in positions_summary:
@@ -369,7 +369,7 @@ Unrealized P&L: ${float(position.unrealized_pl):.2f} ({float(position.unrealized
                             positions_text.append(
                                 f"• {pos['symbol']}: {pos['side']} {pos['qty']} ({weight:.1f}% weight) | P&L: ${pos['pnl']:.2f} ({pnl_pct:.1f}%)"
                             )
-                        
+
                         summary = f"""
 💼 Portfolio Summary:
 Total Position Value: ${total_market_value:.2f}
@@ -383,7 +383,7 @@ Open Positions:
                         await update.message.reply_text(summary)
                 except Exception as e:
                     logger.error(f"Error generating position summary: {str(e)}")
-                
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting position: {str(e)}")
 
@@ -408,7 +408,7 @@ Today's P&L: ${float(account.equity) - float(account.last_equity):.2f}
             account = self.trading_client.get_account()
             today_pl = float(account.equity) - float(account.last_equity)
             today_pl_pct = (today_pl / float(account.last_equity)) * 100
-            
+
             message = f"""
 📈 Today's Performance:
 P&L: ${today_pl:.2f} ({today_pl_pct:.2f}%)
@@ -424,19 +424,19 @@ Current Equity: ${float(account.equity):.2f}
         try:
             # Check if a specific symbol was requested
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-                
+
             symbols_to_check = [symbol] if symbol else self.symbols
             has_data = False
-            
+
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
                 chunk_messages = []
                 chunk_symbols = symbols_to_check[i:i+3]
-                
+
                 for sym in chunk_symbols:
                     try:
                         analysis = self.strategies[sym].analyze()
@@ -465,14 +465,14 @@ Price Changes:
                         chunk_messages.append(message)
                     except Exception as e:
                         chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
-                
+
                 # Send this chunk of messages
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
-            
+
             if not has_data:
                 await update.message.reply_text("❌ No data available for any symbol. The market may be closed or there might be connection issues.")
-                
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting indicators: {str(e)}")
 
@@ -481,11 +481,11 @@ Price Changes:
         try:
             # Parse arguments
             args = context.args if context.args else []
-            
+
             # Default values
             days = 5
             symbols_to_plot = self.symbols
-            
+
             if len(args) >= 1:
                 # First argument could be either symbol or days
                 if args[0].upper() in self.symbols:
@@ -505,13 +505,13 @@ Price Changes:
                     except ValueError:
                         await update.message.reply_text(f"❌ Invalid input: {args[0]} is neither a valid symbol nor a number\nAvailable symbols: {', '.join(self.symbols)}")
                         return
-            
+
             if days <= 0 or days > default_backtest_interval:
                 await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}")
                 return
-            
+
             await update.message.reply_text(f"📊 Generating plots for the last {days} days...")
-            
+
             # Generate and send plot for each symbol
             for symbol in symbols_to_plot:
                 # Get best parameters
@@ -519,7 +519,7 @@ Price Changes:
 
                 try:
                     buf, stats = create_strategy_plot(symbol, days)
-                    
+
                     stats_message = f"""
 📈 {symbol} ({TRADING_SYMBOLS[symbol]['name']}) Statistics ({days} days):
 • Parameters: {params}
@@ -529,7 +529,7 @@ Price Changes:
 • Buy Signals: {stats['buy_signals']}
 • Sell Signals: {stats['sell_signals']}
 """
-                    
+
                     await update.message.reply_document(
                         document=buf,
                         filename=f"{symbol}_strategy_{days}d.png",
@@ -539,7 +539,7 @@ Price Changes:
                     logger.error(f"Error plotting {symbol}: {str(e)}")
                     await update.message.reply_text(f"❌ Could not generate plot for {symbol}: {str(e)}")
                     continue
-                    
+
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
@@ -551,33 +551,33 @@ Price Changes:
         try:
             # Check if a specific symbol was requested
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-                
+
             symbols_to_check = [symbol] if symbol else self.symbols
             signal_messages = []
             has_data = False
-            
+
             # Process symbols in chunks of 3
             for i in range(0, len(symbols_to_check), 3):
                 chunk_messages = []
                 chunk_symbols = symbols_to_check[i:i+3]
-                
+
                 for sym in chunk_symbols:
                     try:
                         analysis = self.strategies[sym].analyze()
                         if not analysis:
                             chunk_messages.append(f"No data available for {sym}")
                             continue
-                            
+
                         has_data = True
                         # Get signal strength and direction
                         signal_strength = abs(analysis['daily_composite'])
                         strength_emoji = "🔥" if signal_strength > 0.8 else "💪" if signal_strength > 0.5 else "👍"
                         signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
-                        
+
                         # Format time since last signal with signal type
                         last_signal_info = "No signals generated yet"
                         if analysis.get('last_signal_time') is not None:
@@ -589,7 +589,7 @@ Price Changes:
                             # Get the signal type from the stored composite value
                             signal_type = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                             last_signal_info = f"Last {signal_type} signal {strength_emoji}: {last_time.strftime('%Y-%m-%d %H:%M')} UTC ({hours}h {minutes}m ago)"
-                        
+
                         # Classify signals
                         signal_direction = "BUY" if analysis['daily_composite'] > 0 else "SELL"
                         daily_signal = (
@@ -598,7 +598,7 @@ Price Changes:
                             else "WEAK " + signal_direction if signal_strength > 0.5
                             else "NEUTRAL"
                         )
-                        
+
                         weekly_signal = (
                             "STRONG BUY" if analysis['weekly_composite'] > analysis['weekly_upper_limit']
                             else "STRONG SELL" if analysis['weekly_composite'] < analysis['weekly_lower_limit']
@@ -631,13 +631,13 @@ Price Changes:
                         chunk_messages.append(message)
                     except Exception as e:
                         chunk_messages.append(f"Error analyzing {sym}: {str(e)}")
-                
+
                 if chunk_messages:
                     await update.message.reply_text("\n---\n".join(chunk_messages))
-            
+
             if not has_data:
                 await update.message.reply_text("❌ No signals available. The market may be closed or there might be connection issues.")
-                
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting signals: {str(e)}")
 
@@ -645,7 +645,7 @@ Price Changes:
         """View market hours for all symbols"""
         try:
             market_info = []
-            
+
             for symbol in self.symbols:
                 config = TRADING_SYMBOLS[symbol]
                 market_info.append(f"""
@@ -653,7 +653,7 @@ Price Changes:
 • Trading Hours: {config['market_hours']['start']} - {config['market_hours']['end']}
 • Timezone: {config['market_hours']['timezone']}
                 """)
-            
+
             await update.message.reply_text("🕒 Market Hours:\n" + "\n".join(market_info))
         except Exception as e:
             await update.message.reply_text(f"❌ Error getting market hours: {str(e)}")
@@ -662,7 +662,7 @@ Price Changes:
         """List all trading symbols"""
         try:
             symbols_info = []
-            
+
             for symbol in self.symbols:
                 config = TRADING_SYMBOLS[symbol]
                 symbols_info.append(f"""
@@ -670,7 +670,7 @@ Price Changes:
 • Market: {config['market']}
 • Interval: {config['interval']}
                 """)
-            
+
             await update.message.reply_text("📈 Trading Symbols:\n" + "\n".join(symbols_info))
         except Exception as e:
             await update.message.reply_text(f"❌ Error listing symbols: {str(e)}")
@@ -688,33 +688,33 @@ Price Changes:
                     "Example: /open SPY 1000 (to open $1000 position in SPY)"
                 )
                 return
-            
+
             symbol = context.args[0].upper()
             try:
                 amount = float(context.args[1])
             except ValueError:
                 await update.message.reply_text("❌ Amount must be a number")
                 return
-            
+
             if symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-            
+
             if amount <= 0:
                 await update.message.reply_text("❌ Amount must be positive")
                 return
-            
+
             # Get current price from strategy
             analysis = self.strategies[symbol].analyze()
             if not analysis:
                 await update.message.reply_text(f"❌ Unable to get current price for {symbol}")
                 return
-            
+
             current_price = analysis['current_price']
-            
+
             # Execute the trade using the appropriate executor
             await self.executors[symbol].open_position(amount, current_price, self.send_message)
-            
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error opening position: {str(e)}")
 
@@ -723,21 +723,21 @@ Price Changes:
         try:
             # If no symbol specified, close all positions
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-            
+
             symbols_to_close = [symbol] if symbol else self.symbols
             success_count = 0
-            
+
             for sym in symbols_to_close:
                 try:
                     if await self.executors[sym].close_position(self.send_message):
                         success_count += 1
                 except Exception as e:
                     await update.message.reply_text(f"❌ Error closing {sym} position: {str(e)}")
-            
+
             if success_count > 0:
                 message = f"Successfully closed {success_count} position(s)"
                 if symbol:
@@ -745,7 +745,7 @@ Price Changes:
                 await update.message.reply_text(message)
             elif not symbol:  # No positions were closed when trying to close all
                 await update.message.reply_text("No open positions to close")
-            
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error closing positions: {str(e)}")
 
@@ -754,10 +754,10 @@ Price Changes:
         try:
             # Parse arguments
             args = context.args if context.args else []
-            
+
             # Default values
             days = 5
-            
+
             if not args:
                 await update.message.reply_text(
                     "Usage:\n"
@@ -766,7 +766,7 @@ Price Changes:
                     "/backtest portfolio [days] - Run portfolio backtest"
                 )
                 return
-            
+
             # Handle portfolio backtest
             if args[0].lower() == 'portfolio':
                 if len(args) >= 2:
@@ -775,14 +775,14 @@ Price Changes:
                     except ValueError:
                         await update.message.reply_text("❌ Days must be a number")
                         return
-                
+
                 # Validate days
                 if days <= 0 or days > default_backtest_interval:
                     await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
                     return
-                
+
                 status_message = await update.message.reply_text(f"🔄 Starting portfolio backtest for the last {days} days...")
-                
+
                 try:
                     # Create async task for the backtest
                     async def run_backtest_task():
@@ -791,7 +791,7 @@ Price Changes:
                             symbols_processed = 0
                             total_symbols = len(self.symbols)
                             loop = asyncio.get_running_loop()
-                            
+
                             def progress_callback(symbol):
                                 nonlocal symbols_processed
                                 symbols_processed += 1
@@ -806,7 +806,7 @@ Price Changes:
                                         )
                                     )
                                 )
-                            
+
                             # Run portfolio backtest with progress updates
                             result = await loop.run_in_executor(
                                 None,
@@ -816,36 +816,36 @@ Price Changes:
                                     progress_callback=progress_callback
                                 )
                             )
-                            
+
                             # Calculate final allocations based on position values at the end
                             # This will be our definitive allocation used for both display and invest
                             individual_results = result['individual_results']
                             last_data_point = result['data'].iloc[-1]
-                            
+
                             # Get position values for the crypto assets
                             symbol_position_values = {}
                             total_position_value = 0
-                            
+
                             for symbol in self.symbols:
                                 position_value_col = f'{symbol}_value'
                                 if position_value_col in last_data_point:
                                     position_value = last_data_point[position_value_col]
                                     symbol_position_values[symbol] = position_value
                                     total_position_value += position_value
-                            
+
                             # Calculate allocations as a percentage of total positions
                             # This is critical - this is the actual allocation used in the graph
                             allocations = {}
                             if total_position_value > 0:
                                 for symbol, value in symbol_position_values.items():
                                     allocations[symbol] = value / total_position_value
-                            
+
                             # Store this allocation in the result for future reference
                             result['allocations'] = allocations
-                            
+
                             # Get crypto symbols
                             crypto_symbols = [s for s in self.symbols if TRADING_SYMBOLS[s]['market'] == 'CRYPTO']
-                            
+
                             # Calculate metrics
                             metrics = result['metrics']
                             summary = (
@@ -858,11 +858,11 @@ Price Changes:
                                 f"💰 Trading Costs: ${result['metrics']['trading_costs']:.2f}\n"
                                 f"💵 Cash Allocation: {last_data_point['total_cash'] / last_data_point['portfolio_total'] * 100:.1f}%\n"  # Add this line
                             )
-                            
+
                             turnover_msg = (
                                 f"\n🔄 Portfolio Turnover: {metrics['turnover']['turnover']:.1%}\n"
                             )
-                            
+
                             # Check which turnover metrics structure we have
                             if 'total_trades' in metrics['turnover']:
                                 # Old structure
@@ -880,7 +880,7 @@ Price Changes:
                                     f"📦 Avg Portfolio Value: ${metrics['turnover']['avg_portfolio_value']:,.2f}\n\n"
                                 )
                             summary += turnover_msg
-                            
+
                             # Add returns and allocations for each asset
                             for symbol in self.symbols:
                                 ret = metrics['symbol_returns'].get(symbol, 0)
@@ -889,7 +889,7 @@ Price Changes:
                                 # Only include assets with non-zero allocations
                                 if alloc > 0.01:  # Include anything above 0.01%
                                     summary += f"{symbol}: {ret:.2f}% (Allocation: {alloc:.1f}%)\n"
-                            
+
                             # Add allocation info for crypto assets specifically
                             if crypto_symbols:
                                 summary += "\nCrypto Assets Allocation:\n"
@@ -897,10 +897,10 @@ Price Changes:
                                     alloc = allocations.get(symbol, 0) * 100
                                     if alloc > 0.01:  # Include anything above 0.01%
                                         summary += f"{symbol}: {alloc:.1f}%\n"
-                            
+
                             # Edit status message with completion
                             await status_message.edit_text("✅ Portfolio backtest completed!")
-                            
+
                             # Create inline keyboard for buying option
                             keyboard = [[
                                 InlineKeyboardButton(
@@ -909,42 +909,42 @@ Price Changes:
                                 )
                             ]]
                             reply_markup = InlineKeyboardMarkup(keyboard)
-                            
+
                             # Store the result so invest_command can access it later
                             self._last_portfolio_backtest = {
                                 'result': result,
                                 'days': days,
                                 'allocations': allocations
                             }
-                            
+
                             # Send summary message with buy button
                             await update.message.reply_text(summary, reply_markup=reply_markup)
-                            
+
                             # Generate and send plots
                             plot_buffer = await loop.run_in_executor(
                                 None,
                                 lambda: create_portfolio_backtest_plot(result)
                             )
                             await update.message.reply_photo(plot_buffer)
-                            
+
                             prices_plot_buffer = await loop.run_in_executor(
                                 None,
                                 lambda: create_portfolio_with_prices_plot(result)
                             )
                             await update.message.reply_photo(prices_plot_buffer)
-                            
+
                         except Exception as e:
                             logger.error(f"Error in backtest task: {str(e)}")
                             await update.message.reply_text(f"❌ An error occurred: {str(e)}")
-                    
+
                     await run_backtest_task()
-                    
+
                 except Exception as e:
                     logger.error(f"Error running backtest: {str(e)}")
                     await update.message.reply_text(f"❌ An error occurred while running backtest: {str(e)}")
-                
+
                 return
-            
+
             # Handle regular backtest
             try:
                 days = int(args[0])
@@ -957,21 +957,21 @@ Price Changes:
                     except ValueError:
                         await update.message.reply_text("❌ Days must be a number")
                         return
-            
+
             # Validate symbol if provided
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}\nAvailable symbols: {', '.join(self.symbols)}")
                 return
-            
+
             # Validate days
             if days <= 0 or days > default_backtest_interval:
                 await update.message.reply_text(f"❌ Days must be between 1 and {default_backtest_interval}, currently {days}")
                 return
-            
+
             symbols_to_test = [symbol] if symbol else self.symbols
-            
+
             status_message = await update.message.reply_text(f"🔄 Starting backtest for the last {days} days...")
-            
+
             # Run backtest for each symbol
             for sym in symbols_to_test:
                 # Get best parameters
@@ -984,13 +984,13 @@ Price Changes:
                         None,
                         lambda: run_backtest(sym, days)
                     )
-                    
+
                     # Generate plot in executor
                     buf, stats = await asyncio.get_event_loop().run_in_executor(
                         None,
                         lambda: create_backtest_plot(result)
                     )
-                    
+
                     # Create performance message
                     message = f"""
 📊 {sym} ({TRADING_SYMBOLS[sym]['name']}) Backtest Results ({days} days):
@@ -1003,7 +1003,7 @@ Price Changes:
 • 💰 Trading Costs: ${stats.get('trading_costs', 0):.2f}
 {params_message}
                     """
-                    
+
                     # Send plot and stats
                     await context.bot.send_photo(
                         chat_id=update.effective_chat.id,
@@ -1011,23 +1011,23 @@ Price Changes:
                         caption=message,
                         parse_mode='HTML'
                     )
-                    
+
                     # Update status for multiple symbols
                     if len(symbols_to_test) > 1:
                         await status_message.edit_text(f"✅ Completed {sym}, processing next symbol...")
-                        
+
                 except Exception as e:
                     error_msg = str(e)
                     if "Error running backtest for" in error_msg:
                         error_msg = error_msg.split(": ", 1)[1]  # Get the actual error message
                     await update.message.reply_text(f"❌ Could not run backtest for {sym}: {error_msg}")
-            
+
             # Final status update
             if len(symbols_to_test) > 1:
                 await status_message.edit_text("✅ All backtests completed!")
             else:
                 await status_message.edit_text("✅ Backtest completed!")
-                
+
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
@@ -1053,24 +1053,24 @@ Price Changes:
             args = context.args
             timeframe = '1D'  # default
             period = '1M'     # default
-            
+
             if len(args) >= 1:
                 timeframe = args[0]
             if len(args) >= 2:
                 period = args[1]
-                
+
             # Get portfolio history
             portfolio_history = get_portfolio_history(timeframe=timeframe, period=period)
-            
+
             # Create plot
             plot_buffer = create_portfolio_plot(portfolio_history)
-            
+
             # Send plot
             await update.message.reply_photo(
                 photo=plot_buffer,
                 caption=f'Portfolio History (Timeframe: {timeframe}, Period: {period})'
             )
-            
+
         except Exception as e:
             logger.error(f"Error in portfolio_command: {str(e)}")
             await update.message.reply_text(f"Error getting portfolio history: {str(e)}")
@@ -1108,11 +1108,11 @@ Price Changes:
         """Handle button callbacks"""
         query = update.callback_query
         await query.answer()  # Answer the callback query to remove the loading state
-        
+
         if query.data.startswith('buy_backtest:'):
             # Extract backtest data from callback
             _, backtest_type, days = query.data.split(':')
-            
+
             # Ask for investment amount
             await query.message.reply_text(
                 "💰 Enter the total amount to invest using the format:\n"
@@ -1130,58 +1130,58 @@ Price Changes:
                     "Example: /invest portfolio 5 1000"
                 )
                 return
-                
+
             backtest_type, days, amount = context.args
             days = int(days)
             amount = float(amount)
-            
+
             # Check if we have cached results from the previous backtest
             if backtest_type.lower() == 'portfolio' and hasattr(self, '_last_portfolio_backtest'):
                 cached_backtest = self._last_portfolio_backtest
-                
+
                 # Verify days parameter matches
                 if cached_backtest['days'] == days:
                     # Use the allocations directly from the cached result
                     allocations = cached_backtest['allocations']
-                    
+
                     # Get crypto symbols with their allocations
                     crypto_symbols = [s for s in allocations.keys() 
                                     if TRADING_SYMBOLS.get(s, {}).get('market') == 'CRYPTO' 
                                     and allocations.get(s, 0) > 0]
-                    
+
                     if not crypto_symbols:
                         await update.message.reply_text("❌ No crypto assets with non-zero allocations in the backtest portfolio")
                         return
-                    
+
                     # Show planned allocations
                     allocation_msg = "📊 Planned allocations:\n"
                     for symbol in crypto_symbols:
                         allocation_msg += f"{symbol}: ${amount * allocations[symbol]:.2f} ({allocations[symbol]*100:.1f}%)\n"
                     await update.message.reply_text(allocation_msg)
-                    
+
                     # First close all existing crypto positions
                     for symbol in crypto_symbols:
                         # Use close_command directly
                         context.args = [symbol]  # Set the symbol as argument
                         await self.close_command(update, context)
-                    
+
                     # Now open new positions
                     status_message = await update.message.reply_text("🔄 Opening new positions...")
-                    
+
                     for symbol in crypto_symbols:
                         # Calculate amount for this symbol
                         symbol_amount = amount * allocations[symbol]
-                        
+
                         # Use open_command directly
                         context.args = [symbol, str(symbol_amount)]  # Set symbol and amount as arguments
                         await self.open_command(update, context)
-                    
+
                     await status_message.edit_text("✅ Portfolio reallocation completed!")
                     return
-            
+
             # If no cached results or different days parameter, run a new backtest
             await update.message.reply_text("No matching backtest data found. Please run /backtest portfolio first.")
-                        
+
         except ValueError as e:
             await update.message.reply_text(f"❌ Invalid input: {str(e)}")
         except Exception as e:
@@ -1193,18 +1193,18 @@ Price Changes:
         try:
             # Check if a specific symbol was requested
             symbol = context.args[0].upper() if context.args else None
-            
+
             if symbol and symbol not in self.symbols:
                 await update.message.reply_text(f"❌ Invalid symbol: {symbol}")
                 return
-                
+
             try:
                 from replit.object_storage import Client
-                
+
                 # Initialize Object Storage client
                 try:
                     client = Client()
-                    
+
                     # Try to get parameters from Object Storage
                     try:
                         json_content = client.download_as_text("best_params.json")
@@ -1224,7 +1224,7 @@ Price Changes:
                 logger.info("Falling back to local file")
                 params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
                 logger.info(f"Looking for file at: {params_file}")
-                
+
                 if os.path.exists(params_file):
                     logger.info(f"File exists at {params_file}")
                     with open(params_file, "r") as f:
@@ -1234,24 +1234,24 @@ Price Changes:
                     logger.error(f"Best parameters file not found at {params_file}")
                     await update.message.reply_text("❌ Best parameters file not found. Run backtest optimization first.")
                     return
-                
+
             if symbol:
                 # Get best parameters for a specific symbol
                 if symbol in best_params_data:
                     params = best_params_data[symbol]['best_params']
                     metrics = best_params_data[symbol].get('metrics', {})
                     date = best_params_data[symbol].get('date', 'Unknown')
-                    
+
                     # Format the parameters
                     params_text = f"📊 Best Parameters for {symbol} (Updated: {date}):\n\n"
-                    
+
                     # Add metrics if available
                     if metrics:
                         params_text += "Performance Metrics:\n"
                         params_text += f"• Performance: {metrics.get('performance', 'N/A'):.2f}%\n"
                         params_text += f"• Win Rate: {metrics.get('win_rate', 'N/A'):.2f}%\n"
                         params_text += f"• Max Drawdown: {metrics.get('max_drawdown', 'N/A'):.2f}%\n\n"
-                    
+
                     params_text += "Parameters:\n"
                     # Format fractal_lags as a list if it's a list
                     for key, value in params.items():
@@ -1263,27 +1263,27 @@ Price Changes:
                             params_text += f"• {key}: {', '.join(map(str, value))}\n"
                         else:
                             params_text += f"• {key}: {value}\n"
-                    
+
                     await update.message.reply_text(params_text)
                 else:
                     await update.message.reply_text(f"❌ No best parameters found for {symbol}")
             else:
                 # Get best parameters for all symbols
                 symbols_text = "📊 Best Parameters Summary for All Symbols:\n\n"
-                
+
                 for sym in self.symbols:
                     if sym in best_params_data:
                         date = best_params_data[sym].get('date', 'Unknown')
                         metrics = best_params_data[sym].get('metrics', {})
-                        
+
                         symbols_text += f"🔹 {sym} (Updated: {date}):\n"
-                        
+
                         # Add key metrics
                         if metrics:
                             symbols_text += f"  • Performance: {metrics.get('performance', 'N/A'):.2f}%\n"
                             symbols_text += f"  • Win Rate: {metrics.get('win_rate', 'N/A'):.2f}%\n"
                             symbols_text += f"  • Max Drawdown: {metrics.get('max_drawdown', 'N/A'):.2f}%\n"
-                        
+
                         # Add key parameters (only a subset for readability)
                         params = best_params_data[sym]['best_params']
                         symbols_text += "  • Key Parameters:\n"
@@ -1291,21 +1291,21 @@ Price Changes:
                         for key in key_params:
                             if key in params:
                                 symbols_text += f"    - {key}: {params[key]}\n"
-                        
+
                         symbols_text += "\n"
                     else:
                         symbols_text += f"🔹 {sym}: No parameters available\n\n"
-                
+
                 symbols_text += "\nUse /bestparams <symbol> to see detailed parameters for a specific symbol."
                 await update.message.reply_text(symbols_text)
-                
+
         except Exception as e:
             logger.error(f"Error in best_params_command: {e}")
             await update.message.reply_text(f"❌ Error retrieving best parameters: {str(e)}")
 
     async def orders_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """View past orders from Alpaca account.
-        
+
         Usage:
         /orders - Get 20 most recent orders
         /orders all - Get all orders
@@ -1317,23 +1317,23 @@ Price Changes:
             import matplotlib.dates as mdates
             import pandas as pd
             import io
-            import yfinance as yf
             from datetime import datetime, timedelta
             import pytz
             from config import TRADING_SYMBOLS
             from utils import get_api_symbol, get_display_symbol
-            
+            from fetch import fetch_historical_data
+
             # Initialize AlpacaService
             alpaca_service = AlpacaService()
-            
+
             # Parse arguments
             args = context.args
-            
+
             # Default values
             limit = 20
             symbol = None
             get_all = False
-            
+
             # Parse command arguments
             if args:
                 if args[0].lower() == 'all':
@@ -1348,7 +1348,7 @@ Price Changes:
                     else:
                         api_symbol = symbol
                         symbol = get_display_symbol(api_symbol)
-                    
+
                     # Check for limit argument
                     if len(args) > 1:
                         if args[1].lower() == 'all':
@@ -1372,19 +1372,19 @@ Price Changes:
                     except ValueError:
                         await update.message.reply_text(f"❌ Invalid argument: {args[0]}. Use /orders, /orders all, or /orders <symbol> [limit]")
                         return
-            
+
             # Get orders from Alpaca
             orders = alpaca_service.get_recent_trades(limit=limit)
-            
+
             # Filter by symbol if specified
             if symbol:
                 # Try both API and display formats
                 orders = [order for order in orders if order['symbol'].lower() == api_symbol.lower() or order['symbol'].lower() == symbol.lower()]
-                
+
                 if not orders:
                     await update.message.reply_text(f"❌ No orders found for {symbol}")
                     return
-            
+
             # Format orders for display
             if orders:
                 # Group orders by symbol for better readability
@@ -1395,90 +1395,85 @@ Price Changes:
                     if display_sym not in orders_by_symbol:
                         orders_by_symbol[display_sym] = []
                     orders_by_symbol[display_sym].append(order)
-                
+
                 # Create message with orders grouped by symbol
                 message = f"📋 Past Orders ({len(orders)} total):\n\n"
-                
+
                 for sym, sym_orders in orders_by_symbol.items():
                     message += f"🔹 {sym} ({len(sym_orders)} orders):\n"
-                    
+
                     for i, order in enumerate(sym_orders[:10]):  # Show max 10 orders per symbol in text
                         # Format dates
                         submitted_at = order['submitted_at']
                         if isinstance(submitted_at, str):
                             submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
                         date_str = submitted_at.strftime('%Y/%m/%d %H:%M:%S')
-                        
+
                         status = order['status']
-                        
+
                         # Format order details
                         side = order['side'].lower()
                         side_emoji = "🟢" if side == 'buy' else "🔴"
                         price = f"${order['filled_avg_price']:.2f}" if order['filled_avg_price'] else "N/A"
-                        
+
                         message += f"  {i+1}. {side_emoji} {side} {order['filled_qty']} @ {price} - {status} ({date_str})\n"
-                    
+
                     if len(sym_orders) > 10:
                         message += f"  ... and {len(sym_orders) - 10} more orders\n"
-                    
+
                     message += "\n"
-                
+
                 # Send the message
                 await update.message.reply_text(message)
-                
+
                 # If a specific symbol was requested with a limit, generate a chart
                 if symbol and limit > 0:
                     await update.message.reply_text(f"Generating chart for {symbol} with last {len(orders)} orders...")
-                    
+
                     try:
                         # Get the correct Yahoo Finance symbol
                         symbol_config = TRADING_SYMBOLS.get(symbol)
                         if not symbol_config:
                             await update.message.reply_text(f"❌ Symbol configuration not found for {symbol}")
                             return
-                            
+
                         yf_symbol = symbol_config['yfinance']
-                        
+
                         # Get the earliest order date to determine chart start date
                         earliest_order_date = None
                         for order in orders:
                             submitted_at = order['submitted_at']
                             if isinstance(submitted_at, str):
                                 submitted_at = datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
-                            
+
                             if earliest_order_date is None or submitted_at < earliest_order_date:
                                 earliest_order_date = submitted_at
-                        
+
                         # Add buffer days before earliest order
                         if earliest_order_date:
                             start_date = earliest_order_date - timedelta(days=5)
                         else:
                             start_date = datetime.now(pytz.UTC) - timedelta(days=30)
-                            
+
                         end_date = datetime.now(pytz.UTC)
-                        
-                        # Fetch historical data
-                        ticker = yf.Ticker(yf_symbol)
-                        data = ticker.history(
-                            start=start_date,
-                            end=end_date,
-                            interval='1h'  # Use hourly data for better visualization
-                        )
-                        
+
+                        # Fetch historical data using fetch_historical_data
+                        data = fetch_historical_data(yf_symbol, start_date, end_date, '1h')
+
                         if len(data) == 0:
                             await update.message.reply_text(f"❌ No price data available for {symbol}")
                             return
-                        
+
                         # Ensure index is timezone-aware
                         if data.index.tz is None:
                             data.index = data.index.tz_localize('UTC')
-                        
+
                         # Create the plot
                         plt.figure(figsize=(12, 6))
-                        
+
                         # Plot price data
                         plt.plot(data.index, data['Close'], label='Price', color='blue', alpha=0.7)
-                        
+
                         # Plot buy orders
                         buy_orders = [order for order in orders if order['side'].lower() == 'buy' and order['status'] == 'filled']
                         for order in buy_orders:
@@ -1486,11 +1481,11 @@ Price Changes:
                             order_time = order['filled_at'] or order['submitted_at']
                             if isinstance(order_time, str):
                                 order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
-                            
+
                             price = order['filled_avg_price']
                             if not price:  # Skip if no price available
                                 continue
-                            
+
                             plt.scatter(order_time, price, marker='^', color='green', s=100, zorder=5)
                             plt.annotate(f"Buy: {order['filled_qty']} @ ${price:.2f}",
                                     (order_time, price),
@@ -1500,7 +1495,7 @@ Price Changes:
                                     va='bottom',
                                     fontsize=8,
                                     bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
-                        
+
                         # Plot sell orders
                         sell_orders = [order for order in orders if order['side'].lower() == 'sell' and order['status'] == 'filled']
                         for order in sell_orders:
@@ -1508,11 +1503,11 @@ Price Changes:
                             order_time = order['filled_at'] or order['submitted_at']
                             if isinstance(order_time, str):
                                 order_time = datetime.fromisoformat(order_time.replace('Z', '+00:00'))
-                            
+
                             price = order['filled_avg_price']
                             if not price:  # Skip if no price available
                                 continue
-                            
+
                             plt.scatter(order_time, price, marker='v', color='red', s=100, zorder=5)
                             plt.annotate(f"Sell: {order['filled_qty']} @ ${price:.2f}",
                                     (order_time, price),
@@ -1521,19 +1516,19 @@ Price Changes:
                                     ha='center',
                                     va='top',
                                     fontsize=8,
-                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
-                        
+                                    bbox=dictboxstyle='round,pad=0.3', fc='white', alpha=0.7))
+
                         # Format the plot
                         plt.title(f"{symbol} Price with Order History")
                         plt.xlabel('Date')
                         plt.ylabel('Price')
                         plt.grid(True, alpha=0.3)
-                        
+
                         # Format x-axis dates
                         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
                         plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
                         plt.gcf().autofmt_xdate()
-                        
+
                         # Add legend
                         buy_patch = plt.Line2D([], [], marker='^', color='green', linestyle='None', 
                                             markersize=10, label='Buy Orders')
@@ -1541,14 +1536,14 @@ Price Changes:
                                             markersize=10, label='Sell Orders')
                         price_line = plt.Line2D([], [], color='blue', label='Price')
                         plt.legend(handles=[price_line, buy_patch, sell_patch])
-                        
+
                         # Save to buffer
                         buf = io.BytesIO()
                         plt.tight_layout()
                         plt.savefig(buf, format='png', dpi=150)
                         buf.seek(0)
                         plt.close()
-                        
+
                         # Send the chart
                         await update.message.reply_document(
                             document=buf,
@@ -1559,6 +1554,6 @@ Price Changes:
                         await update.message.reply_text(f"❌ Error generating chart: {str(e)}")
             else:
                 await update.message.reply_text("❌ No orders found")
-                
+
         except Exception as e:
             await update.message.reply_text(f"❌ Error retrieving orders: {str(e)}")
