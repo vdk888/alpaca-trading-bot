@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import logging
 from typing import Dict, Any
 from replit.object_storage import Client
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
