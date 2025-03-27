@@ -33,16 +33,7 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
         cached_data = cache_service.get(cache_key)
         if cached_data and cache_service.is_fresh(cache_key):
             logger.debug(f"Using cached data for {symbol}")
-            if isinstance(cached_data, dict) and 'data' in cached_data and 'index' in cached_data:
-                df = pd.DataFrame.from_dict(cached_data['data'])
-                # Convert string timestamps back to datetime with timezone
-                df.index = pd.to_datetime(cached_data['index']).tz_localize('UTC')
-                return df
-            # If cached data is already a DataFrame
-            df = pd.DataFrame.from_dict(cached_data)
-            if df.index.tz is None:
-                df.index = pd.to_datetime(df.index).tz_localize('UTC')
-            return df
+            return pd.DataFrame.from_dict(cached_data)
 
     # Get the correct Yahoo Finance symbol
     yf_symbol = TRADING_SYMBOLS[symbol]['yfinance']
@@ -94,9 +85,6 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     # Store in cache if enabled
     if use_cache:
         cache_key = get_cache_key(symbol, interval, days)
-        # Ensure timezone awareness before caching
-        if df.index.tz is None:
-            df.index = df.index.tz_localize('UTC')
         # Convert DataFrame to dict with string timestamps
         df_dict = df.copy()
         df_dict.index = df_dict.index.strftime('%Y-%m-%d %H:%M:%S%z')
@@ -130,18 +118,12 @@ def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: 
         logger.info(f"Fetching {days} days of data for {symbol}")
         df = fetch_historical_data(symbol, config_interval, days=days, use_cache=use_cache)
 
-        # Ensure timezone awareness for all data
-        if not isinstance(df.index, pd.DatetimeIndex):
-            df.index = pd.to_datetime(df.index)
-            
-        if df.index.tz is None:
-            df.index = df.index.tz_localize('UTC')
-        elif str(df.index.tz) != 'UTC':
-            df.index = df.index.tz_convert('UTC')
-
-        # Filter for market hours if needed
+        # Filter for market hours
         market_hours = TRADING_SYMBOLS[symbol]['market_hours']
         if market_hours['start'] != '00:00' or market_hours['end'] != '23:59':
+            # Convert index to market timezone
+            if df.index.tz is None:
+                df.index = df.index.tz_localize('UTC')
             market_tz = market_hours['timezone']
             df.index = df.index.tz_convert(market_tz)
 

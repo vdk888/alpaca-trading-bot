@@ -24,18 +24,8 @@ class TradingStrategy:
     def _initialize_data(self) -> None:
         """Initialize historical data for the strategy"""
         try:
-            # Fetch historical data
+            # Fetch 3 days of historical data
             self.data = fetch_historical_data(self.symbol, self.interval, days=int(lookback_days_param))
-            
-            # Ensure DataFrame index has timezone
-            if not isinstance(self.data.index, pd.DatetimeIndex):
-                self.data.index = pd.to_datetime(self.data.index)
-                
-            if self.data.index.tz is None:
-                self.data.index = self.data.index.tz_localize('UTC')
-            elif str(self.data.index.tz) != 'UTC':
-                self.data.index = self.data.index.tz_convert('UTC')
-                
             self.last_update = pd.Timestamp.now(tz=pytz.UTC)
             logger.info(f"Initialized data for {self.symbol}: {len(self.data)} bars")
         except Exception as e:
@@ -88,14 +78,7 @@ class TradingStrategy:
             
             # Check if we already generated a signal for this bar
             # Convert interval string to pandas offset
-            interval_str = self.interval.lower()
-            if 'min' in interval_str:
-                interval_str = interval_str.replace('min', 'T')
-            elif 'h' in interval_str:
-                interval_str = interval_str.replace('h', 'h')
-            elif 'd' in interval_str:
-                interval_str = interval_str.replace('d', 'D')
-            interval_offset = pd.Timedelta(interval_str)
+            interval_offset = pd.Timedelta(self.interval.replace('min', 'T'))
             if (self.last_signal_time is not None and 
                 current_bar_time.floor(interval_offset) == self.last_signal_time.floor(interval_offset)):
                 # Return the last analysis but with signal=0 to prevent duplicate signals
