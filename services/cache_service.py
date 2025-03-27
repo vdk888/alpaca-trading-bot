@@ -32,11 +32,13 @@ class CacheService:
             # Convert Timestamps to strings in data
             def convert_timestamps(obj):
                 if isinstance(obj, dict):
-                    return {k: convert_timestamps(v) for k, v in obj.items()}
+                    return {str(k): convert_timestamps(v) for k, v in obj.items()}
                 elif isinstance(obj, list):
                     return [convert_timestamps(item) for item in obj]
                 elif isinstance(obj, pd.Timestamp):
                     return obj.isoformat()
+                elif isinstance(obj, pd.Index):
+                    return list(map(str, obj))
                 return obj
 
             cleaned_data = convert_timestamps(data)
