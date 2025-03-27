@@ -360,8 +360,16 @@ def run_backtest_api():
 
     if symbol == "portfolio":
         try:
+            # Check cache first
+            cache_key = get_cache_key('portfolio_backtest', days=days)
+            cached_data = cache_service.get(cache_key)
+            
+            if cached_data and cache_service.is_fresh(cache_key, max_age_hours=4):
+                logger.info("Returning cached portfolio backtest data")
+                return jsonify(cached_data)
+
             logger.info("Running portfolio backtest")
-            # Run portfolio backtest directly
+            # Run portfolio backtest if not cached
             results = run_portfolio_backtest(symbols, days)
 
             logger.info("Creating portfolio backtest plot")
@@ -369,6 +377,16 @@ def run_backtest_api():
             buf = create_portfolio_backtest_plot(results)
             buf.seek(0)
             plot_url = base64.b64encode(buf.read()).decode()
+
+            # Prepare response data
+            response_data = {
+                "success": True,
+                "plot": plot_url,
+                "results": results['metrics']
+            }
+
+            # Cache the results
+            cache_service.set_with_ttl(cache_key, response_data, ttl_hours=4)
 
             # Extract key metrics for the frontend
             metrics = {
