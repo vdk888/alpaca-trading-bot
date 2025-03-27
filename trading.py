@@ -108,43 +108,42 @@ class TradingExecutor:
         return shares
 
     def calculate_performance_ranking(self, current_price: float, lookback_days: int = lookback_days_param) -> tuple[float, float]:
-        """Calculate performance ranking compared to other symbols."""
+        """Calculate performance ranking using backtest results."""
         try:
             logger.info(f"Calculating performance ranking for {self.symbol} at price {current_price:.2f} over {lookback_days} days")
-
-            # Get historical data for all symbols
-            end_time = datetime.now(pytz.UTC)
-            start_time = end_time - timedelta(days=lookback_days)
-            logger.info(f"Time range for performance calculation: {start_time} to {end_time}")
+            
+            # Try to load best_params.json for strategy performance data
+            try:
+                params_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best_params.json")
+                with open(params_file, "r") as f:
+                    best_params_data = json.load(f)
+            except Exception as e:
+                logger.error(f"Could not load best_params.json: {e}")
+                best_params_data = {}
 
             performance_dict = {}
 
-            # Calculate performance for each symbol
+            # Calculate performance for each symbol using backtest results
             for sym, config in TRADING_SYMBOLS.items():
                 try:
                     logger.info(f"Processing symbol: {sym}")
-
-                    # Get historical data using fetch.py
-                    data = fetch_historical_data(
-                        symbol=sym,
-                        interval=config['interval'],
-                        days=lookback_days,
-                        use_cache=True
-                    )
-
-                    # Adjust timezone if needed
-                    if data.index.tz is None:
-                        data.index = data.index.tz_localize('UTC')
-
-                    if len(data) >= 2:
-                        start_price = data['close'].iloc[0]
-                        end_price = current_price if sym == self.symbol else data['close'].iloc[-1]
-                        performance = ((end_price - start_price) / start_price) * 100
-                        performance_dict[sym] = performance
-
-                        logger.info(f"{sym} Performance: {performance:.2f}% (Start: ${start_price:.2f}, End: ${end_price:.2f})")
-                    else:
-                        logger.warning(f"Insufficient data points for {sym}: {len(data)} (need at least 2)")
+                    
+                    # Run a quick backtest to get recent performance
+                    backtest_days = min(lookback_days, 30)  # Limit to 30 days for speed
+                    params = best_params_data.get(sym, {}).get('best_params', get_default_params())
+                    
+                    from backtest_individual import run_backtest
+                    result = run_backtest(symbol=sym,
+                                       days=backtest_days,
+                                       params=params,
+                                       is_simulating=True,
+                                       lookback_days_param=lookback_days)
+                    
+                    # Use total return as performance metric
+                    performance = result['stats']['total_return']
+                    performance_dict[sym] = performance
+                    
+                    logger.info(f"{sym} Performance: {performance:.2f}% (Backtest)")
 
                 except Exception as e:
                     logger.error(f"Error calculating performance for {sym}: {str(e)}")
