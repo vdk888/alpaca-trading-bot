@@ -912,14 +912,22 @@ def get_portfolio_data():
         except (ValueError, TypeError):
             return jsonify({"error": "Invalid 'days' parameter.  Must be an integer."}), 400
 
-        # Run portfolio backtest
-        result = run_portfolio_backtest(symbols, days)
+        try:
+            # Run portfolio backtest
+            result = run_portfolio_backtest(symbols, days)
 
-        # Get the portfolio data
-        data = result['data']
+            # Get the portfolio data and ensure required columns exist
+            data = result['data']
+            required_columns = ['open', 'high', 'low', 'close']
+            
+            # Check if any required columns are missing
+            missing_columns = [col for col in required_columns if not any(c.endswith(f'_{col}') for c in data.columns)]
+            if missing_columns:
+                logger.error(f"Missing required columns: {missing_columns}")
+                return jsonify({"error": f"Missing required columns in portfolio data: {missing_columns}"}), 500
 
-        # Convert index to string format for JSON serialization
-        data_dict = data.reset_index().to_dict(orient='records')
+            # Convert index to string format for JSON serialization
+            data_dict = data.reset_index().to_dict(orient='records')
 
         # Calculate benchmark (equal-weight portfolio) - same as in create_portfolio_backtest_plot
         price_columns = [col for col in data.columns if col.endswith('_price')]
