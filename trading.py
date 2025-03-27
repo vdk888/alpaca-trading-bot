@@ -8,7 +8,7 @@ from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_M
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
-import yfinance as yf
+from fetch import fetch_historical_data
 
 logger = logging.getLogger(__name__)
 
@@ -122,18 +122,19 @@ class TradingExecutor:
             # Calculate performance for each symbol
             for sym, config in TRADING_SYMBOLS.items():
                 try:
-                    # Get the yfinance symbol
-                    yf_symbol = config['yfinance']
-                    logger.info(f"Processing symbol: {sym} (yfinance: {yf_symbol})")
+                    logger.info(f"Processing symbol: {sym}")
 
-                    # Get historical data from yfinance
-                    ticker = yf.Ticker(yf_symbol)
-                    data = ticker.history(
-                        start=start_time,
-                        end=end_time,
+                    # Get historical data using fetch.py
+                    data = fetch_historical_data(
+                        symbol=sym,
                         interval=config['interval'],
-                        actions=True
+                        days=lookback_days,
+                        use_cache=True
                     )
+
+                    # Adjust timezone if needed
+                    if data.index.tz is None:
+                        data.index = data.index.tz_localize('UTC')
 
                     if len(data) >= 2:
                         start_price = data['Close'].iloc[0]
