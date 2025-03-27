@@ -131,11 +131,13 @@ def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: 
         df = fetch_historical_data(symbol, config_interval, days=days, use_cache=use_cache)
 
         # Ensure timezone awareness for all data
-        if isinstance(df.index, pd.DatetimeIndex):
-            if df.index.tz is None:
-                df.index = df.index.tz_localize('UTC')
-        else:
-            df.index = pd.to_datetime(df.index, utc=True)
+        if not isinstance(df.index, pd.DatetimeIndex):
+            df.index = pd.to_datetime(df.index)
+            
+        if df.index.tz is None:
+            df.index = df.index.tz_localize('UTC')
+        elif str(df.index.tz) != 'UTC':
+            df.index = df.index.tz_convert('UTC')
 
         # Filter for market hours if needed
         market_hours = TRADING_SYMBOLS[symbol]['market_hours']

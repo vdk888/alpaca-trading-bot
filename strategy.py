@@ -28,11 +28,13 @@ class TradingStrategy:
             self.data = fetch_historical_data(self.symbol, self.interval, days=int(lookback_days_param))
             
             # Ensure DataFrame index has timezone
-            if isinstance(self.data.index, pd.DatetimeIndex):
-                if self.data.index.tz is None:
-                    self.data.index = self.data.index.tz_localize('UTC')
-            else:
-                self.data.index = pd.to_datetime(self.data.index, utc=True)
+            if not isinstance(self.data.index, pd.DatetimeIndex):
+                self.data.index = pd.to_datetime(self.data.index)
+                
+            if self.data.index.tz is None:
+                self.data.index = self.data.index.tz_localize('UTC')
+            elif str(self.data.index.tz) != 'UTC':
+                self.data.index = self.data.index.tz_convert('UTC')
                 
             self.last_update = pd.Timestamp.now(tz=pytz.UTC)
             logger.info(f"Initialized data for {self.symbol}: {len(self.data)} bars")
