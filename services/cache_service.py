@@ -28,9 +28,21 @@ class CacheService:
                     logger.error("No Object Storage connection available")
                     return
 
+            # Convert Timestamps to strings in data
+            def convert_timestamps(obj):
+                if isinstance(obj, dict):
+                    return {k: convert_timestamps(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_timestamps(item) for item in obj]
+                elif isinstance(obj, pd.Timestamp):
+                    return obj.isoformat()
+                return obj
+
+            cleaned_data = convert_timestamps(data)
+
             # Add TTL info to the data
             cache_data = {
-                'data': data,
+                'data': cleaned_data,
                 'expires_at': (datetime.now() + timedelta(hours=ttl_hours)).isoformat(),
                 'created_at': datetime.now().isoformat()
             }
