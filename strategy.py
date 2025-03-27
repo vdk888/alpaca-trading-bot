@@ -85,9 +85,12 @@ class TradingStrategy:
                 if isinstance(self.last_signal_time, str):
                     self.last_signal_time = pd.Timestamp(self.last_signal_time)
                 if (current_bar_time.floor(interval_offset) == self.last_signal_time.floor(interval_offset)):
-                # Return the last analysis but with signal=0 to prevent duplicate signals
-                if hasattr(self, '_last_analysis'):
-                    no_signal_analysis = self._last_analysis.copy()
+                    # Return the last analysis but with signal=0 to prevent duplicate signals
+                    if hasattr(self, '_last_analysis'):
+                        no_signal_analysis = self._last_analysis.copy()
+                        no_signal_analysis['signal'] = 0
+                        return no_signal_analysis
+                    return None
                     no_signal_analysis['signal'] = 0
                     return no_signal_analysis
                 return None
