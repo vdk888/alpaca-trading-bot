@@ -1516,7 +1516,7 @@ Price Changes:
                                     ha='center',
                                     va='top',
                                     fontsize=8,
-                                    bbox=dictboxstyle='round,pad=0.3', fc='white', alpha=0.7))
+                                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7))
 
                         # Format the plot
                         plt.title(f"{symbol} Price with Order History")
