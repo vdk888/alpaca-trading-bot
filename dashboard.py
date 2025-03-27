@@ -595,8 +595,8 @@ def get_capital_multiplier():
                 if '/' in yf_symbol:
                     yf_symbol = yf_symbol.replace('/', '-')
 
-                # Fetch historical data using symbol and days
-                data = fetch_historical_data(symbol, default_interval_yahoo, days * 2)
+                # Fetch historical data
+                data = fetch_historical_data(yf_symbol, start_date, end_date)
 
                 if len(data) >= 10:  # Need enough data for meaningful calculation
                     # Calculate daily returns
