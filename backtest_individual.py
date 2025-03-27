@@ -788,7 +788,11 @@ def calculate_performance_ranking(prices_dataset, current_time, lookback_days_pa
 
     # Get the cache key for backtest results
     def get_backtest_cache_key(symbol, days):
-        return f"backtest_result:{symbol}:{days}"
+        # Extract base symbol (e.g., BTC from BTC/USD)
+        base_symbol = symbol.split('/')[0]
+        # Match the format observed in Object Storage (e.g., backtest_result:BTC)
+        # Note: We are removing the ':days' part as it wasn't present in the screenshot keys
+        return f"backtest_result:{base_symbol}"
 
     for symbol, data in prices_dataset.items():
         try:
