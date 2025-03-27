@@ -137,8 +137,8 @@ class TradingExecutor:
                         data.index = data.index.tz_localize('UTC')
 
                     if len(data) >= 2:
-                        start_price = data['Close'].iloc[0]
-                        end_price = current_price if sym == self.symbol else data['Close'].iloc[-1]
+                        start_price = data['close'].iloc[0]
+                        end_price = current_price if sym == self.symbol else data['close'].iloc[-1]
                         performance = ((end_price - start_price) / start_price) * 100
                         performance_dict[sym] = performance
 
