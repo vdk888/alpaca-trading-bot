@@ -5,10 +5,17 @@ from typing import Optional
 from config import TRADING_SYMBOLS, DEFAULT_INTERVAL, DEFAULT_INTERVAL_WEEKLY, default_interval_yahoo, default_backtest_interval
 import logging
 import pytz
+import json
+from services.cache_service import CacheService
 
 logger = logging.getLogger(__name__)
+cache_service = CacheService()
 
-def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, days: int = default_backtest_interval) -> pd.DataFrame:
+def get_cache_key(symbol: str, interval: str, days: int) -> str:
+    """Generate standardized cache key for price data"""
+    return f"price_data:{symbol}:{interval}:{days}"
+
+def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, days: int = default_backtest_interval, use_cache: bool = True) -> pd.DataFrame:
     """
     Fetch historical data from Yahoo Finance
     
@@ -20,6 +27,14 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     Returns:
         DataFrame with OHLCV data
     """
+    # Check cache first if enabled
+    if use_cache:
+        cache_key = get_cache_key(symbol, interval, days)
+        cached_data = cache_service.get(cache_key)
+        if cached_data and cache_service.is_fresh(cache_key):
+            logger.debug(f"Using cached data for {symbol}")
+            return pd.DataFrame.from_dict(cached_data)
+
     # Get the correct Yahoo Finance symbol
     yf_symbol = TRADING_SYMBOLS[symbol]['yfinance']
     ticker = yf.Ticker(yf_symbol)
@@ -67,9 +82,15 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     logger.info(f"Fetched {len(df)} bars of {interval} data for {symbol} ({yf_symbol})")
     logger.info(f"Date range: {df.index[0]} to {df.index[-1]}")
     
+    # Store in cache if enabled
+    if use_cache:
+        cache_key = get_cache_key(symbol, interval, days)
+        cache_service.set_with_ttl(cache_key, df.to_dict(), ttl_hours=1)
+        logger.debug(f"Stored data in cache for {symbol}")
+    
     return df
 
-def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: Optional[int] = None, days: int = default_backtest_interval) -> pd.DataFrame:
+def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: Optional[int] = None, days: int = default_backtest_interval, use_cache: bool = True) -> pd.DataFrame:
     """
     Get the most recent data points
     
@@ -88,7 +109,7 @@ def get_latest_data(symbol: str, interval: str = default_interval_yahoo, limit: 
     try:
         # Fetch data for the specified number of days
         logger.info(f"Fetching {days} days of data for {symbol}")
-        df = fetch_historical_data(symbol, config_interval, days=days)
+        df = fetch_historical_data(symbol, config_interval, days=days, use_cache=use_cache)
         
         # Filter for market hours
         market_hours = TRADING_SYMBOLS[symbol]['market_hours']
