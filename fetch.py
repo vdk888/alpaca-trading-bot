@@ -85,10 +85,14 @@ def fetch_historical_data(symbol: str, interval: str = default_interval_yahoo, d
     # Store in cache if enabled
     if use_cache:
         cache_key = get_cache_key(symbol, interval, days)
-        # Convert index to strings for JSON serialization
+        # Convert DataFrame to dict with string timestamps
         df_dict = df.copy()
         df_dict.index = df_dict.index.strftime('%Y-%m-%d %H:%M:%S%z')
-        cache_service.set_with_ttl(cache_key, df_dict.to_dict(), ttl_hours=1)
+        cache_dict = {
+            'data': df_dict.to_dict(),
+            'index': df_dict.index.tolist()
+        }
+        cache_service.set_with_ttl(cache_key, cache_dict, ttl_hours=1)
         logger.debug(f"Stored data in cache for {symbol}")
 
     return df

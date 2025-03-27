@@ -77,8 +77,10 @@ class TradingStrategy:
             current_bar_time = self.data.index[-1]
             
             # Check if we already generated a signal for this bar
+            # Convert interval string to pandas offset
+            interval_offset = pd.Timedelta(self.interval.replace('min', 'T'))
             if (self.last_signal_time is not None and 
-                current_bar_time.floor(self.interval) == self.last_signal_time.floor(self.interval)):
+                current_bar_time.floor(interval_offset) == self.last_signal_time.floor(interval_offset)):
                 # Return the last analysis but with signal=0 to prevent duplicate signals
                 if hasattr(self, '_last_analysis'):
                     no_signal_analysis = self._last_analysis.copy()
