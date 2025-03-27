@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import yfinance as yf
+from fetch import fetch_historical_data
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
@@ -279,12 +279,8 @@ def run_backtest(symbol: str,
         if '/' in yf_symbol:
             yf_symbol = yf_symbol.replace('/', '-')
 
-        print(f"Fetching {yf_symbol} data...")
-        ticker = yf.Ticker(yf_symbol)
-        data = ticker.history(start=start_date,
-                              end=end_date,
-                              interval=default_interval_yahoo,
-                              actions=True)
+        print(f"Fetching {sym} data...")
+        data = fetch_historical_data(sym, interval=default_interval_yahoo, days=(end_date - start_date).days)
 
         print(f"Retrieved {len(data)} data points for {sym}")
 
@@ -371,11 +367,9 @@ def run_backtest(symbol: str,
     start_date = end_date - timedelta(days=days + 2)  # Add buffer days
 
     # Fetch historical data
-    ticker = yf.Ticker(yf_symbol)
-    data = ticker.history(start=start_date,
-                          end=end_date,
-                          interval=symbol_config.get('interval', DEFAULT_INTERVAL),
-                          actions=True)
+    data = fetch_historical_data(symbol, 
+                               interval=symbol_config.get('interval', DEFAULT_INTERVAL),
+                               days=(end_date - start_date).days)
 
     if len(data) == 0:
         raise ValueError(
