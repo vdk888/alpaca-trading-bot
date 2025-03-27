@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
 from fetch import fetch_historical_data
+from services.cache_service import CacheService
+
+# Initialize cache service
+cache_service = CacheService()
 from datetime import datetime, timedelta
 import pytz
 from indicators import generate_signals, get_default_params
@@ -724,7 +728,8 @@ def run_backtest(symbol: str,
         turnover = 0
         total_trading_costs = 0
 
-    return {
+    # Prepare result dictionary
+    result = {
         'symbol': symbol,
         'data': data,
         'signals': signals,
@@ -746,6 +751,12 @@ def run_backtest(symbol: str,
             'params_used': params
         }
     }
+
+    # Store in cache
+    cache_key = f"backtest_result:{symbol}:{days}"
+    cache_service.set_with_ttl(cache_key, result, ttl_hours=4)
+    
+    return result
 
 
 def calculate_performance_ranking(prices_dataset, current_time, lookback_days_param):
