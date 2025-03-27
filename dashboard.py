@@ -17,7 +17,7 @@ import io
 import base64
 import matplotlib.pyplot as plt
 import json
-from fetch import is_market_open, get_latest_data, fetch_historical_data
+from fetch import is_market_open, get_latest_data
 from helpers.alpaca_service import AlpacaService
 from datetime import timedelta
 from flask import make_response
@@ -53,7 +53,7 @@ def debug_cache():
     """Debug endpoint to check cache functionality"""
     # Re-initialize cache connection 
     cache_service.connect()
-
+    
     # Test writing to cache
     test_key = "test_data"
     test_data = {"timestamp": str(datetime.now()), "test": "data"}
@@ -363,7 +363,7 @@ def run_backtest_api():
             # Check cache first
             cache_key = get_cache_key('portfolio_backtest', days=days)
             cached_data = cache_service.get(cache_key)
-
+            
             if cached_data and cache_service.is_fresh(cache_key, max_age_hours=1):
                 logger.info("Returning cached portfolio backtest data")
                 return jsonify(cached_data)
@@ -569,6 +569,7 @@ def get_capital_multiplier():
 
     try:
         from config import calculate_capital_multiplier
+        import yfinance as yf
         import numpy as np
         import pandas as pd
         from datetime import datetime, timedelta
@@ -596,7 +597,8 @@ def get_capital_multiplier():
                     yf_symbol = yf_symbol.replace('/', '-')
 
                 # Fetch historical data
-                data = fetch_historical_data(yf_symbol, start_date, end_date)
+                ticker = yf.Ticker(yf_symbol)
+                data = ticker.history(start=start_date, end=end_date, interval='1d')
 
                 if len(data) >= 10:  # Need enough data for meaningful calculation
                     # Calculate daily returns
@@ -853,19 +855,19 @@ def download_portfolio_data():
     """Download portfolio backtest data as CSV"""
     try:
         days = request.args.get('days', default=30, type=int)
-
+        
         # Run portfolio backtest
         result = run_portfolio_backtest(symbols, days)
         data = result['data']
-
+        
         # Calculate allocation percentages
         symbol_values = [col for col in data.columns if col.endswith('_value') 
                         and not col.startswith('total')]
         symbols_list = [col.replace('_value', '') for col in symbol_values]
-
+        
         # Include both position values and cash in total
         total_portfolio = data[symbol_values].sum(axis=1) + data['total_cash']
-
+        
         # Calculate and add allocation percentages to the dataframe
         for symbol in symbols_list:
             data[f'{symbol}_allocation'] = (data[f'{symbol}_value'] / total_portfolio * 100).fillna(0)
@@ -876,7 +878,7 @@ def download_portfolio_data():
         response = make_response(csv_data)
         response.headers['Content-Type'] = 'text/csv'
         response.headers['Content-Disposition'] = f'attachment; filename=portfolio_backtest_{days}days.csv'
-
+        
         return response
     except Exception as e:
         logger.error(f"Error generating portfolio CSV: {str(e)}")

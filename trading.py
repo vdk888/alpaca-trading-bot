@@ -3,12 +3,12 @@ import numpy as np
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-from fetch import is_market_open, fetch_historical_data
+from fetch import is_market_open
 from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER, calculate_capital_multiplier, lookback_days_param
 import pytz
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
-
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +122,18 @@ class TradingExecutor:
             # Calculate performance for each symbol
             for sym, config in TRADING_SYMBOLS.items():
                 try:
-                    # Get historical data using fetch.py
-                    logger.info(f"Processing symbol: {sym}")
-                    data = fetch_historical_data(sym, interval=config['interval'], days=lookback_days)
+                    # Get the yfinance symbol
+                    yf_symbol = config['yfinance']
+                    logger.info(f"Processing symbol: {sym} (yfinance: {yf_symbol})")
+
+                    # Get historical data from yfinance
+                    ticker = yf.Ticker(yf_symbol)
+                    data = ticker.history(
+                        start=start_time,
+                        end=end_time,
+                        interval=config['interval'],
+                        actions=True
+                    )
 
                     if len(data) >= 2:
                         start_price = data['Close'].iloc[0]
