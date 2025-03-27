@@ -282,14 +282,12 @@ def run_backtest(symbol: str,
         print(f"Fetching {sym} data...")
         data = fetch_historical_data(sym, interval=default_interval_yahoo, days=(end_date - start_date).days)
         
-        # Ensure we have timezone-aware timestamps
+        # Convert index to datetime if it isn't already
+        data.index = pd.to_datetime(data.index)
+        
+        # Localize timezone like yfinance does
         if data.index.tz is None:
-            data.index = data.index.tz_localize('UTC')
-        else:
-            data.index = data.index.tz_convert('UTC')
-            
-        # Convert any timezone-naive datetimes to UTC
-        data.index = pd.to_datetime(data.index, utc=True)
+            data.index = data.index.tz_localize('America/New_York').tz_convert('UTC')
         
         print(f"Retrieved {len(data)} data points for {sym}")
 
@@ -380,14 +378,12 @@ def run_backtest(symbol: str,
                                interval=symbol_config.get('interval', DEFAULT_INTERVAL),
                                days=(end_date - start_date).days)
                                
-    # Ensure we have timezone-aware timestamps
+    # Convert index to datetime if it isn't already
+    data.index = pd.to_datetime(data.index)
+    
+    # Localize timezone like yfinance does
     if data.index.tz is None:
-        data.index = data.index.tz_localize('UTC')
-    else:
-        data.index = data.index.tz_convert('UTC')
-        
-    # Convert any timezone-naive datetimes to UTC
-    data.index = pd.to_datetime(data.index, utc=True)
+        data.index = data.index.tz_localize('America/New_York').tz_convert('UTC')
 
     if len(data) == 0:
         raise ValueError(
