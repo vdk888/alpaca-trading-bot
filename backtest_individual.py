@@ -752,10 +752,27 @@ def run_backtest(symbol: str,
         }
     }
 
-    # Store in cache
+    # Prepare a JSON-serializable version for caching
+    result_for_cache = result.copy()
+    for key in ['data', 'signals', 'daily_data', 'weekly_data']:
+        if key in result_for_cache and isinstance(result_for_cache[key], pd.DataFrame):
+            # Convert DataFrame to dictionary format suitable for JSON
+            result_for_cache[key] = result_for_cache[key].to_dict(orient='split')
+            # Convert Timestamps in index to strings if using 'split'
+            if 'index' in result_for_cache[key]:
+                 result_for_cache[key]['index'] = [ts.isoformat() for ts in result_for_cache[key]['index']]
+
+    # Store the serializable version in cache
     cache_key = f"backtest_result:{symbol}:{days}"
-    cache_service.set_with_ttl(cache_key, result, ttl_hours=2)
-    
+    try:
+        cache_service.set_with_ttl(cache_key, result_for_cache, ttl_hours=2)
+        logger.info(f"Successfully cached backtest result for {symbol}")
+    except TypeError as e:
+        logger.error(f"Failed to cache backtest result for {symbol}: {e}")
+        # Optionally log the problematic data structure for debugging
+        # logger.debug(f"Data structure causing cache error: {result_for_cache}")
+
+    # Return the original result with DataFrames intact
     return result
 
 
