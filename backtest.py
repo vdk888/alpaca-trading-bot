@@ -522,7 +522,6 @@ def create_backtest_plot(backtest_result: dict) -> tuple:
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
     plt.close()
-    buf.seek(0)
 
     return buf, backtest_result['stats']
 
