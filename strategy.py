@@ -24,8 +24,16 @@ class TradingStrategy:
     def _initialize_data(self) -> None:
         """Initialize historical data for the strategy"""
         try:
-            # Fetch 3 days of historical data
+            # Fetch historical data
             self.data = fetch_historical_data(self.symbol, self.interval, days=int(lookback_days_param))
+            
+            # Ensure DataFrame index has timezone
+            if isinstance(self.data.index, pd.DatetimeIndex):
+                if self.data.index.tz is None:
+                    self.data.index = self.data.index.tz_localize('UTC')
+            else:
+                self.data.index = pd.to_datetime(self.data.index, utc=True)
+                
             self.last_update = pd.Timestamp.now(tz=pytz.UTC)
             logger.info(f"Initialized data for {self.symbol}: {len(self.data)} bars")
         except Exception as e:
