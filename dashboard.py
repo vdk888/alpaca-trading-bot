@@ -850,6 +850,27 @@ def get_price_data():
         logger.error(f"Error getting price data for {symbol}: {str(e)}")
         return jsonify({"error": f"Error getting price data: {str(e)}"}), 500
 
+@dashboard.route('/api/download-portfolio-data')
+def download_portfolio_data():
+    """Download portfolio backtest data as CSV"""
+    try:
+        days = request.args.get('days', default=30, type=int)
+        
+        # Run portfolio backtest
+        result = run_portfolio_backtest(symbols, days)
+        data = result['data']
+        
+        # Create response with CSV data
+        csv_data = data.to_csv(index=True)
+        response = make_response(csv_data)
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename=portfolio_backtest_{days}days.csv'
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error generating portfolio CSV: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @dashboard.route('/api/portfolio')
 def get_portfolio_data():
     """Get portfolio backtest data for the dashboard"""

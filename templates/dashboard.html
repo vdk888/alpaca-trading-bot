@@ -85,7 +85,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Performance -->
                     <div class="col-md-6">
                         <div class="card">
@@ -100,11 +100,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Portfolio Graph -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5>Portfolio Performance <i class="bi bi-arrow-clockwise refresh-btn" onclick="updatePortfolioGraph()"></i></h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPortfolioData()">
+                            <i class="bi bi-download"></i> Download CSV
+                        </button>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -127,7 +130,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Symbol Price Charts -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -152,7 +155,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Performance Ranking -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -164,7 +167,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Capital Multiplier History -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -183,16 +186,16 @@
     <script>
         // Ensure annotation plugin is registered globally
         Chart.defaults.plugins.annotation = Chart.defaults.plugins.annotation || {};
-        
+
         // Populate symbols dropdown
         const availableSymbols = JSON.parse('{{ symbols|tojson|safe }}');
-        
+
         function populateSymbolDropdowns() {
             const symbolSelect = document.getElementById('symbol-select');
-            
+
             // Clear existing options - add null checks
             if (symbolSelect) symbolSelect.innerHTML = '';
-            
+
             // Add symbols to dropdowns
             availableSymbols.forEach(symbol => {
                 // Strategy visualization dropdown
@@ -209,22 +212,22 @@
         function formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
         }
-        
+
         // Format number as percentage
         function formatPercentage(value) {
             return new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value/100);
         }
-        
+
         // Format number with 2 decimal places
         function formatNumber(value) {
             return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
         }
-        
+
         // Get CSS class for positive/negative values
         function getValueClass(value) {
             return value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
         }
-        
+
         // Get CSS class for signal
         function getSignalClass(signal) {
             if (signal.includes('STRONG BUY') || signal.includes('WEAK BUY')) {
@@ -240,7 +243,7 @@
             // Replace any non-alphanumeric characters with underscores
             return symbol.replace(/[^a-zA-Z0-9]/g, '_');
         }
-        
+
         // Update functions
         function updateBalance() {
             $.get('/dashboard/api/balance', function(data) {
@@ -248,10 +251,10 @@
                     $('#balance-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                     return;
                 }
-                
+
                 const todayPL = data.today_pl || 0;
                 const todayPLClass = getValueClass(todayPL);
-                
+
                 const balanceHtml = `
                     <div class="row">
                         <div class="col-md-3">
@@ -271,16 +274,16 @@
                 $('#balance-info').html(balanceHtml);
             });
         }
-        
+
         function updatePerformance() {
             $.get('/dashboard/api/performance', function(data) {
                 if (data.error) {
                     $('#performance-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                     return;
                 }
-                
+
                 const todayPLClass = getValueClass(data.today_pl);
-                
+
                 const performanceHtml = `
                     <div class="row">
                         <div class="col-md-6">
@@ -295,22 +298,22 @@
                 $('#performance-info').html(performanceHtml);
             });
         }
-        
+
         function updateMarkets() {
             $.get('/dashboard/api/markets', function(data) {
                 if (Object.keys(data).length === 0) {
                     $('#markets-info').html(`<div class="alert alert-warning">No market data available</div>`);
                     return;
                 }
-                
+
                 let marketsHtml = '<div class="row">';
-                
+
                 for (const [symbol, info] of Object.entries(data)) {
                     if (info.error) continue;
-                    
+
                     const statusClass = info.is_open ? 'market-open' : 'market-closed';
                     const statusText = info.is_open ? 'Open' : 'Closed';
-                    
+
                     marketsHtml += `
                         <div class="col-md-3 mb-3">
                             <div class="card h-100">
@@ -323,7 +326,7 @@
                         </div>
                     `;
                 }
-                
+
                 marketsHtml += '</div>';
                 $('#markets-info').html(marketsHtml);
             });
@@ -335,17 +338,17 @@
                     $('#status-info').html(`<div class="alert alert-warning">No status data available</div>`);
                     return;
                 }
-                
+
                 let statusHtml = '<div class="row">';
-                
+
                 for (const [symbol, info] of Object.entries(data)) {
                     if (info.error) continue;
-                    
+
                     const dailyCompositeClass = getValueClass(info.daily_composite);
                     const weeklyCompositeClass = getValueClass(info.weekly_composite);
                     const price5mClass = getValueClass(info.price_change_5m);
                     const price1hClass = getValueClass(info.price_change_1h);
-                    
+
                     statusHtml += `
                         <div class="col-md-4 mb-3">
                             <div class="card h-100">
@@ -366,12 +369,12 @@
                         </div>
                     `;
                 }
-                
+
                 statusHtml += '</div>';
                 $('#status-info').html(statusHtml);
             });
         }
-        
+
         function updateRank() {
             const days = parseInt($('#chart-days').val());
             console.log('updateRank called with days:', days);
@@ -380,12 +383,12 @@
                     $('#rank-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                     return;
                 }
-                
+
                 // Create performance chart
                 createPerformanceChart(data);
             });
         }
-        
+
         function updateCapitalMultiplier() {
             const days = parseInt($('#chart-days').val());
             console.log('updateCapitalMultiplier called with days:', days);
@@ -394,37 +397,37 @@
                     $('#capital-multiplier-info').html(`<div class="alert alert-danger">${data.error}</div>`);
                     return;
                 }
-                
+
                 // Create capital multiplier chart
                 createCapitalMultiplierChart(data);
             });
         }
-        
+
         function createPerformanceChart(data) {
             // Clear previous content
             $('#rank-info').empty();
-            
+
             console.log('Performance data:', data);
-            
+
             // Check if we have the performance data in the expected format
             if (!data || !data.performance || !Array.isArray(data.performance) || data.performance.length === 0) {
                 console.warn('Performance data is not in expected format:', data);
                 $('#rank-info').html('<div class="alert alert-warning">No performance data available</div>');
                 return;
             }
-            
+
             // Sort the performance data by return percentage (descending)
             const sortedPerformance = [...data.performance].sort((a, b) => b.return_pct - a.return_pct);
-            
+
             // Create container for the bar chart and table
             const container = $('<div class="row"></div>');
             const chartCol = $('<div class="col-md-6"></div>');
             const tableCol = $('<div class="col-md-6"></div>');
-            
+
             // Create canvas for the bar chart
             const canvas = $('<canvas></canvas>').attr('id', 'performance-bar-chart');
             chartCol.append(canvas);
-            
+
             // Create table for the performance data
             const table = $(`
                 <div class="table-responsive">
@@ -442,14 +445,14 @@
                 </div>
             `);
             tableCol.append(table);
-            
+
             // Add both columns to the container
             container.append(chartCol);
             container.append(tableCol);
-            
+
             // Add the container to the rank-info div
             $('#rank-info').append(container);
-            
+
             // Populate the table
             const tableBody = $('#performance-table-body');
             sortedPerformance.forEach((item, index) => {
@@ -462,7 +465,7 @@
                     </tr>
                 `);
             });
-            
+
             // Create the bar chart
             const ctx = document.getElementById('performance-bar-chart').getContext('2d');
             const labels = sortedPerformance.map(item => item.symbol);
@@ -470,7 +473,7 @@
             const backgroundColors = returns.map(value => 
                 value >= 0 ? 'rgba(75, 192, 75, 0.7)' : 'rgba(255, 99, 132, 0.7)'
             );
-            
+
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -507,23 +510,23 @@
                 }
             });
         }
-        
+
         function createCapitalMultiplierChart(data) {
             // Clear previous content
             $('#capital-multiplier-info').empty();
-            
+
             console.log('Capital Multiplier data:', data);
-            
+
             // Check if we have the data in the expected format
             if (!data || !data.dates || !data.multiplier || !Array.isArray(data.dates) || data.dates.length === 0) {
                 console.warn('Capital Multiplier data is not in expected format:', data);
                 $('#capital-multiplier-info').html('<div class="alert alert-warning">No capital multiplier data available</div>');
                 return;
             }
-            
+
             // Create container for the line chart and current value
             const container = $('<div class="row"></div>');
-            
+
             // Add current multiplier value at the top
             if (data.current_multiplier) {
                 const currentValueCol = $('<div class="col-md-12 mb-3"></div>');
@@ -536,36 +539,36 @@
                 currentValueCol.append(currentValueAlert);
                 container.append(currentValueCol);
             }
-            
+
             const chartCol = $('<div class="col-md-12"></div>');
-            
+
             // Create canvas for the line chart
             const canvas = $('<canvas></canvas>').attr('id', 'capital-multiplier-chart').css('height', '400px');
             chartCol.append(canvas);
-            
+
             // Add column to the container
             container.append(chartCol);
-            
+
             // Add the container to the capital-multiplier-info div
             $('#capital-multiplier-info').append(container);
-            
+
             // Create the line chart
             const ctx = document.getElementById('capital-multiplier-chart').getContext('2d');
-            
+
             // Calculate upper and lower bounds based on standard deviation
             const upperBound = data.multiplier.map((val, idx) => Math.min(3.0, val + data.std[idx]));
             const lowerBound = data.multiplier.map((val, idx) => Math.max(0.5, val - data.std[idx]));
-            
+
             // Add a reference line dataset for the neutral value (1.5)
             const neutralLine = Array(data.dates.length).fill(1.5);
-            
+
             // Add a vertical line for today (last data point)
             // We'll use a separate dataset with a single point for the current date
             const todayMarker = Array(data.dates.length).fill(null);
             if (data.dates.length > 0) {
                 todayMarker[todayMarker.length - 1] = data.multiplier[data.multiplier.length - 1];
             }
-            
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -690,7 +693,7 @@
                     }
                 }
             });
-            
+
             // Add a description of what the capital multiplier means
             const description = $(`
                 <div class="mt-3">
@@ -706,39 +709,39 @@
             `);
             $('#capital-multiplier-info').append(description);
         }
-        
+
         function updatePriceCharts() {
             const days = parseInt($('#chart-days').val());
             console.log('updatePriceCharts called with days:', days);
             const container = $('#price-charts-container');
             container.html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
-            
+
             // Fetch symbols first
             $.ajax({
                 url: '/dashboard/api/symbols',
                 method: 'GET',
                 success: function(data) {
                     container.empty();
-                    
+
                     // Create a row with columns for each symbol
                     data.forEach(function(symbolData) {
                         // Use the original symbol key for API calls
                         const symbol = symbolData.symbol;
                         const safeSymbolId = sanitizeSymbolForId(symbol);
-                        
+
                         // Create a column for each symbol
                         const col = $('<div class="col-md-6 col-lg-6 mb-4"></div>');
                         const card = $('<div class="card h-100"></div>');
                         const cardBody = $('<div class="card-body p-2"></div>');
                         const chartContainer = $('<div class="chart-container" style="position: relative; height: 850px; width: 100%;"></div>');
                         const canvas = $('<canvas></canvas>').attr('id', 'price-chart-' + safeSymbolId);
-                        
+
                         chartContainer.append(canvas);
                         cardBody.append(chartContainer);
                         card.append(cardBody);
                         col.append(card);
                         container.append(col);
-                        
+
                         // Fetch price data for this symbol with the current days value
                         fetchPriceData(symbol, safeSymbolId, days);
                     });
@@ -748,7 +751,7 @@
                 }
             });
         }
-        
+
         function fetchPriceData(symbol, safeSymbolId, days) {
             console.log('fetchPriceData called for symbol:', symbol, 'with days:', days);
             $.ajax({
@@ -767,58 +770,58 @@
                 }
             });
         }
-        
+
         function createPriceChart(symbol, safeSymbolId, data) {
             // Create container for all charts related to this symbol
             const chartContainer = $('#price-chart-' + safeSymbolId).parent();
             chartContainer.empty();
-            
+
             // Create a header div with title and download button
             const headerDiv = $('<div class="d-flex justify-content-between align-items-center mb-2"></div>');
             const titleElement = $('<h6 class="m-0">' + data.name + ' Price</h6>');
             const downloadButton = $('<button class="btn btn-sm btn-outline-secondary" title="Download data as CSV"><i class="bi bi-download"></i> CSV</button>');
-            
+
             // Add click handler to download button
             downloadButton.on('click', function() {
                 downloadSymbolData(symbol, data.days);
             });
-            
+
             // Add Bootstrap Icons CSS if not already included
             if ($('link[href*="bootstrap-icons"]').length === 0) {
                 $('head').append('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">');
             }
-            
-            // Add title and button to header
+
+            // Add title andbutton to header
             headerDiv.append(titleElement);
             headerDiv.append(downloadButton);
-            
+
             // Add header to chart container
             chartContainer.append(headerDiv);
-            
+
             // Increase the height of the chart container to fit all four charts with proper spacing
             chartContainer.css('height', '850px');
-            
+
             // Create div containers for each chart to ensure proper spacing
             const priceChartDiv = $('<div style="height: 220px; margin-bottom: 30px;"></div>').attr('id', 'price-chart-container-' + safeSymbolId);
             const dailyChartDiv = $('<div style="height: 130px; margin-bottom: 30px;"></div>');
             const weeklyChartDiv = $('<div style="height: 130px; margin-bottom: 30px;"></div>');
             const portfolioChartDiv = $('<div style="height: 150px; margin-bottom: 20px;"></div>');
-            
+
             // Create canvas elements for indicator charts
             const dailyCanvas = $('<canvas></canvas>').attr('id', 'daily-indicator-chart-' + safeSymbolId);
             const weeklyCanvas = $('<canvas></canvas>').attr('id', 'weekly-indicator-chart-' + safeSymbolId);
             const portfolioCanvas = $('<canvas></canvas>').attr('id', 'portfolio-backtest-chart-' + safeSymbolId);
-            
+
             // Add canvases to their respective divs
             dailyChartDiv.append(dailyCanvas);
             weeklyChartDiv.append(weeklyCanvas);
             portfolioChartDiv.append(portfolioCanvas);
-            
+
             // Add titles for each chart
             const dailyTitle = $('<h6 class="text-center mt-3 mb-1">Daily Composite Indicator</h6>');
             const weeklyTitle = $('<h6 class="text-center mt-3 mb-1">Weekly Composite Indicator</h6>');
             const portfolioTitle = $('<h6 class="text-center mt-3 mb-1">Backtest Portfolio Value</h6>');
-            
+
             // Add all divs to the container
             chartContainer.append(priceChartDiv);
             chartContainer.append(dailyTitle);
@@ -827,7 +830,7 @@
             chartContainer.append(weeklyChartDiv);
             chartContainer.append(portfolioTitle);
             chartContainer.append(portfolioChartDiv);
-            
+
             // 1. Create Price Chart with Candlesticks using ApexCharts
             const ohlcData = data.ohlc.map(item => {
                 return {
@@ -835,11 +838,11 @@
                     y: [item.o, item.h, item.l, item.c]
                 };
             });
-            
+
             // Create series for buy and sell signals
             const buySeries = [];
             const sellSeries = [];
-            
+
             // Process buy signals if available
             if (data.buy_signals && data.buy_signals.length > 0) {
                 data.buy_signals.forEach(signal => {
@@ -863,7 +866,7 @@
                     });
                 });
             }
-            
+
             // Process sell signals if available
             if (data.sell_signals && data.sell_signals.length > 0) {
                 data.sell_signals.forEach(signal => {
@@ -889,7 +892,7 @@
                     });
                 });
             }
-            
+
             const options = {
                 series: [
                     {
@@ -967,10 +970,10 @@
                     show: true
                 }
             };
-            
+
             const priceChart = new ApexCharts(document.getElementById('price-chart-container-' + safeSymbolId), options);
             priceChart.render();
-            
+
             // 2. Create Daily Composite Indicator Chart
             const dailyCtx = dailyCanvas.get(0).getContext('2d');
             new Chart(dailyCtx, {
@@ -1070,7 +1073,7 @@
                     }
                 }
             });
-            
+
             // 3. Create Weekly Composite Indicator Chart
             const weeklyCtx = weeklyCanvas.get(0).getContext('2d');
             new Chart(weeklyCtx, {
@@ -1170,14 +1173,14 @@
                     }
                 }
             });
-            
+
             // 4. Create Portfolio Value Chart from Backtest
             if (data.portfolio_values && data.portfolio_values.length > 0) {
                 const portfolioCtx = portfolioCanvas.get(0).getContext('2d');
-                
+
                 // Determine if we have allocation percentage data
                 const hasAllocationData = data.allocation_percentages && data.allocation_percentages.length > 0;
-                
+
                 // Create the chart with dual y-axes if we have allocation data
                 new Chart(portfolioCtx, {
                     type: 'line',
@@ -1313,7 +1316,7 @@
                 portfolioChartDiv.html('<div class="alert alert-info py-2">No backtest portfolio data available</div>');
             }
         }
-        
+
         // Set up price chart days change handler
         $('#chart-days').change(function() {
             const days = $(this).val();
@@ -1321,33 +1324,33 @@
             updatePriceCharts();
             updatePortfolioGraph();
         });
-        
+
         // Function to update portfolio graph
         function updatePortfolioGraph() {
             showLoadingToast('Loading portfolio data...');
-            
+
             const days = $('#chart-days').val();
-            
+
             // Clear existing charts
             $('#portfolio-chart-container').html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
             $('#allocation-chart-container').html('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
-            
+
             // Fetch portfolio data
             $.ajax({
                 url: `/dashboard/api/portfolio?days=${days}`,
                 method: 'GET',
                 success: function(data) {
                     hideLoadingToast();
-                    
+
                     if (data.error) {
                         console.error('Error fetching portfolio data:', data.error);
                         $('#portfolio-chart-container').html(`<div class="alert alert-danger">Error: ${data.error}</div>`);
                         return;
                     }
-                    
+
                     // Create portfolio chart
                     createPortfolioChart(data);
-                    
+
                     // Create allocation chart
                     createAllocationChart(data);
                 },
@@ -1358,7 +1361,7 @@
                 }
             });
         }
-        
+
         // Function to create portfolio chart
         function createPortfolioChart(data) {
             // Prepare data for ApexCharts
@@ -1366,12 +1369,12 @@
                 x: new Date(item.index),
                 y: item.portfolio_total
             }));
-            
+
             const benchmarkData = data.benchmark_data.map(item => ({
                 x: new Date(item.timestamp),
                 y: item.value
             }));
-            
+
             // Create ApexCharts options
             const options = {
                 series: [
@@ -1455,20 +1458,20 @@
                     position: 'top'
                 }
             };
-            
+
             // Clear container and create chart
             $('#portfolio-chart-container').empty();
             const chart = new ApexCharts(document.querySelector('#portfolio-chart-container'), options);
             chart.render();
         }
-        
+
         // Function to create allocation chart
         function createAllocationChart(data) {
             // Prepare data for allocation chart
             const timestamps = data.timestamps.map(ts => new Date(ts));
             const allocations = data.allocations;
             const symbols = Object.keys(allocations);
-            
+
             // Prepare series data for stacked chart
             const series = symbols.map(symbol => ({
                 name: symbol,
@@ -1477,7 +1480,7 @@
                     y: value
                 }))
             }));
-            
+
             // Create ApexCharts options
             const options = {
                 series: series,
@@ -1540,13 +1543,13 @@
                     position: 'right'
                 }
             };
-            
+
             // Clear container and create chart
             $('#allocation-chart-container').empty();
             const chart = new ApexCharts(document.querySelector('#allocation-chart-container'), options);
             chart.render();
         }
-        
+
         // Initialize portfolio graph on page load
         $(document).ready(function() {
             // Initial data loads
@@ -1556,45 +1559,45 @@
             updateRank();
             updateCapitalMultiplier();
             updatePortfolioGraph();
-            
+
             // Set up auto-refresh
             const intervalMs = parseInt($('#config-data').data('interval-ms'));
             console.log(`Setting up auto-refresh every ${intervalMs}ms`);
-            
+
             setInterval(function() {
                 updateBalance();
                 updatePerformance();
                 updatePriceCharts();
             }, intervalMs);
         });
-        
+
         // Function to download symbol data as CSV
         function downloadSymbolData(symbol, days) {
             console.log('Downloading data for symbol:', symbol, 'with days:', days);
-            
+
             // Show loading indicator
             showLoadingToast('Preparing your download...');
-            
+
             // Create a direct download link
             const downloadUrl = `/dashboard/api/download-symbol-data?symbol=${encodeURIComponent(symbol)}&days=${encodeURIComponent(days)}`;
-            
+
             // Create a temporary link element
             const downloadLink = document.createElement('a');
             downloadLink.href = downloadUrl;
             downloadLink.setAttribute('download', `${symbol}_data_${days}days.csv`);
             downloadLink.setAttribute('target', '_blank');
-            
+
             // Add to document, click and remove
             document.body.appendChild(downloadLink);
             downloadLink.click();
-            
+
             // Hide loading indicator after a short delay
             setTimeout(function() {
                 hideLoadingToast();
                 document.body.removeChild(downloadLink);
             }, 1000);
         }
-        
+
         // Helper function to show loading toast with custom message
         function showLoadingToast(message) {
             // Create toast if it doesn't exist
@@ -1619,13 +1622,13 @@
                 toastContainer.append(loadingToast);
                 $('body').append(toastContainer);
             }
-            
+
             // Update message and show toast
             $('#loading-message').text(message || 'Processing...');
             const loadingToast = new bootstrap.Toast(document.getElementById('loading-toast'));
             loadingToast.show();
         }
-        
+
         // Helper function to hide loading toast
         function hideLoadingToast() {
             const loadingToastEl = document.getElementById('loading-toast');
@@ -1635,6 +1638,13 @@
                     loadingToast.hide();
                 }
             }
+        }
+
+        // Add function to download portfolio data
+        function downloadPortfolioData() {
+            const days = $('#chart-days').val();
+            const url = `/dashboard/api/download-portfolio-data?days=${days}`;
+            window.location.href = url;
         }
     </script>
 </body>
