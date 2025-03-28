@@ -10,6 +10,7 @@ from trading import TradingExecutor
 from backtest import run_portfolio_backtest, create_portfolio_backtest_plot, create_portfolio_with_prices_plot
 from backtest_individual import run_backtest, create_backtest_plot
 from portfolio import get_portfolio_history, create_portfolio_plot
+from config import default_backtest_interval # Import the default interval
 import pandas as pd
 import pytz
 from utils import get_api_symbol, get_display_symbol
@@ -433,7 +434,7 @@ def run_backtest_api():
 
         for sym in symbols_to_backtest:
             try:
-                logger.info(f"Running backtest for {sym}")
+                logger.info(f"run_backtest_api: Calling run_backtest for {sym} with days={days}") # ADD LOGGING
                 # Run backtest
                 result = run_backtest(sym, days=days)
 
@@ -761,7 +762,7 @@ def get_price_data():
 
     try:
         # Run backtest for the symbol
-        logger.info(f"Running backtest for {symbol}")
+        logger.info(f"get_price_data: Calling run_backtest for {symbol} with days={days}") # ADD LOGGING
         backtest_result = run_backtest(symbol, days=days)
 
         # Extract data from backtest result
@@ -854,7 +855,7 @@ def get_price_data():
 def download_portfolio_data():
     """Download portfolio backtest data as CSV"""
     try:
-        days = request.args.get('days', default=30, type=int)
+        days = request.args.get('days', default=default_backtest_interval, type=int) # Use config default
         
         # Run portfolio backtest
         result = run_portfolio_backtest(symbols, days)
@@ -890,8 +891,8 @@ def get_portfolio_data():
     logger.info("API call: /api/portfolio")
 
     try:
-        # Get days parameter, default to 30 days
-        days = request.args.get('days', default=30, type=int)
+        # Get days parameter, default to config value
+        days = request.args.get('days', default=default_backtest_interval, type=int)
 
         # Generate cache key 
         cache_key = get_cache_key('portfolio', days=days)
@@ -902,11 +903,11 @@ def get_portfolio_data():
             logger.info("Returning cached portfolio data")
             return jsonify(cached_data)
         try:
-            # Get days parameter, default to 30 days
-            days = request.args.get('days', default=30, type=int)
+            # Get days parameter, default to config value
+            days = request.args.get('days', default=default_backtest_interval, type=int)
 
             # Validate days
-            if days <= 0 or days > default_backtest_interval:
+            if days <= 0 or days > default_backtest_interval: # Keep validation against max interval
                 return jsonify({"error": f"Days must be between 1 and {default_backtest_interval}"}), 400
 
             # Ensure days is an integer
@@ -984,7 +985,7 @@ def download_symbol_data():
     try:
         # Get parameters from request
         symbol = request.args.get('symbol', 'BTCUSD')
-        days = int(request.args.get('days', 30))
+        days = int(request.args.get('days', default_backtest_interval)) # Use config default
 
         logging.info(f"Preparing CSV download for {symbol} with {days} days of data")
 

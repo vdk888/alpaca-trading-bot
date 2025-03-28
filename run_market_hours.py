@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import logging
 from telegram import Update, Bot
 from backtest_individual import find_best_params
-from config import TRADING_SYMBOLS, param_grid, lookback_days_param, ALPACA_PAPER
+from config import TRADING_SYMBOLS, param_grid, lookback_days_param, ALPACA_PAPER, default_backtest_interval # Import default_backtest_interval
 import json
 from backtest_individual import run_backtest, create_backtest_plot
 import io
@@ -178,7 +178,7 @@ async def run_bot():
                                     find_best_params,
                                     symbol,
                                     param_grid,
-                                    30
+                                    default_backtest_interval # Use config default
                                 )
                                 
                                 if best_params:
