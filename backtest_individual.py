@@ -527,7 +527,8 @@ def run_backtest(symbol: str,
                             'value': cost,
                             'total_cost': total_cost,
                             'trading_costs': total_cost - cost,
-                            'total_position': position
+                            'total_position': position,
+                            'performance_rank': rank  # Add performance rank for buy trades
                         })
                         print(f"Remaining cash: ${cash:.2f}")
 
@@ -1302,5 +1303,4 @@ if __name__ == "__main__":
                                 days=10,
                                 params=best_params,
                                 is_simulating=False)
-                                # lookback_days_param is no longer needed here for cache consistency
     print(f"Final Backtest Results: {final_result}")

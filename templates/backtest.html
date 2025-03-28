@@ -133,6 +133,9 @@
                             <p>Win Rate: ${formatPercentage(result.win_rate)}</p>
                             <p>Total Trades: ${result.total_trades}</p>
                             <p>Max Drawdown: <span class="negative">${formatPercentage(result.max_drawdown_pct)}</span></p>
+                            <a href="/dashboard/download_backtest_csv/${symbol}/${days}" class="btn btn-secondary btn-sm mt-2" download>
+                                <i class="bi bi-download"></i> Download Trades CSV
+                            </a>
                         </div>
                         <img class="img-fluid" src="data:image/png;base64,${symbolData.plot}" />
                     `;

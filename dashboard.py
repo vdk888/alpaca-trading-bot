@@ -1100,6 +1100,141 @@ def download_symbol_data():
         logging.error(f"Error generating CSV download: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+
+@dashboard.route('/download_backtest_csv/<path:symbol>/<days>') # Use path converter for symbol
+def download_backtest_csv(symbol, days):
+    """Download comprehensive backtest data as CSV""" # Updated docstring
+    logger.info(f"API call: /download_backtest_csv/{symbol}/{days}")
+    try:
+        days = int(days)
+    except ValueError:
+        logger.error(f"Invalid days value for CSV download: {days}")
+        return jsonify({"error": "Days must be a number"}), 400
+
+    # Validate symbol (allow symbols with slashes if they exist in config)
+    # Note: The 'symbols' list might not contain the raw path string if it has slashes.
+    # We should ideally check against TRADING_SYMBOLS keys directly.
+    if symbol not in TRADING_SYMBOLS:
+         logger.error(f"Invalid symbol for CSV download: {symbol}")
+         # Check if it's a display symbol that needs conversion (though unlikely via URL)
+         found = False
+         for key, config in TRADING_SYMBOLS.items():
+             if config.get('display') == symbol or config.get('yfinance') == symbol:
+                 symbol = key # Use the internal key
+                 found = True
+                 break
+         if not found:
+             return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
+
+    # Construct the cache key used by run_backtest
+    cache_key = f"backtest_result:{symbol}:{days}"
+    logger.info(f"Attempting to retrieve cache key: {cache_key}")
+
+    try:
+        # Retrieve the cached backtest result
+        cached_result = cache_service.get(cache_key)
+
+        if not cached_result:
+            logger.warning(f"No cached backtest result found for key: {cache_key}")
+            return jsonify({"error": f"No backtest data found for {symbol} over {days} days. Please run the backtest first."}), 404
+
+        # --- Reconstruct DataFrames ---
+        required_keys = ['data', 'signals', 'daily_data', 'weekly_data', 'portfolio_value', 'shares', 'trades', 'stats']
+        if not all(key in cached_result for key in required_keys):
+             missing_keys = [key for key in required_keys if key not in cached_result]
+             logger.error(f"Cached result for {cache_key} is missing keys: {missing_keys}")
+             return jsonify({"error": f"Cached data is incomplete. Missing: {', '.join(missing_keys)}"}), 500
+
+        try:
+            data_df = pd.DataFrame(cached_result['data']['data'],
+                                   index=pd.to_datetime(cached_result['data']['index']),
+                                   columns=cached_result['data']['columns'])
+            signals_df = pd.DataFrame(cached_result['signals']['data'],
+                                      index=pd.to_datetime(cached_result['signals']['index']),
+                                      columns=cached_result['signals']['columns'])
+            daily_data_df = pd.DataFrame(cached_result['daily_data']['data'],
+                                         index=pd.to_datetime(cached_result['daily_data']['index']),
+                                         columns=cached_result['daily_data']['columns'])
+            weekly_data_df = pd.DataFrame(cached_result['weekly_data']['data'],
+                                          index=pd.to_datetime(cached_result['weekly_data']['index']),
+                                          columns=cached_result['weekly_data']['columns'])
+        except Exception as e:
+            logger.error(f"Error reconstructing DataFrames from cache for {cache_key}: {e}", exc_info=True)
+            return jsonify({"error": f"Error processing cached data: {e}"}), 500
+
+        # --- Create Main DataFrame ---
+        main_df = data_df.copy()
+
+        # --- Merge Indicator Data ---
+        # Add suffixes to avoid potential column name conflicts
+        main_df = main_df.merge(signals_df, left_index=True, right_index=True, how='left', suffixes=('', '_sig'))
+        main_df = main_df.merge(daily_data_df, left_index=True, right_index=True, how='left', suffixes=('', '_daily'))
+        main_df = main_df.merge(weekly_data_df, left_index=True, right_index=True, how='left', suffixes=('', '_weekly'))
+
+        # --- Add Portfolio Data ---
+        portfolio_values = cached_result['portfolio_value']
+        shares_held = cached_result['shares']
+        # Ensure lists match the DataFrame length
+        main_df['portfolio_value'] = portfolio_values[:len(main_df)] if len(portfolio_values) >= len(main_df) else portfolio_values + [None]*(len(main_df)-len(portfolio_values))
+        main_df['shares_held'] = shares_held[:len(main_df)] if len(shares_held) >= len(main_df) else shares_held + [None]*(len(main_df)-len(shares_held))
+
+
+        # --- Merge Trade Data ---
+        trades_list = cached_result['trades']
+        if trades_list:
+            try:
+                trades_df = pd.DataFrame(trades_list)
+                # Ensure 'time' column exists before proceeding
+                if 'time' in trades_df.columns:
+                    trades_df['time'] = pd.to_datetime(trades_df['time'])
+                    trades_df = trades_df.set_index('time')
+                    # Add suffix to all trade columns before merging
+                    trades_df = trades_df.add_suffix('_trade')
+                    main_df = main_df.merge(trades_df, left_index=True, right_index=True, how='left')
+                else:
+                    logger.warning("Trades list found but missing 'time' column.")
+            except Exception as e:
+                 logger.error(f"Error processing trades for CSV: {e}", exc_info=True)
+                 # Continue without trade data if merging fails
+
+        # --- Add Stats Data (Optional - Repeated on each row) ---
+        # stats_dict = cached_result['stats']
+        # for stat_key, stat_value in stats_dict.items():
+        #     # Avoid adding complex structures like the params dict
+        #     if not isinstance(stat_value, (dict, list)):
+        #         main_df[f'stat_{stat_key}'] = stat_value # This repeats the stat on every row
+
+        # --- Prepare CSV ---
+        # Convert index to a 'timestamp' column
+        main_df.reset_index(inplace=True)
+        main_df.rename(columns={'index': 'timestamp'}, inplace=True)
+
+        # Format timestamp
+        if 'timestamp' in main_df.columns:
+             try:
+                 main_df['timestamp'] = pd.to_datetime(main_df['timestamp']).dt.strftime('%Y-%m-%d %H:%M:%S')
+             except Exception as e:
+                 logger.warning(f"Could not format final 'timestamp' column: {e}")
+
+        # Generate CSV string
+        output = io.StringIO()
+        main_df.to_csv(output, index=False, date_format='%Y-%m-%d %H:%M:%S')
+        output.seek(0)
+
+        # --- Create Response ---
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'text/csv'
+        # Sanitize symbol for filename (replace slash)
+        safe_symbol_name = symbol.replace('/', '-')
+        response.headers['Content-Disposition'] = f'attachment; filename=backtest_full_data_{safe_symbol_name}_{days}days.csv' # Updated filename
+        logger.info(f"Successfully generated full backtest CSV for {symbol}, {days} days")
+        return response
+
+    except Exception as e:
+        logger.error(f"Error generating full backtest CSV for {symbol}/{days}: {str(e)}", exc_info=True)
+        return jsonify({"error": f"An error occurred while generating the CSV file: {str(e)}"}), 500
+
+
 def register_blueprints(app):
     """Register all blueprints with the Flask app"""
     # Register the dashboard blueprint
