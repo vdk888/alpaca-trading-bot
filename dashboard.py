@@ -842,9 +842,18 @@ def get_price_data():
             ]
         }
 
-        # Store in cache with 4 hour TTL before returning
+        # --- START ADDITION ---
+        # Store portfolio_values separately with TTL=2 days (48 hours)
+        port_values_cache_key = get_cache_key('port_values', symbol=symbol, days=days)
+        # Convert portfolio_values to a serializable format (list) if it's not already
+        portfolio_values_list = portfolio_values.tolist() if hasattr(portfolio_values, 'tolist') else portfolio_values
+        cache_service.set_with_ttl(port_values_cache_key, portfolio_values_list, ttl_hours=2)
+        logger.info(f"Cached portfolio values for {symbol} with TTL of 2 hours")
+        # --- END ADDITION ---
+
+        # Store in cache with 1 hour TTL before returning
         cache_service.set_with_ttl(cache_key, price_data, ttl_hours=1)
-        logger.info(f"Cached price data for {symbol} with TTL of 4 hours")
+        logger.info(f"Cached price data for {symbol} with TTL of 1 hour")
         return jsonify(price_data)
 
     except Exception as e:

@@ -24,6 +24,15 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Add this helper function before run_backtest
+def get_cache_key(endpoint: str, **params) -> str:
+    """Generate standardized cache key"""
+    key = f"backtest_individual:{endpoint}" # Use a distinct prefix
+    if params:
+        param_str = "_".join(f"{k}:{v}" for k, v in sorted(params.items()))
+        key += f":{param_str}"
+    return key
+
 from datetime import datetime, timedelta
 import json
 
@@ -376,7 +385,8 @@ def run_backtest(symbol: str,
     end_date = datetime.now(pytz.UTC)
     # Round down end_date to the nearest minute to avoid potential future timestamps
     end_date = end_date.replace(second=0, microsecond=0)
-    start_date = end_date - timedelta(days=days + 2)  # Add buffer days
+    # Fetch exactly 'days' worth of data for the backtest period
+    start_date = end_date - timedelta(days=days) 
 
     # Fetch historical data
     data = fetch_historical_data(symbol, 
@@ -776,6 +786,18 @@ def run_backtest(symbol: str,
         logger.error(f"Failed to cache backtest result for {symbol}: {e}")
         # Optionally log the problematic data structure for debugging
         # logger.debug(f"Data structure causing cache error: {result_for_cache}")
+
+    # --- START ADDITION ---
+    # Cache portfolio_value separately with TTL=48 hours
+    try:
+        port_values_cache_key = get_cache_key('port_values_individual', symbol=symbol, days=days)
+        # Ensure portfolio_value is a list
+        portfolio_values_list = portfolio_value if isinstance(portfolio_value, list) else list(portfolio_value)
+        cache_service.set_with_ttl(port_values_cache_key, portfolio_values_list, ttl_hours=48)
+        logger.info(f"Successfully cached portfolio values for {symbol} with key {port_values_cache_key} (TTL=48h)")
+    except Exception as e:
+        logger.error(f"Failed to cache portfolio values separately for {symbol}: {e}")
+    # --- END ADDITION ---
 
     # Return the original result with DataFrames intact
     return result
