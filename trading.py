@@ -6,11 +6,14 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 from fetch import is_market_open
 from config import TRADING_SYMBOLS, default_interval_yahoo, PER_SYMBOL_CAPITAL_MULTIPLIER, calculate_capital_multiplier, lookback_days_param
 import pytz
+import pandas as pd
 from datetime import datetime, timedelta
 from utils import get_api_symbol, get_display_symbol
 from fetch import fetch_historical_data
+from services.cache_service import CacheService # Added import
 
 logger = logging.getLogger(__name__)
+cache_service = CacheService() # Added cache service instance
 
 class TradingExecutor:
     def __init__(self, trading_client: TradingClient, symbol: str):
@@ -110,64 +113,178 @@ class TradingExecutor:
     def calculate_performance_ranking(self, current_price: float, lookback_days: int = lookback_days_param) -> tuple[float, float]:
         """Calculate performance ranking compared to other symbols."""
         try:
-            logger.info(f"Calculating performance ranking for {self.symbol} at price {current_price:.2f} over {lookback_days} days")
+            """Calculate performance ranking compared to other symbols based on strategy backtest performance."""
+            logger.info(f"Calculating strategy performance ranking for {self.symbol} over {lookback_days} days")
 
-            # Get historical data for all symbols
-            end_time = datetime.now(pytz.UTC)
-            start_time = end_time - timedelta(days=lookback_days)
-            logger.info(f"Time range for performance calculation: {start_time} to {end_time}")
+            current_time = datetime.now(pytz.UTC)
+            # Use the function's lookback_days for the ranking period
+            ranking_lookback_days = lookback_days
+            ranking_lookback_time = current_time - timedelta(days=ranking_lookback_days)
+            # Use lookback_days_param from config for the cache key duration
+            cache_backtest_duration = lookback_days_param
+
+            logger.info(f"Ranking Period: {ranking_lookback_time} to {current_time} ({ranking_lookback_days} days)")
+            logger.info(f"Using Cache Key Duration: {cache_backtest_duration} days")
 
             performance_dict = {}
 
+            # Helper function to get cache key (consistent with backtest_individual.py)
+            def get_backtest_cache_key(symbol, full_backtest_days):
+                return f"backtest_result:{symbol}:{full_backtest_days}"
+
             # Calculate performance for each symbol
             for sym, config in TRADING_SYMBOLS.items():
+                performance = None
+                fallback_reason = None
                 try:
-                    logger.info(f"Processing symbol: {sym}")
+                    logger.debug(f"Processing symbol for ranking: {sym}")
 
-                    # Get historical data using fetch.py
-                    data = fetch_historical_data(
-                        symbol=sym,
-                        interval=config['interval'],
-                        days=lookback_days,
-                        use_cache=True
-                    )
+                    # Attempt to get cached backtest result using the configured duration
+                    cache_key = get_backtest_cache_key(sym, cache_backtest_duration)
+                    cached_result = cache_service.get(cache_key)
 
-                    # Adjust timezone if needed
-                    if data.index.tz is None:
-                        data.index = data.index.tz_localize('UTC')
+                    if not cached_result:
+                        fallback_reason = "Cache miss"
+                    elif 'portfolio_value' not in cached_result:
+                        fallback_reason = "Cached result missing 'portfolio_value'"
+                    elif 'data' not in cached_result:
+                        fallback_reason = "Cached result missing 'data' (for timestamps)"
+                    else:
+                        portfolio_values = cached_result['portfolio_value']
+                        if not isinstance(portfolio_values, list) or len(portfolio_values) < 2:
+                            fallback_reason = f"Invalid or insufficient portfolio values in cache ({len(portfolio_values) if isinstance(portfolio_values, list) else 'Not a list'})"
+                        else:
+                            # Reconstruct timestamps from cached data
+                            timestamps = None
+                            try:
+                                if isinstance(cached_result['data'], dict) and 'index' in cached_result['data']:
+                                    timestamps = pd.to_datetime(cached_result['data']['index'])
+                                    if timestamps.tz is None:
+                                        timestamps = timestamps.tz_localize('UTC') # Ensure timezone
+                                elif isinstance(cached_result['data'], pd.DataFrame):
+                                     timestamps = cached_result['data'].index
+                                     if timestamps.tz is None:
+                                         timestamps = timestamps.tz_localize('UTC') # Ensure timezone
+                                else:
+                                     fallback_reason = "Cached 'data' format unrecognized"
 
-                    if len(data) >= 2:
-                        start_price = data['close'].iloc[0]
-                        end_price = current_price if sym == self.symbol else data['close'].iloc[-1]
-                        performance = ((end_price - start_price) / start_price) * 100
+                            except Exception as e:
+                                fallback_reason = f"Error processing cached timestamps: {e}"
+
+                            if timestamps is not None and len(timestamps) >= 2:
+                                # Filter timestamps relevant to the ranking period and up to current time
+                                valid_indices = timestamps[(timestamps >= ranking_lookback_time) & (timestamps <= current_time)]
+
+                                if len(valid_indices) < 2:
+                                    fallback_reason = f"Not enough timestamps in ranking period ({len(valid_indices)})"
+                                else:
+                                    try:
+                                        # Find the original indices corresponding to the start and end of the ranking period
+                                        start_ts = valid_indices[0]
+                                        end_ts = valid_indices[-1]
+
+                                        # Find the indices in the original full timestamp list
+                                        orig_start_idx = timestamps.get_loc(start_ts)
+                                        orig_end_idx = timestamps.get_loc(end_ts)
+
+                                        # Ensure indices are valid for portfolio_values list
+                                        if isinstance(orig_start_idx, slice): orig_start_idx = orig_start_idx.start
+                                        if isinstance(orig_end_idx, slice): orig_end_idx = orig_end_idx.stop -1 # Slices are exclusive at stop
+
+                                        if 0 <= orig_start_idx < len(portfolio_values) and 0 <= orig_end_idx < len(portfolio_values) and orig_start_idx <= orig_end_idx:
+                                            start_value = portfolio_values[orig_start_idx]
+                                            end_value = portfolio_values[orig_end_idx]
+
+                                            if start_value is not None and end_value is not None and start_value > 0:
+                                                performance = ((end_value - start_value) / start_value) * 100
+                                                logger.debug(f"{sym}: Used backtest portfolio for ranking ({ranking_lookback_days} days). Start: ${start_value:.2f} @ {start_ts}, End: ${end_value:.2f} @ {end_ts}, Perf: {performance:.2f}%")
+                                            else:
+                                                fallback_reason = f"Invalid portfolio values (Start: {start_value}, End: {end_value})"
+                                        else:
+                                            fallback_reason = f"Mapped indices out of bounds (Start: {orig_start_idx}, End: {orig_end_idx}, Len: {len(portfolio_values)})"
+
+                                    except KeyError as e:
+                                        fallback_reason = f"Timestamp key error during index lookup: {e}"
+                                    except Exception as e:
+                                        fallback_reason = f"Error calculating performance from cache: {e}"
+                            else:
+                                fallback_reason = fallback_reason or "Invalid or insufficient timestamps reconstructed"
+
+                    # --- Fallback Logic ---
+                    if performance is None:
+                        if fallback_reason:
+                            logger.warning(f"{sym}: Falling back to price data for ranking. Reason: {fallback_reason}")
+                        else:
+                            logger.warning(f"{sym}: Falling back to price data for ranking (unknown reason).")
+
+                        # Fetch price data specifically for the ranking period
+                        price_data = fetch_historical_data(
+                            symbol=sym,
+                            interval=config.get('interval', default_interval_yahoo), # Use config interval or default
+                            days=ranking_lookback_days, # Fetch only needed days
+                            use_cache=True
+                        )
+
+                        if price_data is None or len(price_data) < 2:
+                            logger.warning(f"{sym}: Insufficient price data for fallback ranking ({len(price_data) if price_data is not None else 'None'}).")
+                            continue # Skip this symbol if no fallback data
+
+                        # Ensure timezone
+                        if price_data.index.tz is None:
+                            price_data.index = price_data.index.tz_localize('UTC')
+
+                        # Filter data strictly within the ranking period (fetch might give slightly more)
+                        price_data = price_data[(price_data.index >= ranking_lookback_time) & (price_data.index <= current_time)]
+
+                        if len(price_data) >= 2 and 'close' in price_data.columns:
+                            start_price = price_data['close'].iloc[0]
+                            # Use provided current_price if it's the symbol being executed, else last close
+                            end_price = current_price if sym == self.symbol else price_data['close'].iloc[-1]
+
+                            if start_price > 0:
+                                performance = ((end_price - start_price) / start_price) * 100
+                                logger.debug(f"{sym}: Used price data for ranking (fallback, {ranking_lookback_days} days). Start: ${start_price:.2f}, End: ${end_price:.2f}, Perf: {performance:.2f}%")
+                            else:
+                                logger.warning(f"{sym}: Start price is zero or negative in fallback data.")
+                        else:
+                            logger.warning(f"{sym}: Insufficient or invalid price data columns for fallback ranking.")
+
+                    # Store calculated performance (either from cache or fallback)
+                    if performance is not None:
                         performance_dict[sym] = performance
 
-                        logger.info(f"{sym} Performance: {performance:.2f}% (Start: ${start_price:.2f}, End: ${end_price:.2f})")
-                    else:
-                        logger.warning(f"Insufficient data points for {sym}: {len(data)} (need at least 2)")
-
                 except Exception as e:
-                    logger.error(f"Error calculating performance for {sym}: {str(e)}")
+                    logger.error(f"Error calculating performance for {sym}: {str(e)}", exc_info=True)
                     continue
 
-            # Calculate percentile ranking
-            if performance_dict:
-                performances = list(performance_dict.values())
-                current_perf = performance_dict.get(self.symbol)
-                if current_perf is not None:
-                    rank = sum(p <= current_perf for p in performances) / len(performances)
-                    logger.info(f"Performance rank for {self.symbol}: {rank:.2f} (based on {len(performances)} symbols)")
-                    return rank, current_perf
-                else:
-                    logger.warning(f"No performance data found for current symbol {self.symbol}")
-            else:
-                logger.warning("No performance data available for any symbols")
+            # --- Calculate percentile ranking for the current symbol ---
+            if not performance_dict:
+                logger.warning("No performance data available for ranking any symbols.")
+                return 0.0, 0.0
 
-            return 0.0, 0.0  # Default to worst rank if calculation fails
+            performances = list(performance_dict.values())
+            current_sym_perf = performance_dict.get(self.symbol)
+
+            if current_sym_perf is None:
+                logger.warning(f"Could not calculate performance for the current symbol {self.symbol}.")
+                # Assign worst possible rank if own performance is missing
+                rank = 0.0
+                current_sym_perf = min(performances) if performances else 0.0 # Use min performance or 0
+            else:
+                # Calculate percentile rank (0 to 1, higher is better)
+                rank = sum(p <= current_sym_perf for p in performances) / len(performances)
+
+            logger.info(f"Performance rank for {self.symbol}: {rank:.2f} ({current_sym_perf:.2f}%) (based on {len(performances)} symbols)")
+            # Log top/bottom 3 for context
+            sorted_perf = sorted(performance_dict.items(), key=lambda item: item[1], reverse=True)
+            logger.info(f"Top 3: {[(s, f'{p:.2f}%') for s, p in sorted_perf[:3]]}")
+            logger.info(f"Bottom 3: {[(s, f'{p:.2f}%') for s, p in sorted_perf[-3:]]}")
+
+            return rank, current_sym_perf
 
         except Exception as e:
-            logger.error(f"Error in performance ranking calculation: {str(e)}", exc_info=True)
-            return 0.0, 0.0
+            logger.error(f"Critical error in performance ranking calculation: {str(e)}", exc_info=True)
+            return 0.0, 0.0 # Default to worst rank if calculation fails critically
 
     async def execute_trade(self, action: str, analysis: dict, notify_callback=None) -> bool:
         """

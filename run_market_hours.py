@@ -195,12 +195,12 @@ async def run_bot():
                                 await trading_bot.send_message(f"❌ {error_msg}")
                                 input("Press Enter to continue...")
                             # Small delay between symbols to prevent overload
-                            await asyncio.sleep(1)
                     except Exception as e:
-                        logger.error(f"Error in backtest for {symbol}: {str(e)}")
-                        continue
-                
-                # Sleep for 1 hour before checking again
+                        logger.error(f"Error during background optimization tasks for {symbol}: {str(e)}")
+                        continue # Continue to next symbol
+
+                # Sleep for 1 hour before the next full cycle
+                logger.info("Completed backtest/cache loop cycle. Sleeping for 1 hour.")
                 await asyncio.sleep(3600)
             except Exception as e:
                 logger.error(f"Error in backtest loop: {str(e)}")
@@ -252,8 +252,39 @@ async def run_bot():
                         except Exception as e:
                             logger.warning(f"Error loading parameters: {e}")
                             params = get_default_params()
-                        
+
+                        # --- Run cache-populating backtest before analysis ---
                         try:
+                            logger.info(f"Running cache-populating backtest for {symbol} (Duration: {lookback_days_param} days) before analysis...")
+                            # Optional: Send message only if needed or for debugging
+                            # await trading_bot.send_message(f"🔄 Populating cache for {symbol} ({lookback_days_param} days)...")
+                            loop = asyncio.get_event_loop()
+                            params_to_use = best_params_data.get(symbol, {}).get('best_params', get_default_params())
+                            # Run in executor to avoid blocking the trading loop
+                            backtest_result = await loop.run_in_executor(
+                                None,
+                                run_backtest,
+                                symbol,
+                                lookback_days_param, # Use lookback_days_param for cache key
+                                params_to_use,
+                                True, # is_simulating=True to avoid re-finding params
+                                lookback_days_param # Pass lookback_days_param here too
+                            )
+                            if backtest_result and 'stats' in backtest_result:
+                                logger.info(f"Cache population backtest complete for {symbol}. Return: {backtest_result['stats'].get('total_return', 'N/A'):.2f}%")
+                            else:
+                                logger.warning(f"Cache population backtest for {symbol} did not return expected results.")
+                            # No sleep here, proceed directly to analysis
+                        except Exception as e:
+                            logger.error(f"Error running cache-populating backtest for {symbol} before analysis: {str(e)}", exc_info=True)
+                            await trading_bot.send_message(f"❌ Error populating cache for {symbol}: {str(e)}")
+                            # Decide if you want to continue without fresh cache or skip analysis
+                            # continue # Option: Skip analysis if cache population fails
+
+                        # --- End cache population section ---
+
+                        try:
+                            # Now analyze with potentially fresh cache
                             analysis = strategies[symbol].analyze()
                             if analysis and analysis['signal'] != 0:  # If there's a trading signal
                                 signal_type = "LONG" if analysis['signal'] == 1 else "SHORT"
