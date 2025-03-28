@@ -528,7 +528,11 @@ def run_backtest(symbol: str,
                             'total_cost': total_cost,
                             'trading_costs': total_cost - cost,
                             'total_position': position,
-                            'performance_rank': rank  # Add performance rank for buy trades
+                            'performance_rank': rank,
+                            'performance_pct': performance, # Add actual performance %
+                            'max_ranked_performance': perf_rankings['performance'].max(), # Add max performance
+                            'min_ranked_performance': perf_rankings['performance'].min(), # Add min performance
+                            'buy_percentage': buy_percentage * 100
                         })
                         print(f"Remaining cash: ${cash:.2f}")
 
@@ -619,6 +623,9 @@ def run_backtest(symbol: str,
                             'trading_costs': trading_costs,
                             'total_position': position,
                             'performance_rank': rank,
+                            'performance_pct': performance, # Add actual performance %
+                            'max_ranked_performance': perf_rankings['performance'].max(), # Add max performance
+                            'min_ranked_performance': perf_rankings['performance'].min(), # Add min performance
                             'sell_percentage': sell_percentage * 100
                         })
                         print(
@@ -642,12 +649,15 @@ def run_backtest(symbol: str,
                         'price': current_price,
                         'shares': position,
                         'gross_value': gross_sale_value,
-                        'value': net_sale_value,
-                        'trading_costs': trading_costs,
-                        'total_position': 0,
-                        'performance_rank': None,
-                        'sell_percentage': 100
-                    })
+                            'value': net_sale_value,
+                            'trading_costs': trading_costs,
+                            'total_position': 0,
+                            'performance_rank': None,
+                            'performance_pct': None, # Add placeholder
+                            'max_ranked_performance': None, # Add placeholder
+                            'min_ranked_performance': None, # Add placeholder
+                            'sell_percentage': 100
+                        })
                     print(
                         "\nWARNING: Could not calculate rankings, selling entire position"
                     )
